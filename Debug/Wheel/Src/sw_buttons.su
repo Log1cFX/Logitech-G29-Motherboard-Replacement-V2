@@ -1,0 +1,8 @@
+../Wheel/Src/sw_buttons.c:25:21:Buttons_INIT	0	static
+../Wheel/Src/sw_buttons.c:34:21:Buttons_DeINIT	8	static
+../Wheel/Src/sw_buttons.c:66:13:get_debounced_state	64	static
+../Wheel/Src/sw_buttons.c:61:21:Buttons_GetState	8	static
+../Wheel/Src/sw_buttons.c:88:13:read_rotary_buttons_state	8	static
+../Wheel/Src/sw_buttons.c:53:21:Buttons_Update	8	static
+../Wheel/Src/sw_buttons.c:48:21:Buttons_Stop	8	static
+../Wheel/Src/sw_buttons.c:43:21:Buttons_Start_TIM	8	static

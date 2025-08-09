@@ -1,0 +1,3 @@
+../Wheel/Src/hw_digital_input.c:18:21:DigitalInput_INIT	5
+../Wheel/Src/hw_digital_input.c:31:21:DigitalInput_DeINIT	1
+../Wheel/Src/hw_digital_input.c:39:21:DigitalInput_ReadState	3

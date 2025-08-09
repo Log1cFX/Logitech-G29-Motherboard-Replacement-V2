@@ -1,0 +1,7 @@
+../Wheel/Src/hw_analog_input.c:27:21:Analog_INIT	0	static
+../Wheel/Src/hw_analog_input.c:58:21:Pedals_INIT	0	static
+../Wheel/Src/hw_analog_input.c:75:21:Pedals_GetState	0	static
+../Wheel/Src/hw_analog_input.c:53:21:Analog_Stop	8	static
+../Wheel/Src/hw_analog_input.c:36:21:Analog_DeINIT	8	static
+../Wheel/Src/hw_analog_input.c:47:21:Analog_Start_CONTINIOUS_SCAN_DMA	8	static
+../Wheel/Src/hw_analog_input.c:67:21:Pedals_DeINIT	8	static

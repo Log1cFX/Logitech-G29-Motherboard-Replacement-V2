@@ -1,0 +1,11 @@
+../Wheel/Src/steeringwheel.c:95:13:init_analog	24	static
+../Wheel/Src/steeringwheel.c:105:13:configure_software_exti	0	static
+../Wheel/Src/steeringwheel.c:116:13:init_wheel_handle	0	static
+../Wheel/Src/steeringwheel.c:60:13:init_buttons	32	static
+../Wheel/Src/steeringwheel.c:78:13:init_sensor	32	static
+../Wheel/Src/steeringwheel.c:39:6:wheel_startup	8	static,ignoring_inline_asm
+../Wheel/Src/steeringwheel.c:124:14:wheel_get_all_component_states	8	static
+../Wheel/Src/steeringwheel.c:143:6:HAL_GPIO_EXTI_Callback	8	static
+../Wheel/Src/steeringwheel.c:153:6:HAL_ADC_ConvCpltCallback	0	static
+../Wheel/Src/steeringwheel.c:159:6:HAL_SPI_TxRxCpltCallback	8	static
+../Wheel/Src/steeringwheel.c:174:6:HAL_TIM_PeriodElapsedCallback	8	static
