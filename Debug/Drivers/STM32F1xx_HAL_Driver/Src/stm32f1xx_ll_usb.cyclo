@@ -7,6 +7,7 @@
 ../Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_ll_usb.c:2069:19:USB_FlushRxFifo	1
 ../Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_ll_usb.c:2090:19:USB_ActivateEndpoint	22
 ../Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_ll_usb.c:2223:19:USB_DeactivateEndpoint	10
+../Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_ll_usb.c:2282:19:USB_EPStartXfer	84
 ../Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_ll_usb.c:2502:19:USB_EPSetStall	2
 ../Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_ll_usb.c:2522:19:USB_EPClearStall	6
 ../Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_ll_usb.c:2554:19:USB_EPStopXfer	6
@@ -24,5 +25,4 @@
 ../Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_ll_usb.c:2790:19:USB_ActivateRemoteWakeup	1
 ../Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_ll_usb.c:2802:19:USB_DeActivateRemoteWakeup	1
 ../Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_ll_usb.c:2817:6:USB_WritePMA	2
-../Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_ll_usb.c:2282:19:USB_EPStartXfer	78
 ../Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_ll_usb.c:2852:6:USB_ReadPMA	3

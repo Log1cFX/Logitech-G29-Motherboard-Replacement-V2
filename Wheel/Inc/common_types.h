@@ -9,6 +9,7 @@
 #define INC_COMMON_TYPES_H_
 
 #include "main.h"
+#include "util.h"
 
 typedef enum {
 	WHEEL_OK,

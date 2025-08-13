@@ -1,4 +1,3 @@
-../Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dma.c:857:13:DMA_SetConfig	2
 ../Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dma.c:142:19:HAL_DMA_Init	2
 ../Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dma.c:219:19:HAL_DMA_DeInit	2
 ../Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dma.c:318:19:HAL_DMA_Start	3
@@ -11,3 +10,4 @@
 ../Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dma.c:743:19:HAL_DMA_UnRegisterCallback	8
 ../Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dma.c:819:22:HAL_DMA_GetState	1
 ../Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dma.c:831:10:HAL_DMA_GetError	1
+../Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dma.c:857:13:DMA_SetConfig	2

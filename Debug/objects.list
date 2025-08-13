@@ -39,3 +39,4 @@
 "./Wheel/Src/steeringwheel.o"
 "./Wheel/Src/sw_buttons.o"
 "./Wheel/Src/sw_sensor.o"
+"./Wheel/Src/util.o"

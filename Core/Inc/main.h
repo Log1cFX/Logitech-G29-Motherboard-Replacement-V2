@@ -71,6 +71,8 @@ void Error_Handler(void);
 #define SWIT_1_EXTI_IRQn EXTI1_IRQn
 #define SPI2_SS_Pin GPIO_PIN_12
 #define SPI2_SS_GPIO_Port GPIOB
+#define test_Pin GPIO_PIN_5
+#define test_GPIO_Port GPIOB
 
 /* USER CODE BEGIN Private defines */
 

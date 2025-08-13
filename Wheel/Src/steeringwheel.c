@@ -68,7 +68,7 @@ static void init_buttons() {
 	}
 
 	Buttons_ConfigHandleTypeDef config2 = { 0 };
-	config2.htim = &htim4;
+	config2.htim = &htim3;
 	config2.hw_buttons = &hG29Buttons;
 	if (hButtons.INIT(&hButtons, &config2) == WHEEL_ERROR) {
 		Error_Handler();
@@ -138,7 +138,7 @@ Wheel_Status wheel_get_all_component_states() {
 	return WHEEL_OK;
 }
 
-/* 			LOW_LEVEL CALLBACKS		 	*/
+/*		HARDWARE CALLBACK FUNCTIONS		 	*/
 // The custom software interrupt implementation using the EXTI line callbacks
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
 	if (GPIO_Pin == wheel.hSwit.usb_send_report_swit_pin) {
@@ -149,36 +149,25 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
 	}
 }
 
-/* ADC CALLBACK */
 void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef *hadc) {
 	UNUSED(hadc);
 }
 
-/* SPI CALLBACK */
 // Called at the end of a transfer to process the raw data received by the sensor
 void HAL_SPI_TxRxCpltCallback(SPI_HandleTypeDef *hspi) {
 	if (wheel.hSensor->hw_magnetometer->hspi->Instance == hspi->Instance) {
 		wheel.hSensor->hw_magnetometer->TxRxDone_CB(
 				wheel.hSensor->hw_magnetometer);
 		wheel.hSensor->Update(wheel.hSensor);
-		if(temp==1){
-			test_time_ms = time_ms - old_time_ms;
-			temp=2;
-		}
 	}
 }
 
-/* TIM CALLBACK */
 // 1. Used to start, periodically, the transmission with the sensor
 // 2. Used to periodically read the buttons state
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
 	if (wheel.hSensor->hw_magnetometer->htim->Instance == htim->Instance) {
 		wheel.hSensor->hw_magnetometer->TransmitRecieve_DMA(
 				wheel.hSensor->hw_magnetometer);
-		if(temp == 0){
-			temp = 1;
-			old_time_ms = time_ms;
-		}
 	}
 	if (wheel.hButtons->htim->Instance == htim->Instance) {
 		wheel.hButtons->hw_buttons->ReadState(wheel.hButtons->hw_buttons);

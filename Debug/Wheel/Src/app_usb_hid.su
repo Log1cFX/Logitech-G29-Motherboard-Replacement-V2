@@ -1,7 +1,7 @@
-../Wheel/Src/app_usb_hid.c:68:16:app_usb_hid_SOF_CB	0	static
-../Wheel/Src/app_usb_hid.c:87:16:app_usb_hid_DataInStage_CB	0	static
-../Wheel/Src/app_usb_hid.c:17:14:app_usb_hid_init	0	static
-../Wheel/Src/app_usb_hid.c:25:14:app_usb_hid_start	0	static
-../Wheel/Src/app_usb_hid.c:31:14:app_usb_hid_stop	0	static
+../Wheel/Src/app_usb_hid.c:17:14:app_usb_hid_init	16	static
+../Wheel/Src/app_usb_hid.c:25:14:app_usb_hid_start	4	static
+../Wheel/Src/app_usb_hid.c:31:14:app_usb_hid_stop	4	static
 ../Wheel/Src/app_usb_hid.c:37:6:app_usb_hid_deferred_processing	8	static
-../Wheel/Src/app_usb_hid.c:46:6:app_usb_hid_send_report	8	static
+../Wheel/Src/app_usb_hid.c:46:6:app_usb_hid_send_report	16	static
+../Wheel/Src/app_usb_hid.c:68:16:app_usb_hid_SOF_CB	16	static
+../Wheel/Src/app_usb_hid.c:87:16:app_usb_hid_DataInStage_CB	16	static
