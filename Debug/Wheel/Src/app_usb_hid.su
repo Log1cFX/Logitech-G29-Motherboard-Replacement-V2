@@ -1,7 +1,8 @@
-../Wheel/Src/app_usb_hid.c:17:14:app_usb_hid_init	16	static
-../Wheel/Src/app_usb_hid.c:25:14:app_usb_hid_start	4	static
-../Wheel/Src/app_usb_hid.c:31:14:app_usb_hid_stop	4	static
-../Wheel/Src/app_usb_hid.c:37:6:app_usb_hid_deferred_processing	8	static
-../Wheel/Src/app_usb_hid.c:46:6:app_usb_hid_send_report	16	static
-../Wheel/Src/app_usb_hid.c:68:16:app_usb_hid_SOF_CB	16	static
-../Wheel/Src/app_usb_hid.c:87:16:app_usb_hid_DataInStage_CB	16	static
+../Wheel/Src/app_usb_hid.c:18:14:app_usb_hid_init	16	static
+../Wheel/Src/app_usb_hid.c:26:14:app_usb_hid_start	4	static
+../Wheel/Src/app_usb_hid.c:32:14:app_usb_hid_stop	4	static
+../Wheel/Src/app_usb_hid.c:40:6:app_usb_hid_deferred_processing	8	static
+../Wheel/Src/app_usb_hid.c:49:6:app_usb_hid_send_report	16	static
+../Wheel/Src/app_usb_hid.c:69:16:hat_switch_from_msb	24	static
+../Wheel/Src/app_usb_hid.c:100:16:app_usb_hid_SOF_CB	16	static
+../Wheel/Src/app_usb_hid.c:119:16:app_usb_hid_DataInStage_CB	16	static

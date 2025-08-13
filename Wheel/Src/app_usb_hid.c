@@ -13,9 +13,10 @@ extern Wheel_HandleTypeDef wheel;
 static uint8_t app_usb_hid_SOF_CB(USBD_HandleTypeDef *pdev);
 static uint8_t app_usb_hid_DataInStage_CB(USBD_HandleTypeDef *pdev,
 		uint8_t epnum);
+static uint8_t hat_switch_from_msb(uint8_t byte);
 
 Wheel_Status app_usb_hid_init(USB_HID_HandleTypeDef *hUsbHid) {
-	if(hUsbHid==0){
+	if (hUsbHid == 0) {
 		return WHEEL_ERROR;
 	}
 	hUsbHid->usb_device = &hUsbDeviceFS;
@@ -34,9 +35,11 @@ Wheel_Status app_usb_hid_stop() {
 	return WHEEL_OK;
 }
 
+/* 		FUNCTIONS COMPOSING THE REPORT 		*/
+
 void app_usb_hid_deferred_processing() {
 	wheel.hUsbHid->processing_state = USB_IS_PROCESSING;
-	if(wheel_get_all_component_states() == WHEEL_ERROR){
+	if (wheel_get_all_component_states() == WHEEL_ERROR) {
 		Error_Handler();
 	}
 	wheel.hUsbHid->report_state = USB_REPORT_IS_READY;
@@ -48,7 +51,9 @@ void app_usb_hid_send_report() {
 		return;
 	}
 	uint8_t *tx = wheel.hUsbHid->tx_buffer;
-	tx[0] = wheel.hButtons->buttons_state;
+	tx[0] = 0;
+	tx[0] |= 0x0F & hat_switch_from_msb(wheel.hButtons->buttons_state);
+	tx[0] |= 0xF0 & (wheel.hButtons->buttons_state << 4);
 	tx[1] = wheel.hButtons->buttons_state >> 8;
 	tx[2] = wheel.hButtons->buttons_state >> 16;
 	tx[3] = wheel.hSensor->virtual_axis;
@@ -59,6 +64,33 @@ void app_usb_hid_send_report() {
 	USBD_CUSTOM_HID_SendReport(&hUsbDeviceFS, tx,
 	USBD_CUSTOMHID_INREPORT_BUF_SIZE);
 	wheel.hUsbHid->report_state = USB_REPORT_NOT_READY;
+}
+
+static uint8_t hat_switch_from_msb(uint8_t byte) {
+	/* Extract individual direction bits (boolean 0 / 1) */
+	uint8_t down = (byte & 0x10u) ? 1u : 0u; // bit 4
+	uint8_t left = (byte & 0x20u) ? 1u : 0u; // bit 5
+	uint8_t up = (byte & 0x40u) ? 1u : 0u; // bit 6
+	uint8_t right = (byte & 0x80u) ? 1u : 0u; // bit 7
+
+	// Convert to signed axis values −1 / 0 / +1
+	int8_t dpadX = (int8_t) right - (int8_t) left; // +1 = Right, −1 = Left
+	int8_t dpadY = (int8_t) down - (int8_t) up; // +1 = Down,  −1 = Up
+
+	// If both opposite directions are pressed, cancel the axis
+	if ((right && left))
+		dpadX = 0;
+	if ((up && down))
+		dpadY = 0;
+
+	/* Map (dpadX, dpadY) to the hat-switch look-up table */
+	static const uint8_t hatTable[3][3] = {
+	/*           X = −1   0   +1  */
+	/* Y = −1 */{ 7, 0, 1 }, /* Up, Up-Left(NW), Up-Right(NE) */
+	/* Y =  0 */{ 6, 8, 2 }, /* Left, Centre,   Right        */
+	/* Y = +1 */{ 5, 4, 3 } /* Down-Left(SW), Down, Down-Right(SE) */
+	};
+	return hatTable[dpadY + 1][dpadX + 1];
 }
 
 /* 		CALLBACKS 		*/

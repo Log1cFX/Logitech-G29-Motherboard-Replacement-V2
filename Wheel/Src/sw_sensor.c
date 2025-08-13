@@ -26,6 +26,7 @@ static Wheel_Status Sensor_SW_INIT(Sensor_HandleTypeDef *sensor,
 	}
 	sensor->hw_magnetometer = config->hw_magnetometer;
 	sensor->start_settling_cnt = 2;
+	sensor->axis_scale = 1.0;
 	return WHEEL_OK;
 }
 
@@ -51,9 +52,9 @@ static Wheel_Status Sensor_SW_Update(Sensor_HandleTypeDef *sensor) {
 
 static Wheel_Status Sensor_SW_GetAxis(Sensor_HandleTypeDef *sensor) {
 	get_steering_pos(sensor);
-	sensor->distance = (uint16_t) (sensor->max - sensor->min);
 	sensor->physical_axis = (uint16_t) (sensor->steering_pos - sensor->min);
-	sensor->virtual_axis = sensor->physical_axis - (sensor->distance / 2);
+	sensor->virtual_axis = (sensor->physical_axis - (sensor->distance / 2))
+			* sensor->axis_scale;
 	return WHEEL_OK;
 }
 

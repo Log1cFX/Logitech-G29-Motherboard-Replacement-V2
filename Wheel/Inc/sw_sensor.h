@@ -29,8 +29,9 @@ typedef struct _Sensor_HandleTypeDef {
 	int8_t magnet_full_rotation_cnt;
 	int32_t min;
 	int32_t max;
-	uint16_t distance;
 	uint8_t start_settling_cnt;
+	uint16_t distance;
+	float axis_scale;
 
 	Magnetometer_HandleTypeDef *hw_magnetometer;
 } Sensor_HandleTypeDef;

@@ -5354,7 +5354,7 @@ LOAD C:/Program Files/STMicroelectronics/STM32CubeIDE_1.16.0/STM32CubeIDE/plugin
                 0x08000000                g_pfnVectors
                 0x0800010c                        . = ALIGN (0x4)
 
-.text           0x0800010c     0xbb30
+.text           0x0800010c     0xbc18
                 0x0800010c                        . = ALIGN (0x4)
  *(.text)
  .text          0x0800010c       0x40 C:/Program Files/STMicroelectronics/STM32CubeIDE_1.16.0/STM32CubeIDE/plugins/com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.13.3.rel1.win32_1.0.0.202411081344/tools/bin/../lib/gcc/arm-none-eabi/13.3.1/thumb/v7-m/nofp/crtbegin.o
@@ -6027,213 +6027,219 @@ LOAD C:/Program Files/STMicroelectronics/STM32CubeIDE_1.16.0/STM32CubeIDE/plugin
                 0x0800a564       0x54 ./Wheel/Src/app_usb_hid.o
                 0x0800a564                app_usb_hid_deferred_processing
  .text.app_usb_hid_send_report
-                0x0800a5b8       0xf4 ./Wheel/Src/app_usb_hid.o
+                0x0800a5b8      0x136 ./Wheel/Src/app_usb_hid.o
                 0x0800a5b8                app_usb_hid_send_report
+ .text.hat_switch_from_msb
+                0x0800a6ee       0x92 ./Wheel/Src/app_usb_hid.o
  .text.app_usb_hid_SOF_CB
-                0x0800a6ac       0x9a ./Wheel/Src/app_usb_hid.o
+                0x0800a780       0x9a ./Wheel/Src/app_usb_hid.o
  .text.app_usb_hid_DataInStage_CB
-                0x0800a746       0x44 ./Wheel/Src/app_usb_hid.o
+                0x0800a81a       0x44 ./Wheel/Src/app_usb_hid.o
  .text.Analog_INIT
-                0x0800a78a       0x2a ./Wheel/Src/hw_analog_input.o
+                0x0800a85e       0x2a ./Wheel/Src/hw_analog_input.o
  .text.Analog_DeINIT
-                0x0800a7b4       0x4a ./Wheel/Src/hw_analog_input.o
+                0x0800a888       0x4a ./Wheel/Src/hw_analog_input.o
  .text.Analog_Start_CONTINIOUS_SCAN_DMA
-                0x0800a7fe       0x22 ./Wheel/Src/hw_analog_input.o
+                0x0800a8d2       0x22 ./Wheel/Src/hw_analog_input.o
  .text.Analog_Stop
-                0x0800a820       0x1c ./Wheel/Src/hw_analog_input.o
+                0x0800a8f4       0x1c ./Wheel/Src/hw_analog_input.o
  .text.Pedals_INIT
-                0x0800a83c       0x2a ./Wheel/Src/hw_analog_input.o
+                0x0800a910       0x2a ./Wheel/Src/hw_analog_input.o
  .text.Pedals_DeINIT
-                0x0800a866       0x30 ./Wheel/Src/hw_analog_input.o
+                0x0800a93a       0x30 ./Wheel/Src/hw_analog_input.o
  .text.Pedals_GetState
-                0x0800a896       0x4a ./Wheel/Src/hw_analog_input.o
+                0x0800a96a       0x4a ./Wheel/Src/hw_analog_input.o
  .text.DigitalInput_INIT
-                0x0800a8e0       0x5a ./Wheel/Src/hw_digital_input.o
+                0x0800a9b4       0x5a ./Wheel/Src/hw_digital_input.o
  .text.DigitalInput_DeINIT
-                0x0800a93a       0x2c ./Wheel/Src/hw_digital_input.o
+                0x0800aa0e       0x2c ./Wheel/Src/hw_digital_input.o
  .text.DigitalInput_ReadState
-                0x0800a966       0xa2 ./Wheel/Src/hw_digital_input.o
+                0x0800aa3a       0xa2 ./Wheel/Src/hw_digital_input.o
  .text.MLX90363_INIT
-                0x0800aa08       0x5a ./Wheel/Src/hw_magnetometer.o
+                0x0800aadc       0x5a ./Wheel/Src/hw_magnetometer.o
  .text.MLX90363_DeINIT
-                0x0800aa62       0x3a ./Wheel/Src/hw_magnetometer.o
+                0x0800ab36       0x3a ./Wheel/Src/hw_magnetometer.o
  .text.MLX90363_Start_TIM
-                0x0800aa9c       0x42 ./Wheel/Src/hw_magnetometer.o
+                0x0800ab70       0x42 ./Wheel/Src/hw_magnetometer.o
  .text.MLX90363_Stop
-                0x0800aade       0x1c ./Wheel/Src/hw_magnetometer.o
+                0x0800abb2       0x1c ./Wheel/Src/hw_magnetometer.o
  .text.MLX90363_TransmitRecieve_DMA
-                0x0800aafa       0x54 ./Wheel/Src/hw_magnetometer.o
+                0x0800abce       0x54 ./Wheel/Src/hw_magnetometer.o
  .text.MLX90363_TxRxDone_CB
-                0x0800ab4e       0x30 ./Wheel/Src/hw_magnetometer.o
+                0x0800ac22       0x30 ./Wheel/Src/hw_magnetometer.o
  .text.calculate_crc
-                0x0800ab7e       0xd8 ./Wheel/Src/hw_magnetometer.o
+                0x0800ac52       0xd8 ./Wheel/Src/hw_magnetometer.o
  .text.set_Tx_GET1
-                0x0800ac56       0x60 ./Wheel/Src/hw_magnetometer.o
+                0x0800ad2a       0x60 ./Wheel/Src/hw_magnetometer.o
  .text.set_Tx_NOP
-                0x0800acb6       0x5c ./Wheel/Src/hw_magnetometer.o
+                0x0800ad8a       0x5c ./Wheel/Src/hw_magnetometer.o
  .text.transmit_blocking
-                0x0800ad12       0x44 ./Wheel/Src/hw_magnetometer.o
+                0x0800ade6       0x44 ./Wheel/Src/hw_magnetometer.o
  .text.reset_roll_counter
-                0x0800ad56       0x30 ./Wheel/Src/hw_magnetometer.o
- .text.getData  0x0800ad86      0x12c ./Wheel/Src/hw_magnetometer.o
+                0x0800ae2a       0x30 ./Wheel/Src/hw_magnetometer.o
+ .text.getData  0x0800ae5a      0x12c ./Wheel/Src/hw_magnetometer.o
  .text.wheel_startup
-                0x0800aeb2       0x82 ./Wheel/Src/steeringwheel.o
-                0x0800aeb2                wheel_startup
+                0x0800af86       0x82 ./Wheel/Src/steeringwheel.o
+                0x0800af86                wheel_startup
  .text.init_buttons
-                0x0800af34       0x98 ./Wheel/Src/steeringwheel.o
+                0x0800b008       0x98 ./Wheel/Src/steeringwheel.o
  .text.init_sensor
-                0x0800afcc       0x94 ./Wheel/Src/steeringwheel.o
+                0x0800b0a0       0x94 ./Wheel/Src/steeringwheel.o
  .text.init_analog
-                0x0800b060       0x5a ./Wheel/Src/steeringwheel.o
+                0x0800b134       0x5a ./Wheel/Src/steeringwheel.o
  .text.configure_software_exti
-                0x0800b0ba       0xb4 ./Wheel/Src/steeringwheel.o
+                0x0800b18e       0xb4 ./Wheel/Src/steeringwheel.o
  .text.init_wheel_handle
-                0x0800b16e       0x54 ./Wheel/Src/steeringwheel.o
+                0x0800b242       0x54 ./Wheel/Src/steeringwheel.o
  .text.wheel_get_all_component_states
-                0x0800b1c2       0xae ./Wheel/Src/steeringwheel.o
-                0x0800b1c2                wheel_get_all_component_states
+                0x0800b296       0xae ./Wheel/Src/steeringwheel.o
+                0x0800b296                wheel_get_all_component_states
  .text.HAL_GPIO_EXTI_Callback
-                0x0800b270       0x3a ./Wheel/Src/steeringwheel.o
-                0x0800b270                HAL_GPIO_EXTI_Callback
+                0x0800b344       0x3a ./Wheel/Src/steeringwheel.o
+                0x0800b344                HAL_GPIO_EXTI_Callback
  .text.HAL_ADC_ConvCpltCallback
-                0x0800b2aa       0x12 ./Wheel/Src/steeringwheel.o
-                0x0800b2aa                HAL_ADC_ConvCpltCallback
+                0x0800b37e       0x12 ./Wheel/Src/steeringwheel.o
+                0x0800b37e                HAL_ADC_ConvCpltCallback
  .text.HAL_SPI_TxRxCpltCallback
-                0x0800b2bc       0x60 ./Wheel/Src/steeringwheel.o
-                0x0800b2bc                HAL_SPI_TxRxCpltCallback
+                0x0800b390       0x60 ./Wheel/Src/steeringwheel.o
+                0x0800b390                HAL_SPI_TxRxCpltCallback
  .text.HAL_TIM_PeriodElapsedCallback
-                0x0800b31c       0xb0 ./Wheel/Src/steeringwheel.o
-                0x0800b31c                HAL_TIM_PeriodElapsedCallback
+                0x0800b3f0       0xb0 ./Wheel/Src/steeringwheel.o
+                0x0800b3f0                HAL_TIM_PeriodElapsedCallback
  .text.Buttons_INIT
-                0x0800b3cc       0x3e ./Wheel/Src/sw_buttons.o
+                0x0800b4a0       0x3e ./Wheel/Src/sw_buttons.o
  .text.Buttons_DeINIT
-                0x0800b40a       0x3e ./Wheel/Src/sw_buttons.o
+                0x0800b4de       0x3e ./Wheel/Src/sw_buttons.o
  .text.Buttons_Start_TIM
-                0x0800b448       0x1e ./Wheel/Src/sw_buttons.o
+                0x0800b51c       0x1e ./Wheel/Src/sw_buttons.o
  .text.Buttons_Stop
-                0x0800b466       0x1e ./Wheel/Src/sw_buttons.o
+                0x0800b53a       0x1e ./Wheel/Src/sw_buttons.o
  .text.Buttons_Update
-                0x0800b484       0x6c ./Wheel/Src/sw_buttons.o
+                0x0800b558       0x6c ./Wheel/Src/sw_buttons.o
  .text.Buttons_GetState
-                0x0800b4f0       0x1e ./Wheel/Src/sw_buttons.o
+                0x0800b5c4       0x1e ./Wheel/Src/sw_buttons.o
  .text.get_debounced_state
-                0x0800b50e      0x29c ./Wheel/Src/sw_buttons.o
+                0x0800b5e2      0x29c ./Wheel/Src/sw_buttons.o
  .text.get_current_knob_state
-                0x0800b7aa       0x60 ./Wheel/Src/sw_buttons.o
- .text.read_knob_buttons_state
-                0x0800b80a      0x188 ./Wheel/Src/sw_buttons.o
- .text.update_knob_buttons_state
-                0x0800b992       0x56 ./Wheel/Src/sw_buttons.o
+                0x0800b87e       0x60 ./Wheel/Src/sw_buttons.o
+ .text.read_knob_button_state
+                0x0800b8de      0x188 ./Wheel/Src/sw_buttons.o
+ .text.update_knob_button_state
+                0x0800ba66       0x56 ./Wheel/Src/sw_buttons.o
  .text.Sensor_SW_INIT
-                0x0800b9e8       0x32 ./Wheel/Src/sw_sensor.o
+                0x0800babc       0x3a ./Wheel/Src/sw_sensor.o
  .text.Sensor_SW_DeINIT
-                0x0800ba1a       0x30 ./Wheel/Src/sw_sensor.o
+                0x0800baf6       0x30 ./Wheel/Src/sw_sensor.o
  .text.Sensor_SW_Update
-                0x0800ba4a       0x46 ./Wheel/Src/sw_sensor.o
+                0x0800bb26       0x46 ./Wheel/Src/sw_sensor.o
  .text.Sensor_SW_GetAxis
-                0x0800ba90       0x56 ./Wheel/Src/sw_sensor.o
+                0x0800bb6c       0x60 ./Wheel/Src/sw_sensor.o
  .text.calculate_magnet_rotations
-                0x0800bae6       0x6c ./Wheel/Src/sw_sensor.o
+                0x0800bbcc       0x6c ./Wheel/Src/sw_sensor.o
  .text.get_steering_pos
-                0x0800bb52       0x7a ./Wheel/Src/sw_sensor.o
- .text.memset   0x0800bbcc       0x10 C:/Program Files/STMicroelectronics/STM32CubeIDE_1.16.0/STM32CubeIDE/plugins/com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.13.3.rel1.win32_1.0.0.202411081344/tools/bin/../lib/gcc/arm-none-eabi/13.3.1/../../../../arm-none-eabi/lib/thumb/v7-m/nofp\libc_nano.a(libc_a-memset.o)
-                0x0800bbcc                memset
+                0x0800bc38       0x7a ./Wheel/Src/sw_sensor.o
+ .text.memset   0x0800bcb2       0x10 C:/Program Files/STMicroelectronics/STM32CubeIDE_1.16.0/STM32CubeIDE/plugins/com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.13.3.rel1.win32_1.0.0.202411081344/tools/bin/../lib/gcc/arm-none-eabi/13.3.1/../../../../arm-none-eabi/lib/thumb/v7-m/nofp\libc_nano.a(libc_a-memset.o)
+                0x0800bcb2                memset
+ *fill*         0x0800bcc2        0x2 
  .text.__libc_init_array
-                0x0800bbdc       0x48 C:/Program Files/STMicroelectronics/STM32CubeIDE_1.16.0/STM32CubeIDE/plugins/com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.13.3.rel1.win32_1.0.0.202411081344/tools/bin/../lib/gcc/arm-none-eabi/13.3.1/../../../../arm-none-eabi/lib/thumb/v7-m/nofp\libc_nano.a(libc_a-init.o)
-                0x0800bbdc                __libc_init_array
+                0x0800bcc4       0x48 C:/Program Files/STMicroelectronics/STM32CubeIDE_1.16.0/STM32CubeIDE/plugins/com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.13.3.rel1.win32_1.0.0.202411081344/tools/bin/../lib/gcc/arm-none-eabi/13.3.1/../../../../arm-none-eabi/lib/thumb/v7-m/nofp\libc_nano.a(libc_a-init.o)
+                0x0800bcc4                __libc_init_array
  *(.glue_7)
- .glue_7        0x0800bc24        0x0 linker stubs
+ .glue_7        0x0800bd0c        0x0 linker stubs
  *(.glue_7t)
- .glue_7t       0x0800bc24        0x0 linker stubs
+ .glue_7t       0x0800bd0c        0x0 linker stubs
  *(.eh_frame)
- .eh_frame      0x0800bc24        0x0 C:/Program Files/STMicroelectronics/STM32CubeIDE_1.16.0/STM32CubeIDE/plugins/com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.13.3.rel1.win32_1.0.0.202411081344/tools/bin/../lib/gcc/arm-none-eabi/13.3.1/thumb/v7-m/nofp/crtbegin.o
+ .eh_frame      0x0800bd0c        0x0 C:/Program Files/STMicroelectronics/STM32CubeIDE_1.16.0/STM32CubeIDE/plugins/com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.13.3.rel1.win32_1.0.0.202411081344/tools/bin/../lib/gcc/arm-none-eabi/13.3.1/thumb/v7-m/nofp/crtbegin.o
  *(.init)
- .init          0x0800bc24        0x4 C:/Program Files/STMicroelectronics/STM32CubeIDE_1.16.0/STM32CubeIDE/plugins/com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.13.3.rel1.win32_1.0.0.202411081344/tools/bin/../lib/gcc/arm-none-eabi/13.3.1/thumb/v7-m/nofp/crti.o
-                0x0800bc24                _init
- .init          0x0800bc28        0x8 C:/Program Files/STMicroelectronics/STM32CubeIDE_1.16.0/STM32CubeIDE/plugins/com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.13.3.rel1.win32_1.0.0.202411081344/tools/bin/../lib/gcc/arm-none-eabi/13.3.1/thumb/v7-m/nofp/crtn.o
+ .init          0x0800bd0c        0x4 C:/Program Files/STMicroelectronics/STM32CubeIDE_1.16.0/STM32CubeIDE/plugins/com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.13.3.rel1.win32_1.0.0.202411081344/tools/bin/../lib/gcc/arm-none-eabi/13.3.1/thumb/v7-m/nofp/crti.o
+                0x0800bd0c                _init
+ .init          0x0800bd10        0x8 C:/Program Files/STMicroelectronics/STM32CubeIDE_1.16.0/STM32CubeIDE/plugins/com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.13.3.rel1.win32_1.0.0.202411081344/tools/bin/../lib/gcc/arm-none-eabi/13.3.1/thumb/v7-m/nofp/crtn.o
  *(.fini)
- .fini          0x0800bc30        0x4 C:/Program Files/STMicroelectronics/STM32CubeIDE_1.16.0/STM32CubeIDE/plugins/com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.13.3.rel1.win32_1.0.0.202411081344/tools/bin/../lib/gcc/arm-none-eabi/13.3.1/thumb/v7-m/nofp/crti.o
-                0x0800bc30                _fini
- .fini          0x0800bc34        0x8 C:/Program Files/STMicroelectronics/STM32CubeIDE_1.16.0/STM32CubeIDE/plugins/com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.13.3.rel1.win32_1.0.0.202411081344/tools/bin/../lib/gcc/arm-none-eabi/13.3.1/thumb/v7-m/nofp/crtn.o
-                0x0800bc3c                        . = ALIGN (0x4)
-                0x0800bc3c                        _etext = .
+ .fini          0x0800bd18        0x4 C:/Program Files/STMicroelectronics/STM32CubeIDE_1.16.0/STM32CubeIDE/plugins/com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.13.3.rel1.win32_1.0.0.202411081344/tools/bin/../lib/gcc/arm-none-eabi/13.3.1/thumb/v7-m/nofp/crti.o
+                0x0800bd18                _fini
+ .fini          0x0800bd1c        0x8 C:/Program Files/STMicroelectronics/STM32CubeIDE_1.16.0/STM32CubeIDE/plugins/com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.13.3.rel1.win32_1.0.0.202411081344/tools/bin/../lib/gcc/arm-none-eabi/13.3.1/thumb/v7-m/nofp/crtn.o
+                0x0800bd24                        . = ALIGN (0x4)
+                0x0800bd24                        _etext = .
 
-.vfp11_veneer   0x0800bc3c        0x0
- .vfp11_veneer  0x0800bc3c        0x0 linker stubs
+.vfp11_veneer   0x0800bd24        0x0
+ .vfp11_veneer  0x0800bd24        0x0 linker stubs
 
-.v4_bx          0x0800bc3c        0x0
- .v4_bx         0x0800bc3c        0x0 linker stubs
+.v4_bx          0x0800bd24        0x0
+ .v4_bx         0x0800bd24        0x0 linker stubs
 
-.iplt           0x0800bc3c        0x0
- .iplt          0x0800bc3c        0x0 C:/Program Files/STMicroelectronics/STM32CubeIDE_1.16.0/STM32CubeIDE/plugins/com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.13.3.rel1.win32_1.0.0.202411081344/tools/bin/../lib/gcc/arm-none-eabi/13.3.1/thumb/v7-m/nofp/crtbegin.o
+.iplt           0x0800bd24        0x0
+ .iplt          0x0800bd24        0x0 C:/Program Files/STMicroelectronics/STM32CubeIDE_1.16.0/STM32CubeIDE/plugins/com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.13.3.rel1.win32_1.0.0.202411081344/tools/bin/../lib/gcc/arm-none-eabi/13.3.1/thumb/v7-m/nofp/crtbegin.o
 
-.rodata         0x0800bc3c      0x1b4
-                0x0800bc3c                        . = ALIGN (0x4)
+.rodata         0x0800bd24      0x1c0
+                0x0800bd24                        . = ALIGN (0x4)
  *(.rodata)
- .rodata        0x0800bc3c       0x5d ./USB_DEVICE/App/usbd_desc.o
- *fill*         0x0800bc99        0x3 
- .rodata        0x0800bc9c        0x8 ./Wheel/Src/sw_buttons.o
+ .rodata        0x0800bd24       0x5d ./USB_DEVICE/App/usbd_desc.o
+ *fill*         0x0800bd81        0x3 
+ .rodata        0x0800bd84        0x8 ./Wheel/Src/sw_buttons.o
  *(.rodata*)
  .rodata.AHBPrescTable
-                0x0800bca4       0x10 ./Core/Src/system_stm32f1xx.o
-                0x0800bca4                AHBPrescTable
+                0x0800bd8c       0x10 ./Core/Src/system_stm32f1xx.o
+                0x0800bd8c                AHBPrescTable
  .rodata.aPLLMULFactorTable.1
-                0x0800bcb4       0x10 ./Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_rcc.o
+                0x0800bd9c       0x10 ./Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_rcc.o
  .rodata.aPredivFactorTable.0
-                0x0800bcc4        0x2 ./Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_rcc.o
- *fill*         0x0800bcc6        0x2 
+                0x0800bdac        0x2 ./Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_rcc.o
+ *fill*         0x0800bdae        0x2 
+ .rodata.hatTable.0
+                0x0800bdb0        0x9 ./Wheel/Src/app_usb_hid.o
+ *fill*         0x0800bdb9        0x3 
  .rodata.cba_256_TAB
-                0x0800bcc8      0x100 ./Wheel/Src/hw_magnetometer.o
+                0x0800bdbc      0x100 ./Wheel/Src/hw_magnetometer.o
  .rodata.right_sequence_backwards
-                0x0800bdc8       0x14 ./Wheel/Src/sw_buttons.o
-                0x0800bdc8                right_sequence_backwards
+                0x0800bebc       0x14 ./Wheel/Src/sw_buttons.o
+                0x0800bebc                right_sequence_backwards
  .rodata.left_sequence_backwards
-                0x0800bddc       0x14 ./Wheel/Src/sw_buttons.o
-                0x0800bddc                left_sequence_backwards
-                0x0800bdf0                        . = ALIGN (0x4)
+                0x0800bed0       0x14 ./Wheel/Src/sw_buttons.o
+                0x0800bed0                left_sequence_backwards
+                0x0800bee4                        . = ALIGN (0x4)
 
-.ARM.extab      0x0800bdf0        0x0
-                0x0800bdf0                        . = ALIGN (0x4)
+.ARM.extab      0x0800bee4        0x0
+                0x0800bee4                        . = ALIGN (0x4)
  *(.ARM.extab* .gnu.linkonce.armextab.*)
-                0x0800bdf0                        . = ALIGN (0x4)
+                0x0800bee4                        . = ALIGN (0x4)
 
-.ARM            0x0800bdf0        0x0
-                0x0800bdf0                        . = ALIGN (0x4)
-                0x0800bdf0                        __exidx_start = .
+.ARM            0x0800bee4        0x0
+                0x0800bee4                        . = ALIGN (0x4)
+                0x0800bee4                        __exidx_start = .
  *(.ARM.exidx*)
-                0x0800bdf0                        __exidx_end = .
-                0x0800bdf0                        . = ALIGN (0x4)
+                0x0800bee4                        __exidx_end = .
+                0x0800bee4                        . = ALIGN (0x4)
 
-.preinit_array  0x0800bdf0        0x0
-                0x0800bdf0                        . = ALIGN (0x4)
-                0x0800bdf0                        PROVIDE (__preinit_array_start = .)
+.preinit_array  0x0800bee4        0x0
+                0x0800bee4                        . = ALIGN (0x4)
+                0x0800bee4                        PROVIDE (__preinit_array_start = .)
  *(.preinit_array*)
-                0x0800bdf0                        PROVIDE (__preinit_array_end = .)
-                0x0800bdf0                        . = ALIGN (0x4)
+                0x0800bee4                        PROVIDE (__preinit_array_end = .)
+                0x0800bee4                        . = ALIGN (0x4)
 
-.init_array     0x0800bdf0        0x4
-                0x0800bdf0                        . = ALIGN (0x4)
-                0x0800bdf0                        PROVIDE (__init_array_start = .)
+.init_array     0x0800bee4        0x4
+                0x0800bee4                        . = ALIGN (0x4)
+                0x0800bee4                        PROVIDE (__init_array_start = .)
  *(SORT_BY_NAME(.init_array.*))
  *(.init_array*)
- .init_array    0x0800bdf0        0x4 C:/Program Files/STMicroelectronics/STM32CubeIDE_1.16.0/STM32CubeIDE/plugins/com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.13.3.rel1.win32_1.0.0.202411081344/tools/bin/../lib/gcc/arm-none-eabi/13.3.1/thumb/v7-m/nofp/crtbegin.o
-                0x0800bdf4                        PROVIDE (__init_array_end = .)
-                0x0800bdf4                        . = ALIGN (0x4)
+ .init_array    0x0800bee4        0x4 C:/Program Files/STMicroelectronics/STM32CubeIDE_1.16.0/STM32CubeIDE/plugins/com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.13.3.rel1.win32_1.0.0.202411081344/tools/bin/../lib/gcc/arm-none-eabi/13.3.1/thumb/v7-m/nofp/crtbegin.o
+                0x0800bee8                        PROVIDE (__init_array_end = .)
+                0x0800bee8                        . = ALIGN (0x4)
 
-.fini_array     0x0800bdf4        0x4
-                0x0800bdf4                        . = ALIGN (0x4)
+.fini_array     0x0800bee8        0x4
+                0x0800bee8                        . = ALIGN (0x4)
                 [!provide]                        PROVIDE (__fini_array_start = .)
  *(SORT_BY_NAME(.fini_array.*))
  *(.fini_array*)
- .fini_array    0x0800bdf4        0x4 C:/Program Files/STMicroelectronics/STM32CubeIDE_1.16.0/STM32CubeIDE/plugins/com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.13.3.rel1.win32_1.0.0.202411081344/tools/bin/../lib/gcc/arm-none-eabi/13.3.1/thumb/v7-m/nofp/crtbegin.o
+ .fini_array    0x0800bee8        0x4 C:/Program Files/STMicroelectronics/STM32CubeIDE_1.16.0/STM32CubeIDE/plugins/com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.13.3.rel1.win32_1.0.0.202411081344/tools/bin/../lib/gcc/arm-none-eabi/13.3.1/thumb/v7-m/nofp/crtbegin.o
                 [!provide]                        PROVIDE (__fini_array_end = .)
-                0x0800bdf8                        . = ALIGN (0x4)
-                0x0800bdf8                        _sidata = LOADADDR (.data)
+                0x0800beec                        . = ALIGN (0x4)
+                0x0800beec                        _sidata = LOADADDR (.data)
 
-.rel.dyn        0x0800bdf8        0x0
- .rel.iplt      0x0800bdf8        0x0 C:/Program Files/STMicroelectronics/STM32CubeIDE_1.16.0/STM32CubeIDE/plugins/com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.13.3.rel1.win32_1.0.0.202411081344/tools/bin/../lib/gcc/arm-none-eabi/13.3.1/thumb/v7-m/nofp/crtbegin.o
+.rel.dyn        0x0800beec        0x0
+ .rel.iplt      0x0800beec        0x0 C:/Program Files/STMicroelectronics/STM32CubeIDE_1.16.0/STM32CubeIDE/plugins/com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.13.3.rel1.win32_1.0.0.202411081344/tools/bin/../lib/gcc/arm-none-eabi/13.3.1/thumb/v7-m/nofp/crtbegin.o
 
-.data           0x20000000      0x5b0 load address 0x0800bdf8
+.data           0x20000000      0x5c0 load address 0x0800beec
                 0x20000000                        . = ALIGN (0x4)
                 0x20000000                        _sdata = .
  *(.data)
@@ -6267,107 +6273,107 @@ LOAD C:/Program Files/STMicroelectronics/STM32CubeIDE_1.16.0/STM32CubeIDE/plugin
                 0x200000d4        0xa ./Middlewares/ST/STM32_USB_Device_Library/Class/CustomHID/Src/usbd_customhid.o
  *fill*         0x200000de        0x2 
  .data.CUSTOM_HID_ReportDesc_FS
-                0x200000e0       0x3d ./USB_DEVICE/App/usbd_custom_hid_if.o
- *fill*         0x2000011d        0x3 
+                0x200000e0       0x49 ./USB_DEVICE/App/usbd_custom_hid_if.o
+ *fill*         0x20000129        0x3 
  .data.USBD_CustomHID_fops_FS
-                0x20000120       0x10 ./USB_DEVICE/App/usbd_custom_hid_if.o
-                0x20000120                USBD_CustomHID_fops_FS
- .data.FS_Desc  0x20000130       0x1c ./USB_DEVICE/App/usbd_desc.o
-                0x20000130                FS_Desc
+                0x2000012c       0x10 ./USB_DEVICE/App/usbd_custom_hid_if.o
+                0x2000012c                USBD_CustomHID_fops_FS
+ .data.FS_Desc  0x2000013c       0x1c ./USB_DEVICE/App/usbd_desc.o
+                0x2000013c                FS_Desc
  .data.USBD_FS_DeviceDesc
-                0x2000014c       0x12 ./USB_DEVICE/App/usbd_desc.o
-                0x2000014c                USBD_FS_DeviceDesc
- *fill*         0x2000015e        0x2 
+                0x20000158       0x12 ./USB_DEVICE/App/usbd_desc.o
+                0x20000158                USBD_FS_DeviceDesc
+ *fill*         0x2000016a        0x2 
  .data.USBD_LangIDDesc
-                0x20000160        0x4 ./USB_DEVICE/App/usbd_desc.o
-                0x20000160                USBD_LangIDDesc
+                0x2000016c        0x4 ./USB_DEVICE/App/usbd_desc.o
+                0x2000016c                USBD_LangIDDesc
  .data.USBD_StringSerial
-                0x20000164       0x1a ./USB_DEVICE/App/usbd_desc.o
-                0x20000164                USBD_StringSerial
- *fill*         0x2000017e        0x2 
- .data.hAnalog  0x20000180       0x28 ./Wheel/Src/hw_analog_input.o
-                0x20000180                hAnalog
- .data.hPedals  0x200001a8       0x14 ./Wheel/Src/hw_analog_input.o
-                0x200001a8                hPedals
+                0x20000170       0x1a ./USB_DEVICE/App/usbd_desc.o
+                0x20000170                USBD_StringSerial
+ *fill*         0x2000018a        0x2 
+ .data.hAnalog  0x2000018c       0x28 ./Wheel/Src/hw_analog_input.o
+                0x2000018c                hAnalog
+ .data.hPedals  0x200001b4       0x14 ./Wheel/Src/hw_analog_input.o
+                0x200001b4                hPedals
  .data.hG29Buttons
-                0x200001bc       0x1c ./Wheel/Src/hw_digital_input.o
-                0x200001bc                hG29Buttons
+                0x200001c8       0x1c ./Wheel/Src/hw_digital_input.o
+                0x200001c8                hG29Buttons
  .data.hmlx90363
-                0x200001d8       0x40 ./Wheel/Src/hw_magnetometer.o
-                0x200001d8                hmlx90363
+                0x200001e4       0x40 ./Wheel/Src/hw_magnetometer.o
+                0x200001e4                hmlx90363
  .data.hButtons
-                0x20000218      0x368 ./Wheel/Src/sw_buttons.o
-                0x20000218                hButtons
- .data.hSensor  0x20000580       0x30 ./Wheel/Src/sw_sensor.o
-                0x20000580                hSensor
+                0x20000224      0x368 ./Wheel/Src/sw_buttons.o
+                0x20000224                hButtons
+ .data.hSensor  0x2000058c       0x34 ./Wheel/Src/sw_sensor.o
+                0x2000058c                hSensor
  *(.RamFunc)
  *(.RamFunc*)
-                0x200005b0                        . = ALIGN (0x4)
-                0x200005b0                        _edata = .
+                0x200005c0                        . = ALIGN (0x4)
+                0x200005c0                        _edata = .
 
-.igot.plt       0x200005b0        0x0 load address 0x0800c3a8
- .igot.plt      0x200005b0        0x0 C:/Program Files/STMicroelectronics/STM32CubeIDE_1.16.0/STM32CubeIDE/plugins/com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.13.3.rel1.win32_1.0.0.202411081344/tools/bin/../lib/gcc/arm-none-eabi/13.3.1/thumb/v7-m/nofp/crtbegin.o
-                0x200005b0                        . = ALIGN (0x4)
+.igot.plt       0x200005c0        0x0 load address 0x0800c4ac
+ .igot.plt      0x200005c0        0x0 C:/Program Files/STMicroelectronics/STM32CubeIDE_1.16.0/STM32CubeIDE/plugins/com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.13.3.rel1.win32_1.0.0.202411081344/tools/bin/../lib/gcc/arm-none-eabi/13.3.1/thumb/v7-m/nofp/crtbegin.o
+                0x200005c0                        . = ALIGN (0x4)
 
-.bss            0x200005b0      0x9f4 load address 0x0800c3a8
-                0x200005b0                        _sbss = .
-                0x200005b0                        __bss_start__ = _sbss
+.bss            0x200005c0      0x9f4 load address 0x0800c4ac
+                0x200005c0                        _sbss = .
+                0x200005c0                        __bss_start__ = _sbss
  *(.bss)
- .bss           0x200005b0       0x1c C:/Program Files/STMicroelectronics/STM32CubeIDE_1.16.0/STM32CubeIDE/plugins/com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.13.3.rel1.win32_1.0.0.202411081344/tools/bin/../lib/gcc/arm-none-eabi/13.3.1/thumb/v7-m/nofp/crtbegin.o
+ .bss           0x200005c0       0x1c C:/Program Files/STMicroelectronics/STM32CubeIDE_1.16.0/STM32CubeIDE/plugins/com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.13.3.rel1.win32_1.0.0.202411081344/tools/bin/../lib/gcc/arm-none-eabi/13.3.1/thumb/v7-m/nofp/crtbegin.o
  *(.bss*)
- .bss.hadc1     0x200005cc       0x30 ./Core/Src/main.o
-                0x200005cc                hadc1
+ .bss.hadc1     0x200005dc       0x30 ./Core/Src/main.o
+                0x200005dc                hadc1
  .bss.hdma_adc1
-                0x200005fc       0x44 ./Core/Src/main.o
-                0x200005fc                hdma_adc1
- .bss.hspi2     0x20000640       0x58 ./Core/Src/main.o
-                0x20000640                hspi2
+                0x2000060c       0x44 ./Core/Src/main.o
+                0x2000060c                hdma_adc1
+ .bss.hspi2     0x20000650       0x58 ./Core/Src/main.o
+                0x20000650                hspi2
  .bss.hdma_spi2_rx
-                0x20000698       0x44 ./Core/Src/main.o
-                0x20000698                hdma_spi2_rx
+                0x200006a8       0x44 ./Core/Src/main.o
+                0x200006a8                hdma_spi2_rx
  .bss.hdma_spi2_tx
-                0x200006dc       0x44 ./Core/Src/main.o
-                0x200006dc                hdma_spi2_tx
- .bss.htim3     0x20000720       0x48 ./Core/Src/main.o
-                0x20000720                htim3
- .bss.htim4     0x20000768       0x48 ./Core/Src/main.o
-                0x20000768                htim4
- .bss.uwTick    0x200007b0        0x4 ./Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal.o
-                0x200007b0                uwTick
- .bss.cfgidx.0  0x200007b4        0x1 ./Middlewares/ST/STM32_USB_Device_Library/Core/Src/usbd_ctlreq.o
- *fill*         0x200007b5        0x3 
+                0x200006ec       0x44 ./Core/Src/main.o
+                0x200006ec                hdma_spi2_tx
+ .bss.htim3     0x20000730       0x48 ./Core/Src/main.o
+                0x20000730                htim3
+ .bss.htim4     0x20000778       0x48 ./Core/Src/main.o
+                0x20000778                htim4
+ .bss.uwTick    0x200007c0        0x4 ./Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal.o
+                0x200007c0                uwTick
+ .bss.cfgidx.0  0x200007c4        0x1 ./Middlewares/ST/STM32_USB_Device_Library/Core/Src/usbd_ctlreq.o
+ *fill*         0x200007c5        0x3 
  .bss.hUsbDeviceFS
-                0x200007b8      0x2c4 ./USB_DEVICE/App/usb_device.o
-                0x200007b8                hUsbDeviceFS
+                0x200007c8      0x2c4 ./USB_DEVICE/App/usb_device.o
+                0x200007c8                hUsbDeviceFS
  .bss.USBD_StrDesc
-                0x20000a7c      0x200 ./USB_DEVICE/App/usbd_desc.o
-                0x20000a7c                USBD_StrDesc
+                0x20000a8c      0x200 ./USB_DEVICE/App/usbd_desc.o
+                0x20000a8c                USBD_StrDesc
  .bss.hpcd_USB_FS
-                0x20000c7c      0x2d8 ./USB_DEVICE/Target/usbd_conf.o
-                0x20000c7c                hpcd_USB_FS
- .bss.mem.0     0x20000f54       0x20 ./USB_DEVICE/Target/usbd_conf.o
- .bss.wheel     0x20000f74       0x18 ./Wheel/Src/steeringwheel.o
-                0x20000f74                wheel
- .bss.hUsbHid   0x20000f8c       0x14 ./Wheel/Src/steeringwheel.o
-                0x20000f8c                hUsbHid
- .bss.time_ms   0x20000fa0        0x4 ./Wheel/Src/steeringwheel.o
-                0x20000fa0                time_ms
+                0x20000c8c      0x2d8 ./USB_DEVICE/Target/usbd_conf.o
+                0x20000c8c                hpcd_USB_FS
+ .bss.mem.0     0x20000f64       0x20 ./USB_DEVICE/Target/usbd_conf.o
+ .bss.wheel     0x20000f84       0x18 ./Wheel/Src/steeringwheel.o
+                0x20000f84                wheel
+ .bss.hUsbHid   0x20000f9c       0x14 ./Wheel/Src/steeringwheel.o
+                0x20000f9c                hUsbHid
+ .bss.time_ms   0x20000fb0        0x4 ./Wheel/Src/steeringwheel.o
+                0x20000fb0                time_ms
  *(COMMON)
-                0x20000fa4                        . = ALIGN (0x4)
-                0x20000fa4                        _ebss = .
-                0x20000fa4                        __bss_end__ = _ebss
+                0x20000fb4                        . = ALIGN (0x4)
+                0x20000fb4                        _ebss = .
+                0x20000fb4                        __bss_end__ = _ebss
 
 ._user_heap_stack
-                0x20000fa4      0x604 load address 0x0800c3a8
-                0x20000fa8                        . = ALIGN (0x8)
- *fill*         0x20000fa4        0x4 
+                0x20000fb4      0x604 load address 0x0800c4ac
+                0x20000fb8                        . = ALIGN (0x8)
+ *fill*         0x20000fb4        0x4 
                 [!provide]                        PROVIDE (end = .)
-                0x20000fa8                        PROVIDE (_end = .)
-                0x200011a8                        . = (. + _Min_Heap_Size)
- *fill*         0x20000fa8      0x200 
-                0x200015a8                        . = (. + _Min_Stack_Size)
- *fill*         0x200011a8      0x400 
-                0x200015a8                        . = ALIGN (0x8)
+                0x20000fb8                        PROVIDE (_end = .)
+                0x200011b8                        . = (. + _Min_Heap_Size)
+ *fill*         0x20000fb8      0x200 
+                0x200015b8                        . = (. + _Min_Stack_Size)
+ *fill*         0x200011b8      0x400 
+                0x200015b8                        . = ALIGN (0x8)
 
 /DISCARD/
  libc.a(*)
@@ -6465,42 +6471,42 @@ LOAD C:/Program Files/STMicroelectronics/STM32CubeIDE_1.16.0/STM32CubeIDE/plugin
 LOAD C:/Program Files/STMicroelectronics/STM32CubeIDE_1.16.0/STM32CubeIDE/plugins/com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.13.3.rel1.win32_1.0.0.202411081344/tools/bin/../lib/gcc/arm-none-eabi/13.3.1/../../../../arm-none-eabi/lib/thumb/v7-m/nofp\libm.a
 LOAD C:/Program Files/STMicroelectronics/STM32CubeIDE_1.16.0/STM32CubeIDE/plugins/com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.13.3.rel1.win32_1.0.0.202411081344/tools/bin/../lib/gcc/arm-none-eabi/13.3.1/thumb/v7-m/nofp\libgcc.a
 
-.debug_info     0x00000000    0x1a2d1
- .debug_info    0x00000000     0x13ac ./Core/Src/main.o
- .debug_info    0x000013ac     0x10bd ./Core/Src/stm32f1xx_hal_msp.o
- .debug_info    0x00002469      0xc2a ./Core/Src/stm32f1xx_it.o
- .debug_info    0x00003093      0x222 ./Core/Src/system_stm32f1xx.o
- .debug_info    0x000032b5       0x30 ./Core/Startup/startup_stm32f103c8tx.o
- .debug_info    0x000032e5      0x704 ./Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal.o
- .debug_info    0x000039e9      0xc50 ./Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_adc.o
- .debug_info    0x00004639      0xa87 ./Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_cortex.o
- .debug_info    0x000050c0      0x6d2 ./Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dma.o
- .debug_info    0x00005792      0x5ab ./Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_gpio.o
- .debug_info    0x00005d3d     0x16dc ./Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_pcd.o
- .debug_info    0x00007419      0x6c3 ./Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_pcd_ex.o
- .debug_info    0x00007adc      0x7d5 ./Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_rcc.o
- .debug_info    0x000082b1      0x3c0 ./Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_rcc_ex.o
- .debug_info    0x00008671     0x142d ./Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_spi.o
- .debug_info    0x00009a9e     0x2959 ./Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_tim.o
- .debug_info    0x0000c3f7     0x149b ./Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_tim_ex.o
- .debug_info    0x0000d892     0x17ae ./Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_ll_usb.o
- .debug_info    0x0000f040      0xab5 ./Middlewares/ST/STM32_USB_Device_Library/Class/CustomHID/Src/usbd_customhid.o
- .debug_info    0x0000faf5      0xa52 ./Middlewares/ST/STM32_USB_Device_Library/Core/Src/usbd_core.o
- .debug_info    0x00010547      0x91c ./Middlewares/ST/STM32_USB_Device_Library/Core/Src/usbd_ctlreq.o
- .debug_info    0x00010e63      0x6a0 ./Middlewares/ST/STM32_USB_Device_Library/Core/Src/usbd_ioreq.o
- .debug_info    0x00011503      0x61a ./USB_DEVICE/App/usb_device.o
- .debug_info    0x00011b1d      0x1de ./USB_DEVICE/App/usbd_custom_hid_if.o
- .debug_info    0x00011cfb      0x44a ./USB_DEVICE/App/usbd_desc.o
- .debug_info    0x00012145     0x1864 ./USB_DEVICE/Target/usbd_conf.o
- .debug_info    0x000139a9     0x1a08 ./Wheel/Src/app_usb_hid.o
- .debug_info    0x000153b1      0x876 ./Wheel/Src/hw_analog_input.o
- .debug_info    0x00015c27      0x361 ./Wheel/Src/hw_digital_input.o
- .debug_info    0x00015f88      0xe18 ./Wheel/Src/hw_magnetometer.o
- .debug_info    0x00016da0     0x1ad2 ./Wheel/Src/steeringwheel.o
- .debug_info    0x00018872      0xcca ./Wheel/Src/sw_buttons.o
- .debug_info    0x0001953c      0xd95 ./Wheel/Src/sw_sensor.o
+.debug_info     0x00000000    0x1a3b2
+ .debug_info    0x00000000     0x13b3 ./Core/Src/main.o
+ .debug_info    0x000013b3     0x10bd ./Core/Src/stm32f1xx_hal_msp.o
+ .debug_info    0x00002470      0xc2a ./Core/Src/stm32f1xx_it.o
+ .debug_info    0x0000309a      0x222 ./Core/Src/system_stm32f1xx.o
+ .debug_info    0x000032bc       0x30 ./Core/Startup/startup_stm32f103c8tx.o
+ .debug_info    0x000032ec      0x704 ./Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal.o
+ .debug_info    0x000039f0      0xc50 ./Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_adc.o
+ .debug_info    0x00004640      0xa87 ./Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_cortex.o
+ .debug_info    0x000050c7      0x6d2 ./Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dma.o
+ .debug_info    0x00005799      0x5ab ./Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_gpio.o
+ .debug_info    0x00005d44     0x16dc ./Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_pcd.o
+ .debug_info    0x00007420      0x6c3 ./Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_pcd_ex.o
+ .debug_info    0x00007ae3      0x7d5 ./Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_rcc.o
+ .debug_info    0x000082b8      0x3c0 ./Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_rcc_ex.o
+ .debug_info    0x00008678     0x142d ./Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_spi.o
+ .debug_info    0x00009aa5     0x2959 ./Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_tim.o
+ .debug_info    0x0000c3fe     0x149b ./Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_tim_ex.o
+ .debug_info    0x0000d899     0x17ae ./Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_ll_usb.o
+ .debug_info    0x0000f047      0xab5 ./Middlewares/ST/STM32_USB_Device_Library/Class/CustomHID/Src/usbd_customhid.o
+ .debug_info    0x0000fafc      0xa52 ./Middlewares/ST/STM32_USB_Device_Library/Core/Src/usbd_core.o
+ .debug_info    0x0001054e      0x91c ./Middlewares/ST/STM32_USB_Device_Library/Core/Src/usbd_ctlreq.o
+ .debug_info    0x00010e6a      0x6a0 ./Middlewares/ST/STM32_USB_Device_Library/Core/Src/usbd_ioreq.o
+ .debug_info    0x0001150a      0x61a ./USB_DEVICE/App/usb_device.o
+ .debug_info    0x00011b24      0x1de ./USB_DEVICE/App/usbd_custom_hid_if.o
+ .debug_info    0x00011d02      0x44a ./USB_DEVICE/App/usbd_desc.o
+ .debug_info    0x0001214c     0x1864 ./USB_DEVICE/Target/usbd_conf.o
+ .debug_info    0x000139b0     0x1ac1 ./Wheel/Src/app_usb_hid.o
+ .debug_info    0x00015471      0x876 ./Wheel/Src/hw_analog_input.o
+ .debug_info    0x00015ce7      0x361 ./Wheel/Src/hw_digital_input.o
+ .debug_info    0x00016048      0xe18 ./Wheel/Src/hw_magnetometer.o
+ .debug_info    0x00016e60     0x1ae6 ./Wheel/Src/steeringwheel.o
+ .debug_info    0x00018946      0xcca ./Wheel/Src/sw_buttons.o
+ .debug_info    0x00019610      0xda2 ./Wheel/Src/sw_sensor.o
 
-.debug_abbrev   0x00000000     0x45a4
+.debug_abbrev   0x00000000     0x45b7
  .debug_abbrev  0x00000000      0x2e7 ./Core/Src/main.o
  .debug_abbrev  0x000002e7      0x260 ./Core/Src/stm32f1xx_hal_msp.o
  .debug_abbrev  0x00000547      0x1f6 ./Core/Src/stm32f1xx_it.o
@@ -6527,15 +6533,15 @@ LOAD C:/Program Files/STMicroelectronics/STM32CubeIDE_1.16.0/STM32CubeIDE/plugin
  .debug_abbrev  0x00002fc4      0x12f ./USB_DEVICE/App/usbd_custom_hid_if.o
  .debug_abbrev  0x000030f3      0x1ff ./USB_DEVICE/App/usbd_desc.o
  .debug_abbrev  0x000032f2      0x316 ./USB_DEVICE/Target/usbd_conf.o
- .debug_abbrev  0x00003608      0x281 ./Wheel/Src/app_usb_hid.o
- .debug_abbrev  0x00003889      0x1ed ./Wheel/Src/hw_analog_input.o
- .debug_abbrev  0x00003a76      0x1ac ./Wheel/Src/hw_digital_input.o
- .debug_abbrev  0x00003c22      0x238 ./Wheel/Src/hw_magnetometer.o
- .debug_abbrev  0x00003e5a      0x2ed ./Wheel/Src/steeringwheel.o
- .debug_abbrev  0x00004147      0x269 ./Wheel/Src/sw_buttons.o
- .debug_abbrev  0x000043b0      0x1f4 ./Wheel/Src/sw_sensor.o
+ .debug_abbrev  0x00003608      0x294 ./Wheel/Src/app_usb_hid.o
+ .debug_abbrev  0x0000389c      0x1ed ./Wheel/Src/hw_analog_input.o
+ .debug_abbrev  0x00003a89      0x1ac ./Wheel/Src/hw_digital_input.o
+ .debug_abbrev  0x00003c35      0x238 ./Wheel/Src/hw_magnetometer.o
+ .debug_abbrev  0x00003e6d      0x2ed ./Wheel/Src/steeringwheel.o
+ .debug_abbrev  0x0000415a      0x269 ./Wheel/Src/sw_buttons.o
+ .debug_abbrev  0x000043c3      0x1f4 ./Wheel/Src/sw_sensor.o
 
-.debug_aranges  0x00000000     0x15b8
+.debug_aranges  0x00000000     0x15c0
  .debug_aranges
                 0x00000000       0x60 ./Core/Src/main.o
  .debug_aranges
@@ -6589,22 +6595,22 @@ LOAD C:/Program Files/STMicroelectronics/STM32CubeIDE_1.16.0/STM32CubeIDE/plugin
  .debug_aranges
                 0x00001238      0x118 ./USB_DEVICE/Target/usbd_conf.o
  .debug_aranges
-                0x00001350       0x50 ./Wheel/Src/app_usb_hid.o
+                0x00001350       0x58 ./Wheel/Src/app_usb_hid.o
  .debug_aranges
-                0x000013a0       0x50 ./Wheel/Src/hw_analog_input.o
+                0x000013a8       0x50 ./Wheel/Src/hw_analog_input.o
  .debug_aranges
-                0x000013f0       0x30 ./Wheel/Src/hw_digital_input.o
+                0x000013f8       0x30 ./Wheel/Src/hw_digital_input.o
  .debug_aranges
-                0x00001420       0x78 ./Wheel/Src/hw_magnetometer.o
+                0x00001428       0x78 ./Wheel/Src/hw_magnetometer.o
  .debug_aranges
-                0x00001498       0x70 ./Wheel/Src/steeringwheel.o
+                0x000014a0       0x70 ./Wheel/Src/steeringwheel.o
  .debug_aranges
-                0x00001508       0x68 ./Wheel/Src/sw_buttons.o
+                0x00001510       0x68 ./Wheel/Src/sw_buttons.o
  .debug_aranges
-                0x00001570       0x48 ./Wheel/Src/sw_sensor.o
+                0x00001578       0x48 ./Wheel/Src/sw_sensor.o
 
 .debug_rnglists
-                0x00000000     0x1082
+                0x00000000     0x1089
  .debug_rnglists
                 0x00000000       0x49 ./Core/Src/main.o
  .debug_rnglists
@@ -6658,19 +6664,19 @@ LOAD C:/Program Files/STMicroelectronics/STM32CubeIDE_1.16.0/STM32CubeIDE/plugin
  .debug_rnglists
                 0x00000ded       0xce ./USB_DEVICE/Target/usbd_conf.o
  .debug_rnglists
-                0x00000ebb       0x39 ./Wheel/Src/app_usb_hid.o
+                0x00000ebb       0x40 ./Wheel/Src/app_usb_hid.o
  .debug_rnglists
-                0x00000ef4       0x37 ./Wheel/Src/hw_analog_input.o
+                0x00000efb       0x37 ./Wheel/Src/hw_analog_input.o
  .debug_rnglists
-                0x00000f2b       0x20 ./Wheel/Src/hw_digital_input.o
+                0x00000f32       0x20 ./Wheel/Src/hw_digital_input.o
  .debug_rnglists
-                0x00000f4b       0x57 ./Wheel/Src/hw_magnetometer.o
+                0x00000f52       0x57 ./Wheel/Src/hw_magnetometer.o
  .debug_rnglists
-                0x00000fa2       0x55 ./Wheel/Src/steeringwheel.o
+                0x00000fa9       0x55 ./Wheel/Src/steeringwheel.o
  .debug_rnglists
-                0x00000ff7       0x5a ./Wheel/Src/sw_buttons.o
+                0x00000ffe       0x5a ./Wheel/Src/sw_buttons.o
  .debug_rnglists
-                0x00001051       0x31 ./Wheel/Src/sw_sensor.o
+                0x00001058       0x31 ./Wheel/Src/sw_sensor.o
 
 .debug_macro    0x00000000    0x1c4dd
  .debug_macro   0x00000000      0x3ee ./Core/Src/main.o
@@ -6791,76 +6797,76 @@ LOAD C:/Program Files/STMicroelectronics/STM32CubeIDE_1.16.0/STM32CubeIDE/plugin
  .debug_macro   0x0001c2bc       0x10 ./Wheel/Src/sw_buttons.o
  .debug_macro   0x0001c2cc      0x211 ./Wheel/Src/sw_sensor.o
 
-.debug_line     0x00000000    0x1c3ab
- .debug_line    0x00000000      0xd70 ./Core/Src/main.o
- .debug_line    0x00000d70      0x8de ./Core/Src/stm32f1xx_hal_msp.o
- .debug_line    0x0000164e      0x8ca ./Core/Src/stm32f1xx_it.o
- .debug_line    0x00001f18      0x7da ./Core/Src/system_stm32f1xx.o
- .debug_line    0x000026f2       0x78 ./Core/Startup/startup_stm32f103c8tx.o
- .debug_line    0x0000276a      0xa0c ./Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal.o
- .debug_line    0x00003176     0x1032 ./Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_adc.o
- .debug_line    0x000041a8      0xbd5 ./Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_cortex.o
- .debug_line    0x00004d7d      0xe15 ./Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dma.o
- .debug_line    0x00005b92      0xa68 ./Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_gpio.o
- .debug_line    0x000065fa     0x1390 ./Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_pcd.o
- .debug_line    0x0000798a      0x7d5 ./Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_pcd_ex.o
- .debug_line    0x0000815f      0xece ./Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_rcc.o
- .debug_line    0x0000902d      0x977 ./Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_rcc_ex.o
- .debug_line    0x000099a4     0x1ca2 ./Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_spi.o
- .debug_line    0x0000b646     0x34fb ./Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_tim.o
- .debug_line    0x0000eb41     0x18d1 ./Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_tim_ex.o
- .debug_line    0x00010412     0x117b ./Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_ll_usb.o
- .debug_line    0x0001158d      0xcd8 ./Middlewares/ST/STM32_USB_Device_Library/Class/CustomHID/Src/usbd_customhid.o
- .debug_line    0x00012265      0xdd7 ./Middlewares/ST/STM32_USB_Device_Library/Core/Src/usbd_core.o
- .debug_line    0x0001303c     0x1021 ./Middlewares/ST/STM32_USB_Device_Library/Core/Src/usbd_ctlreq.o
- .debug_line    0x0001405d      0xa8d ./Middlewares/ST/STM32_USB_Device_Library/Core/Src/usbd_ioreq.o
- .debug_line    0x00014aea      0xa70 ./USB_DEVICE/App/usb_device.o
- .debug_line    0x0001555a      0xa58 ./USB_DEVICE/App/usbd_custom_hid_if.o
- .debug_line    0x00015fb2      0xb06 ./USB_DEVICE/App/usbd_desc.o
- .debug_line    0x00016ab8      0xe40 ./USB_DEVICE/Target/usbd_conf.o
- .debug_line    0x000178f8      0xc73 ./Wheel/Src/app_usb_hid.o
- .debug_line    0x0001856b      0x8bd ./Wheel/Src/hw_analog_input.o
- .debug_line    0x00018e28      0x847 ./Wheel/Src/hw_digital_input.o
- .debug_line    0x0001966f      0xa57 ./Wheel/Src/hw_magnetometer.o
- .debug_line    0x0001a0c6      0xd78 ./Wheel/Src/steeringwheel.o
- .debug_line    0x0001ae3e      0xca5 ./Wheel/Src/sw_buttons.o
- .debug_line    0x0001bae3      0x8c8 ./Wheel/Src/sw_sensor.o
+.debug_line     0x00000000    0x1c42d
+ .debug_line    0x00000000      0xd72 ./Core/Src/main.o
+ .debug_line    0x00000d72      0x8de ./Core/Src/stm32f1xx_hal_msp.o
+ .debug_line    0x00001650      0x8ca ./Core/Src/stm32f1xx_it.o
+ .debug_line    0x00001f1a      0x7da ./Core/Src/system_stm32f1xx.o
+ .debug_line    0x000026f4       0x78 ./Core/Startup/startup_stm32f103c8tx.o
+ .debug_line    0x0000276c      0xa0c ./Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal.o
+ .debug_line    0x00003178     0x1032 ./Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_adc.o
+ .debug_line    0x000041aa      0xbd5 ./Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_cortex.o
+ .debug_line    0x00004d7f      0xe15 ./Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dma.o
+ .debug_line    0x00005b94      0xa68 ./Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_gpio.o
+ .debug_line    0x000065fc     0x1390 ./Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_pcd.o
+ .debug_line    0x0000798c      0x7d5 ./Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_pcd_ex.o
+ .debug_line    0x00008161      0xece ./Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_rcc.o
+ .debug_line    0x0000902f      0x977 ./Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_rcc_ex.o
+ .debug_line    0x000099a6     0x1ca2 ./Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_spi.o
+ .debug_line    0x0000b648     0x34fb ./Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_tim.o
+ .debug_line    0x0000eb43     0x18d1 ./Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_tim_ex.o
+ .debug_line    0x00010414     0x117b ./Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_ll_usb.o
+ .debug_line    0x0001158f      0xcd8 ./Middlewares/ST/STM32_USB_Device_Library/Class/CustomHID/Src/usbd_customhid.o
+ .debug_line    0x00012267      0xdd7 ./Middlewares/ST/STM32_USB_Device_Library/Core/Src/usbd_core.o
+ .debug_line    0x0001303e     0x1021 ./Middlewares/ST/STM32_USB_Device_Library/Core/Src/usbd_ctlreq.o
+ .debug_line    0x0001405f      0xa8d ./Middlewares/ST/STM32_USB_Device_Library/Core/Src/usbd_ioreq.o
+ .debug_line    0x00014aec      0xa70 ./USB_DEVICE/App/usb_device.o
+ .debug_line    0x0001555c      0xa58 ./USB_DEVICE/App/usbd_custom_hid_if.o
+ .debug_line    0x00015fb4      0xb06 ./USB_DEVICE/App/usbd_desc.o
+ .debug_line    0x00016aba      0xe40 ./USB_DEVICE/Target/usbd_conf.o
+ .debug_line    0x000178fa      0xcf3 ./Wheel/Src/app_usb_hid.o
+ .debug_line    0x000185ed      0x8bd ./Wheel/Src/hw_analog_input.o
+ .debug_line    0x00018eaa      0x847 ./Wheel/Src/hw_digital_input.o
+ .debug_line    0x000196f1      0xa57 ./Wheel/Src/hw_magnetometer.o
+ .debug_line    0x0001a148      0xd78 ./Wheel/Src/steeringwheel.o
+ .debug_line    0x0001aec0      0xca5 ./Wheel/Src/sw_buttons.o
+ .debug_line    0x0001bb65      0x8c8 ./Wheel/Src/sw_sensor.o
 
-.debug_str      0x00000000    0x947cf
- .debug_str     0x00000000    0x947cf ./Core/Src/main.o
-                              0x8fc8f (size before relaxing)
- .debug_str     0x000947cf    0x8b160 ./Core/Src/stm32f1xx_hal_msp.o
- .debug_str     0x000947cf    0x8ae41 ./Core/Src/stm32f1xx_it.o
- .debug_str     0x000947cf    0x8a39b ./Core/Src/system_stm32f1xx.o
- .debug_str     0x000947cf       0x8a ./Core/Startup/startup_stm32f103c8tx.o
- .debug_str     0x000947cf    0x8aace ./Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal.o
- .debug_str     0x000947cf    0x8aa7f ./Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_adc.o
- .debug_str     0x000947cf    0x8aa1a ./Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_cortex.o
- .debug_str     0x000947cf    0x8a744 ./Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dma.o
- .debug_str     0x000947cf    0x8a721 ./Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_gpio.o
- .debug_str     0x000947cf    0x8acb8 ./Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_pcd.o
- .debug_str     0x000947cf    0x8a81a ./Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_pcd_ex.o
- .debug_str     0x000947cf    0x8a7ca ./Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_rcc.o
- .debug_str     0x000947cf    0x8a51a ./Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_rcc_ex.o
- .debug_str     0x000947cf    0x8acc1 ./Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_spi.o
- .debug_str     0x000947cf    0x8b7cc ./Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_tim.o
- .debug_str     0x000947cf    0x8afd8 ./Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_tim_ex.o
- .debug_str     0x000947cf    0x8a86c ./Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_ll_usb.o
- .debug_str     0x000947cf    0x8f141 ./Middlewares/ST/STM32_USB_Device_Library/Class/CustomHID/Src/usbd_customhid.o
- .debug_str     0x000947cf    0x8ee13 ./Middlewares/ST/STM32_USB_Device_Library/Core/Src/usbd_core.o
- .debug_str     0x000947cf    0x8ed2d ./Middlewares/ST/STM32_USB_Device_Library/Core/Src/usbd_ctlreq.o
- .debug_str     0x000947cf    0x8ec5a ./Middlewares/ST/STM32_USB_Device_Library/Core/Src/usbd_ioreq.o
- .debug_str     0x000947cf    0x8ef02 ./USB_DEVICE/App/usb_device.o
- .debug_str     0x000947cf    0x8ea9f ./USB_DEVICE/App/usbd_custom_hid_if.o
- .debug_str     0x000947cf    0x8ebab ./USB_DEVICE/App/usbd_desc.o
- .debug_str     0x000947cf    0x8f995 ./USB_DEVICE/Target/usbd_conf.o
- .debug_str     0x000947cf    0x8fffd ./Wheel/Src/app_usb_hid.o
- .debug_str     0x000947cf    0x8aa1e ./Wheel/Src/hw_analog_input.o
- .debug_str     0x000947cf    0x8a67d ./Wheel/Src/hw_digital_input.o
- .debug_str     0x000947cf    0x8aedd ./Wheel/Src/hw_magnetometer.o
- .debug_str     0x000947cf    0x90013 ./Wheel/Src/steeringwheel.o
- .debug_str     0x000947cf    0x8e099 ./Wheel/Src/sw_buttons.o
- .debug_str     0x000947cf    0x8aed6 ./Wheel/Src/sw_sensor.o
+.debug_str      0x00000000    0x94827
+ .debug_str     0x00000000    0x94827 ./Core/Src/main.o
+                              0x8fc98 (size before relaxing)
+ .debug_str     0x00094827    0x8b160 ./Core/Src/stm32f1xx_hal_msp.o
+ .debug_str     0x00094827    0x8ae41 ./Core/Src/stm32f1xx_it.o
+ .debug_str     0x00094827    0x8a39b ./Core/Src/system_stm32f1xx.o
+ .debug_str     0x00094827       0x8a ./Core/Startup/startup_stm32f103c8tx.o
+ .debug_str     0x00094827    0x8aace ./Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal.o
+ .debug_str     0x00094827    0x8aa7f ./Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_adc.o
+ .debug_str     0x00094827    0x8aa1a ./Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_cortex.o
+ .debug_str     0x00094827    0x8a744 ./Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dma.o
+ .debug_str     0x00094827    0x8a721 ./Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_gpio.o
+ .debug_str     0x00094827    0x8acb8 ./Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_pcd.o
+ .debug_str     0x00094827    0x8a81a ./Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_pcd_ex.o
+ .debug_str     0x00094827    0x8a7ca ./Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_rcc.o
+ .debug_str     0x00094827    0x8a51a ./Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_rcc_ex.o
+ .debug_str     0x00094827    0x8acc1 ./Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_spi.o
+ .debug_str     0x00094827    0x8b7cc ./Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_tim.o
+ .debug_str     0x00094827    0x8afd8 ./Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_tim_ex.o
+ .debug_str     0x00094827    0x8a86c ./Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_ll_usb.o
+ .debug_str     0x00094827    0x8f144 ./Middlewares/ST/STM32_USB_Device_Library/Class/CustomHID/Src/usbd_customhid.o
+ .debug_str     0x00094827    0x8ee16 ./Middlewares/ST/STM32_USB_Device_Library/Core/Src/usbd_core.o
+ .debug_str     0x00094827    0x8ed30 ./Middlewares/ST/STM32_USB_Device_Library/Core/Src/usbd_ctlreq.o
+ .debug_str     0x00094827    0x8ec5d ./Middlewares/ST/STM32_USB_Device_Library/Core/Src/usbd_ioreq.o
+ .debug_str     0x00094827    0x8ef05 ./USB_DEVICE/App/usb_device.o
+ .debug_str     0x00094827    0x8eaa2 ./USB_DEVICE/App/usbd_custom_hid_if.o
+ .debug_str     0x00094827    0x8ebae ./USB_DEVICE/App/usbd_desc.o
+ .debug_str     0x00094827    0x8f998 ./USB_DEVICE/Target/usbd_conf.o
+ .debug_str     0x00094827    0x9004f ./Wheel/Src/app_usb_hid.o
+ .debug_str     0x00094827    0x8aa1e ./Wheel/Src/hw_analog_input.o
+ .debug_str     0x00094827    0x8a67d ./Wheel/Src/hw_digital_input.o
+ .debug_str     0x00094827    0x8aedd ./Wheel/Src/hw_magnetometer.o
+ .debug_str     0x00094827    0x90027 ./Wheel/Src/steeringwheel.o
+ .debug_str     0x00094827    0x8e097 ./Wheel/Src/sw_buttons.o
+ .debug_str     0x00094827    0x8aee1 ./Wheel/Src/sw_sensor.o
 
 .comment        0x00000000       0x43
  .comment       0x00000000       0x43 ./Core/Src/main.o
@@ -6897,7 +6903,7 @@ LOAD C:/Program Files/STMicroelectronics/STM32CubeIDE_1.16.0/STM32CubeIDE/plugin
  .comment       0x00000043       0x44 ./Wheel/Src/sw_buttons.o
  .comment       0x00000043       0x44 ./Wheel/Src/sw_sensor.o
 
-.debug_frame    0x00000000     0x58b8
+.debug_frame    0x00000000     0x58e0
  .debug_frame   0x00000000      0x138 ./Core/Src/main.o
  .debug_frame   0x00000138      0x110 ./Core/Src/stm32f1xx_hal_msp.o
  .debug_frame   0x00000248      0x1e4 ./Core/Src/stm32f1xx_it.o
@@ -6923,18 +6929,18 @@ LOAD C:/Program Files/STMicroelectronics/STM32CubeIDE_1.16.0/STM32CubeIDE/plugin
  .debug_frame   0x000048d0       0x78 ./USB_DEVICE/App/usbd_custom_hid_if.o
  .debug_frame   0x00004948      0x160 ./USB_DEVICE/App/usbd_desc.o
  .debug_frame   0x00004aa8      0x4a4 ./USB_DEVICE/Target/usbd_conf.o
- .debug_frame   0x00004f4c      0x108 ./Wheel/Src/app_usb_hid.o
- .debug_frame   0x00005054      0x118 ./Wheel/Src/hw_analog_input.o
- .debug_frame   0x0000516c       0x84 ./Wheel/Src/hw_digital_input.o
- .debug_frame   0x000051f0      0x1cc ./Wheel/Src/hw_magnetometer.o
- .debug_frame   0x000053bc      0x190 ./Wheel/Src/steeringwheel.o
- .debug_frame   0x0000554c      0x184 ./Wheel/Src/sw_buttons.o
- .debug_frame   0x000056d0       0xf4 ./Wheel/Src/sw_sensor.o
- .debug_frame   0x000057c4       0x20 C:/Program Files/STMicroelectronics/STM32CubeIDE_1.16.0/STM32CubeIDE/plugins/com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.13.3.rel1.win32_1.0.0.202411081344/tools/bin/../lib/gcc/arm-none-eabi/13.3.1/../../../../arm-none-eabi/lib/thumb/v7-m/nofp\libc_nano.a(libc_a-memset.o)
- .debug_frame   0x000057e4       0x2c C:/Program Files/STMicroelectronics/STM32CubeIDE_1.16.0/STM32CubeIDE/plugins/com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.13.3.rel1.win32_1.0.0.202411081344/tools/bin/../lib/gcc/arm-none-eabi/13.3.1/../../../../arm-none-eabi/lib/thumb/v7-m/nofp\libc_nano.a(libc_a-init.o)
- .debug_frame   0x00005810       0x4c C:/Program Files/STMicroelectronics/STM32CubeIDE_1.16.0/STM32CubeIDE/plugins/com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.13.3.rel1.win32_1.0.0.202411081344/tools/bin/../lib/gcc/arm-none-eabi/13.3.1/thumb/v7-m/nofp\libgcc.a(_arm_addsubsf3.o)
- .debug_frame   0x0000585c       0x38 C:/Program Files/STMicroelectronics/STM32CubeIDE_1.16.0/STM32CubeIDE/plugins/com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.13.3.rel1.win32_1.0.0.202411081344/tools/bin/../lib/gcc/arm-none-eabi/13.3.1/thumb/v7-m/nofp\libgcc.a(_arm_muldivsf3.o)
- .debug_frame   0x00005894       0x24 C:/Program Files/STMicroelectronics/STM32CubeIDE_1.16.0/STM32CubeIDE/plugins/com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.13.3.rel1.win32_1.0.0.202411081344/tools/bin/../lib/gcc/arm-none-eabi/13.3.1/thumb/v7-m/nofp\libgcc.a(_arm_fixsfsi.o)
+ .debug_frame   0x00004f4c      0x130 ./Wheel/Src/app_usb_hid.o
+ .debug_frame   0x0000507c      0x118 ./Wheel/Src/hw_analog_input.o
+ .debug_frame   0x00005194       0x84 ./Wheel/Src/hw_digital_input.o
+ .debug_frame   0x00005218      0x1cc ./Wheel/Src/hw_magnetometer.o
+ .debug_frame   0x000053e4      0x190 ./Wheel/Src/steeringwheel.o
+ .debug_frame   0x00005574      0x184 ./Wheel/Src/sw_buttons.o
+ .debug_frame   0x000056f8       0xf4 ./Wheel/Src/sw_sensor.o
+ .debug_frame   0x000057ec       0x20 C:/Program Files/STMicroelectronics/STM32CubeIDE_1.16.0/STM32CubeIDE/plugins/com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.13.3.rel1.win32_1.0.0.202411081344/tools/bin/../lib/gcc/arm-none-eabi/13.3.1/../../../../arm-none-eabi/lib/thumb/v7-m/nofp\libc_nano.a(libc_a-memset.o)
+ .debug_frame   0x0000580c       0x2c C:/Program Files/STMicroelectronics/STM32CubeIDE_1.16.0/STM32CubeIDE/plugins/com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.13.3.rel1.win32_1.0.0.202411081344/tools/bin/../lib/gcc/arm-none-eabi/13.3.1/../../../../arm-none-eabi/lib/thumb/v7-m/nofp\libc_nano.a(libc_a-init.o)
+ .debug_frame   0x00005838       0x4c C:/Program Files/STMicroelectronics/STM32CubeIDE_1.16.0/STM32CubeIDE/plugins/com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.13.3.rel1.win32_1.0.0.202411081344/tools/bin/../lib/gcc/arm-none-eabi/13.3.1/thumb/v7-m/nofp\libgcc.a(_arm_addsubsf3.o)
+ .debug_frame   0x00005884       0x38 C:/Program Files/STMicroelectronics/STM32CubeIDE_1.16.0/STM32CubeIDE/plugins/com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.13.3.rel1.win32_1.0.0.202411081344/tools/bin/../lib/gcc/arm-none-eabi/13.3.1/thumb/v7-m/nofp\libgcc.a(_arm_muldivsf3.o)
+ .debug_frame   0x000058bc       0x24 C:/Program Files/STMicroelectronics/STM32CubeIDE_1.16.0/STM32CubeIDE/plugins/com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.13.3.rel1.win32_1.0.0.202411081344/tools/bin/../lib/gcc/arm-none-eabi/13.3.1/thumb/v7-m/nofp\libgcc.a(_arm_fixsfsi.o)
 
 .debug_line_str
                 0x00000000       0x6e

@@ -17,8 +17,8 @@ static Wheel_Status Buttons_Update(Buttons_HandleTypeDef *buttons);
 static Wheel_Status Buttons_GetState(Buttons_HandleTypeDef *buttons);
 
 static void get_debounced_state(Buttons_HandleTypeDef *buttons);
-static void read_knob_buttons_state(Buttons_HandleTypeDef *buttons);
-static void update_knob_buttons_state(Buttons_HandleTypeDef *buttons);
+static void read_knob_button_state(Buttons_HandleTypeDef *buttons);
+static void update_knob_button_state(Buttons_HandleTypeDef *buttons);
 static void get_current_knob_state(Buttons_HandleTypeDef *buttons);
 
 Buttons_HandleTypeDef hButtons = { Buttons_INIT, Buttons_DeINIT,
@@ -57,10 +57,10 @@ static Wheel_Status Buttons_Update(Buttons_HandleTypeDef *buttons) {
 	buttons->sample_buffer[buttons->sample_head] =
 			buttons->hw_buttons->buttons_state;
 	if (GET_BIT(buttons->knob_flags, KNOB_LOCK_FLAG)) {
-		update_knob_buttons_state(buttons);
+		update_knob_button_state(buttons);
 		__NOP();
 	} else {
-		read_knob_buttons_state(buttons);
+		read_knob_button_state(buttons);
 	}
 	return WHEEL_OK;
 }
@@ -135,7 +135,7 @@ L_KNOB_BIT_MASK, RL_KNOB_BIT_MASK, R_KNOB_BIT_MASK, 0 };
 const uint32_t left_sequence_backwards[ROTATION_SEQUENCE_SIZE] = { 0,
 R_KNOB_BIT_MASK, RL_KNOB_BIT_MASK, L_KNOB_BIT_MASK, 0 };
 
-static void read_knob_buttons_state(Buttons_HandleTypeDef *buttons) {
+static void read_knob_button_state(Buttons_HandleTypeDef *buttons) {
 	uint32_t *buffer = buttons->sample_buffer;
 	uint32_t *sequence = buttons->knob_rotation_sequence_buffer;
 	uint8_t knob_idx = buttons->knob_head;
@@ -178,7 +178,7 @@ static void read_knob_buttons_state(Buttons_HandleTypeDef *buttons) {
 	}
 }
 
-static void update_knob_buttons_state(Buttons_HandleTypeDef *buttons) {
+static void update_knob_button_state(Buttons_HandleTypeDef *buttons) {
 	if (HAL_GetTick() - buttons->knob_lock_init_time_ms > KNOB_LOCK_TIME_MS) {
 		CLEAR_BIT(buttons->knob_flags, KNOB_LOCK_FLAG);
 		CLEAR_BIT(buttons->knob_flags, KNOB_DIRECTION_FLAG);

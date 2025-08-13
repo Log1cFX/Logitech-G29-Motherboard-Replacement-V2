@@ -6,5 +6,5 @@
 ../Wheel/Src/sw_buttons.c:68:21:Buttons_GetState	16	static
 ../Wheel/Src/sw_buttons.c:74:13:get_debounced_state	88	static
 ../Wheel/Src/sw_buttons.c:122:13:get_current_knob_state	16	static
-../Wheel/Src/sw_buttons.c:138:13:read_knob_buttons_state	48	static
-../Wheel/Src/sw_buttons.c:181:13:update_knob_buttons_state	16	static
+../Wheel/Src/sw_buttons.c:138:13:read_knob_button_state	48	static
+../Wheel/Src/sw_buttons.c:181:13:update_knob_button_state	16	static
