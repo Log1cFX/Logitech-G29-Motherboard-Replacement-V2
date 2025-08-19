@@ -13,7 +13,7 @@
 #include "usb_device.h"
 #include "usbd_customhid.h"
 
-#define USBD_CUSTOMHID_INREPORT_BUF_SIZE 8
+#define USBD_CUSTOMHID_INREPORT_BUF_SIZE 9
 #define DEFERRED_PROCESSING_UNSENT_REPORT_THRESHOLD 25
 
 typedef enum {

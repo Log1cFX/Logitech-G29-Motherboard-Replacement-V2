@@ -14,6 +14,7 @@
 #include "hw_magnetometer.h"
 #include "sw_sensor.h"
 #include "hw_analog_input.h"
+#include "sw_shifter.h"
 #include "app_usb_hid.h"
 
 #define MAX_PEDALS 3
@@ -30,6 +31,7 @@ typedef struct {
 	Buttons_HandleTypeDef *hButtons;
 	Sensor_HandleTypeDef *hSensor;
 	Pedals_HandleTypeDef *hPedals;
+	Shifter_HandleTypeDef *hShifter;
 	Wheel_SWIT_HandleTypeDef hSwit;
 	struct _USB_HID_HandleTypeDef *hUsbHid;
 } Wheel_HandleTypeDef;

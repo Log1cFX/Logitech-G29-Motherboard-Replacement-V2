@@ -73,6 +73,8 @@ void Error_Handler(void);
 #define SPI2_SS_GPIO_Port GPIOB
 #define test_Pin GPIO_PIN_5
 #define test_GPIO_Port GPIOB
+#define SHIFTER_MODIFIER_Pin GPIO_PIN_9
+#define SHIFTER_MODIFIER_GPIO_Port GPIOB
 
 /* USER CODE BEGIN Private defines */
 

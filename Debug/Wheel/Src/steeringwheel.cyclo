@@ -1,11 +1,6 @@
-../Wheel/Src/steeringwheel.c:39:6:wheel_startup	1
-../Wheel/Src/steeringwheel.c:60:13:init_buttons	3
-../Wheel/Src/steeringwheel.c:78:13:init_sensor	3
-../Wheel/Src/steeringwheel.c:95:13:init_analog	1
-../Wheel/Src/steeringwheel.c:105:13:configure_software_exti	2
-../Wheel/Src/steeringwheel.c:116:13:init_wheel_handle	1
-../Wheel/Src/steeringwheel.c:124:14:wheel_get_all_component_states	5
-../Wheel/Src/steeringwheel.c:143:6:HAL_GPIO_EXTI_Callback	3
-../Wheel/Src/steeringwheel.c:152:6:HAL_ADC_ConvCpltCallback	1
-../Wheel/Src/steeringwheel.c:157:6:HAL_SPI_TxRxCpltCallback	2
-../Wheel/Src/steeringwheel.c:167:6:HAL_TIM_PeriodElapsedCallback	3
+../Wheel/Src/steeringwheel.c:38:6:wheel_startup	7
+../Wheel/Src/steeringwheel.c:141:14:wheel_get_all_component_states	5
+../Wheel/Src/steeringwheel.c:161:6:HAL_GPIO_EXTI_Callback	3
+../Wheel/Src/steeringwheel.c:170:6:HAL_ADC_ConvCpltCallback	1
+../Wheel/Src/steeringwheel.c:175:6:HAL_SPI_TxRxCpltCallback	2
+../Wheel/Src/steeringwheel.c:185:6:HAL_TIM_PeriodElapsedCallback	3

@@ -37,7 +37,7 @@ static Wheel_Status Analog_DeINIT(Analog_HandleTypeDef *analog) {
 	if (HAL_ADC_Stop_DMA(analog->hadc) == HAL_ERROR) {
 		return WHEEL_ERROR;
 	}
-	for (uint8_t i = 0; i < ANALOG_AXIS_NUM; i++) {
+	for (uint8_t i = 0; i < ANALOG_INPUT_NUM; i++) {
 		analog->axis[i] = 0;
 	}
 	analog->hadc = 0;
@@ -46,7 +46,7 @@ static Wheel_Status Analog_DeINIT(Analog_HandleTypeDef *analog) {
 
 static Wheel_Status Analog_Start_CONTINIOUS_SCAN_DMA(
 		Analog_HandleTypeDef *analog) {
-	HAL_ADC_Start_DMA(analog->hadc, analog->axis, 3);
+	HAL_ADC_Start_DMA(analog->hadc, analog->axis, ANALOG_INPUT_NUM);
 	return WHEEL_OK;
 }
 

@@ -12,8 +12,6 @@ Wheel_HandleTypeDef wheel;
 
 extern ADC_HandleTypeDef hadc1;
 extern SPI_HandleTypeDef hspi2;
-extern TIM_HandleTypeDef htim1;
-extern TIM_HandleTypeDef htim2;
 extern TIM_HandleTypeDef htim3;
 extern TIM_HandleTypeDef htim4;
 
@@ -23,6 +21,7 @@ extern Magnetometer_HandleTypeDef hmlx90363;
 extern Sensor_HandleTypeDef hSensor;
 extern Analog_HandleTypeDef hAnalog;
 extern Pedals_HandleTypeDef hPedals;
+extern Shifter_HandleTypeDef hShifter;
 USB_HID_HandleTypeDef hUsbHid;
 
 static void init_buttons();
@@ -51,7 +50,18 @@ void wheel_startup() {
 
 	app_usb_hid_start();
 
+	wheel.hSensor->min = 1;
+	wheel.hSensor->max = 1;
+
 	while (1) {
+		if (wheel.hSensor->steering_pos < wheel.hSensor->min) {
+			wheel.hSensor->min = wheel.hSensor->steering_pos;
+		}
+		if (wheel.hSensor->steering_pos > wheel.hSensor->max) {
+			wheel.hSensor->max = wheel.hSensor->steering_pos;
+		}
+		wheel.hSensor->axis_scale = (float) (0xFFFF / 2)
+				/ (wheel.hSensor->distance / 2);
 		__WFI();
 	}
 }
@@ -100,6 +110,12 @@ static void init_analog() {
 	Pedals_ConfigHandleTypeDef config2 = { 0 };
 	config2.hw_analog = &hAnalog;
 	hPedals.INIT(&hPedals, &config2);
+
+	Shifter_ConfigHandleTypeDef config3 = { 0 };
+	config3.hw_analog = &hAnalog;
+	config3.modifier_port = SHIFTER_MODIFIER_GPIO_Port;
+	config3.modifier_pin = SHIFTER_MODIFIER_Pin;
+	hShifter.INIT(&hShifter, &config3);
 }
 
 static void configure_software_exti() {
@@ -115,8 +131,9 @@ static void configure_software_exti() {
 
 static void init_wheel_handle() {
 	wheel.hButtons = &hButtons;
-	wheel.hPedals = &hPedals;
 	wheel.hSensor = &hSensor;
+	wheel.hPedals = &hPedals;
+	wheel.hShifter = &hShifter;
 	wheel.hUsbHid = &hUsbHid;
 }
 
@@ -135,6 +152,7 @@ Wheel_Status wheel_get_all_component_states() {
 	wheel.hButtons->GetState(wheel.hButtons);
 	wheel.hPedals->GetState(wheel.hPedals);
 	wheel.hSensor->GetAxis(wheel.hSensor);
+	wheel.hShifter->GetSpeed(wheel.hShifter);
 	return WHEEL_OK;
 }
 

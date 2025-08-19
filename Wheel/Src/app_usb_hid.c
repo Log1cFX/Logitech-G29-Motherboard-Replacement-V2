@@ -56,11 +56,12 @@ void app_usb_hid_send_report() {
 	tx[0] |= 0xF0 & (wheel.hButtons->buttons_state << 4);
 	tx[1] = wheel.hButtons->buttons_state >> 8;
 	tx[2] = wheel.hButtons->buttons_state >> 16;
-	tx[3] = wheel.hSensor->virtual_axis;
-	tx[4] = wheel.hSensor->virtual_axis >> 8;
-	tx[5] = wheel.hPedals->clutch;
-	tx[6] = wheel.hPedals->brake;
-	tx[7] = wheel.hPedals->throtle;
+	tx[3] = 1U<<wheel.hShifter->speed;
+	tx[4] = wheel.hSensor->virtual_axis;
+	tx[5] = wheel.hSensor->virtual_axis >> 8;
+	tx[6] = wheel.hPedals->clutch;
+	tx[7] = wheel.hPedals->brake;
+	tx[8] = wheel.hPedals->throtle;
 	USBD_CUSTOM_HID_SendReport(&hUsbDeviceFS, tx,
 	USBD_CUSTOMHID_INREPORT_BUF_SIZE);
 	wheel.hUsbHid->report_state = USB_REPORT_NOT_READY;
@@ -83,14 +84,13 @@ static uint8_t hat_switch_from_msb(uint8_t byte) {
 	if ((up && down))
 		dpadY = 0;
 
-	/* Map (dpadX, dpadY) to the hat-switch look-up table */
-	static const uint8_t hatTable[3][3] = {
-	/*           X = −1   0   +1  */
-	/* Y = −1 */{ 7, 0, 1 }, /* Up, Up-Left(NW), Up-Right(NE) */
-	/* Y =  0 */{ 6, 8, 2 }, /* Left, Centre,   Right        */
-	/* Y = +1 */{ 5, 4, 3 } /* Down-Left(SW), Down, Down-Right(SE) */
+	// Map (dpadX, dpadY) to the hat-switch look-up table
+	static const uint8_t hat_table[3][3] = {
+	/**/{ 7, 0, 1 },/**/
+	/**/{ 6, 8, 2 },/**/
+	/**/{ 5, 4, 3 }/**/
 	};
-	return hatTable[dpadY + 1][dpadX + 1];
+	return hat_table[dpadY + 1][dpadX + 1];
 }
 
 /* 		CALLBACKS 		*/

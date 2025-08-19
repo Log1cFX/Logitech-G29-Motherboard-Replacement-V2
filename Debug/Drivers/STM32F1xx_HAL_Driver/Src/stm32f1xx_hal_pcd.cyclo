@@ -1,10 +1,9 @@
-../Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_pcd.c:131:19:HAL_PCD_Init	8
-../Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_pcd.c:243:19:HAL_PCD_DeInit	3
 ../Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_pcd.c:282:13:HAL_PCD_MspInit	1
+../Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_pcd.c:131:19:HAL_PCD_Init	20
 ../Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_pcd.c:297:13:HAL_PCD_MspDeInit	1
+../Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_pcd.c:243:19:HAL_PCD_DeInit	3
 ../Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_pcd.c:855:19:HAL_PCD_Start	2
 ../Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_pcd.c:875:19:HAL_PCD_Stop	2
-../Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_pcd.c:1321:6:HAL_PCD_IRQHandler	12
 ../Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_pcd.c:1456:6:HAL_PCD_WKUP_IRQHandler	1
 ../Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_pcd.c:1469:13:HAL_PCD_DataOutStageCallback	1
 ../Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_pcd.c:1486:13:HAL_PCD_DataInStageCallback	1
@@ -13,6 +12,7 @@
 ../Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_pcd.c:1531:13:HAL_PCD_ResetCallback	1
 ../Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_pcd.c:1546:13:HAL_PCD_SuspendCallback	1
 ../Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_pcd.c:1561:13:HAL_PCD_ResumeCallback	1
+../Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_pcd.c:1321:6:HAL_PCD_IRQHandler	85
 ../Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_pcd.c:1577:13:HAL_PCD_ISOOUTIncompleteCallback	1
 ../Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_pcd.c:1594:13:HAL_PCD_ISOINIncompleteCallback	1
 ../Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_pcd.c:1610:13:HAL_PCD_ConnectCallback	1
@@ -32,6 +32,3 @@
 ../Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_pcd.c:1986:19:HAL_PCD_ActivateRemoteWakeup	1
 ../Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_pcd.c:1996:19:HAL_PCD_DeActivateRemoteWakeup	1
 ../Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_pcd.c:2025:18:HAL_PCD_GetState	1
-../Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_pcd.c:2185:26:PCD_EP_ISR_Handler	36
-../Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_pcd.c:2464:17:HAL_PCD_EP_DB_Receive	10
-../Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_pcd.c:2545:26:HAL_PCD_EP_DB_Transmit	36

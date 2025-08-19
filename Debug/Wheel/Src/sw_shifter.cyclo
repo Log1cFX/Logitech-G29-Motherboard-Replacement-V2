@@ -1,0 +1,3 @@
+../Wheel/Src/sw_shifter.c:18:21:Shifter_INIT	2
+../Wheel/Src/sw_shifter.c:41:21:Shifter_getSpeed	8
+../Wheel/Src/sw_shifter.c:33:21:Shifter_DeINIT	2

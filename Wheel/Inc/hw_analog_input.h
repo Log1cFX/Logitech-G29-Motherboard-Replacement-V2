@@ -10,9 +10,10 @@
 
 #include "common_types.h"
 
-#define ANALOG_AXIS_NUM 5
+#define ANALOG_INPUT_NUM 5
 #define PEDALS_NUM 3
 #define PEDALS_IDX 0
+#define SHIFTER_IDX 3
 
 typedef struct {
 	ADC_HandleTypeDef *hadc;
@@ -26,7 +27,7 @@ typedef struct _Analog_HandleTypeDef {
 			struct _Analog_HandleTypeDef *analog);
 	Wheel_Status (*Stop)(struct _Analog_HandleTypeDef *analog);
 
-	uint32_t axis[ANALOG_AXIS_NUM];
+	uint32_t axis[ANALOG_INPUT_NUM];
 
 	ADC_HandleTypeDef *hadc;
 } Analog_HandleTypeDef;

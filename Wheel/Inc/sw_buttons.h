@@ -15,7 +15,7 @@
 #define HALF_SAMPLES MAX_SAMPLES/2
 #define BUTTONS_BUFFER_SIZE 200U
 #define SAMPLE_TIME_US 1000U
-#define	KNOB_LOCK_TIME_MS 25U
+#define	KNOB_LOCK_TIME_MS 30U
 
 #define GET_BIT(var, mask) ((mask) & (var))
 #define R_KNOB_BIT_MASK (1U << (23-1))
