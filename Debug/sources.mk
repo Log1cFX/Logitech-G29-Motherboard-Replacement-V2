@@ -25,6 +25,7 @@ SUBDIRS := \
 Core/Src \
 Core/Startup \
 Drivers/STM32F1xx_HAL_Driver/Src \
+Middlewares/JakaSimonic/ForceFeedback-core-library-legacy \
 Middlewares/ST/STM32_USB_Device_Library/Class/CustomHID/Src \
 Middlewares/ST/STM32_USB_Device_Library/Core/Src \
 USB_DEVICE/App \

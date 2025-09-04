@@ -42,7 +42,9 @@ Wheel/Src/app_usb_hid.o: ../Wheel/Src/app_usb_hid.c \
  ../Middlewares/ST/STM32_USB_Device_Library/Core/Inc/usbd_def.h \
  ../Middlewares/ST/STM32_USB_Device_Library/Core/Inc/usbd_core.h \
  ../Middlewares/ST/STM32_USB_Device_Library/Core/Inc/usbd_ioreq.h \
- ../Middlewares/ST/STM32_USB_Device_Library/Core/Inc/usbd_ctlreq.h
+ ../Middlewares/ST/STM32_USB_Device_Library/Core/Inc/usbd_ctlreq.h \
+ ../Wheel/Inc/app_hid_desc.h \
+ ../Middlewares/JakaSimonic/ForceFeedback-core-library-legacy/ffb.h
 ../Wheel/Inc/app_usb_hid.h:
 ../Wheel/Inc/steeringwheel.h:
 ../Wheel/Inc/common_types.h:
@@ -94,3 +96,5 @@ Wheel/Src/app_usb_hid.o: ../Wheel/Src/app_usb_hid.c \
 ../Middlewares/ST/STM32_USB_Device_Library/Core/Inc/usbd_core.h:
 ../Middlewares/ST/STM32_USB_Device_Library/Core/Inc/usbd_ioreq.h:
 ../Middlewares/ST/STM32_USB_Device_Library/Core/Inc/usbd_ctlreq.h:
+../Wheel/Inc/app_hid_desc.h:
+../Middlewares/JakaSimonic/ForceFeedback-core-library-legacy/ffb.h:

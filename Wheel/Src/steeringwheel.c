@@ -7,6 +7,7 @@
 
 #include "common_types.h"
 #include "steeringwheel.h"
+#include "ffb.h"
 
 Wheel_HandleTypeDef wheel;
 
@@ -30,12 +31,10 @@ static void init_analog();
 static void configure_software_exti();
 static void init_wheel_handle();
 
-uint32_t time_ms = 0;
-uint8_t temp = 0;
-uint32_t test_time_ms;
-uint32_t old_time_ms;
+int16_t test_pos;
 
 void wheel_startup() {
+	/* INIT */
 	init_analog();
 	init_buttons();
 	init_sensor();
@@ -43,6 +42,7 @@ void wheel_startup() {
 	app_usb_hid_init(&hUsbHid);
 	init_wheel_handle();
 
+	/* START MODULES */
 	wheel.hPedals->hw_analog->Start_CONTINIOUS_SCAN_DMA(
 			wheel.hPedals->hw_analog);
 	wheel.hButtons->Start_TIM(wheel.hButtons);
@@ -50,6 +50,7 @@ void wheel_startup() {
 
 	app_usb_hid_start();
 
+	/* temporary code for live calibration and force feedback testing */
 	wheel.hSensor->min = 1;
 	wheel.hSensor->max = 1;
 
@@ -62,7 +63,8 @@ void wheel_startup() {
 		}
 		wheel.hSensor->axis_scale = (float) (0xFFFF / 2)
 				/ (wheel.hSensor->distance / 2);
-		__WFI();
+		HAL_Delay(10);
+//		FfbGetFeedbackValue(&wheel.hSensor->virtual_axis, &test_pos);
 	}
 }
 
@@ -157,7 +159,7 @@ Wheel_Status wheel_get_all_component_states() {
 }
 
 /*		HARDWARE CALLBACK FUNCTIONS		 	*/
-// The custom software interrupt implementation using the EXTI line callbacks
+// Custom software interrupt implementation using the EXTI line callbacks
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
 	if (GPIO_Pin == wheel.hSwit.usb_send_report_swit_pin) {
 		app_usb_hid_send_report();
@@ -167,6 +169,8 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
 	}
 }
 
+// ADC callbacks not used because ADC fills the values in continuous scan mode,
+// paired up with DMA, meaning that we never have to worry about it.
 void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef *hadc) {
 	UNUSED(hadc);
 }
@@ -180,8 +184,8 @@ void HAL_SPI_TxRxCpltCallback(SPI_HandleTypeDef *hspi) {
 	}
 }
 
-// 1. Used to start, periodically, the transmission with the sensor
-// 2. Used to periodically read the buttons state
+// 1. Used to start, periodically, the transmission with the magnetometer (steering) (IMPORTANT)
+// 2. Used to periodically read the buttons' state (for debouncing) (IMPORTANT)
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
 	if (wheel.hSensor->hw_magnetometer->htim->Instance == htim->Instance) {
 		wheel.hSensor->hw_magnetometer->TransmitRecieve_DMA(
@@ -190,6 +194,5 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
 	if (wheel.hButtons->htim->Instance == htim->Instance) {
 		wheel.hButtons->hw_buttons->ReadState(wheel.hButtons->hw_buttons);
 		wheel.hButtons->Update(wheel.hButtons);
-		time_ms++;
 	}
 }

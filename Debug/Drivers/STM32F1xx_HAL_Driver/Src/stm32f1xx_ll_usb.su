@@ -2,12 +2,11 @@
 ../Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_ll_usb.c:1951:19:USB_EnableGlobalInt	0	static
 ../Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_ll_usb.c:1976:19:USB_DisableGlobalInt	0	static
 ../Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_ll_usb.c:2000:19:USB_SetCurrentMode	0	static
-../Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_ll_usb.c:2021:19:USB_DevInit	24	static
+../Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_ll_usb.c:2021:19:USB_DevInit	16	static
 ../Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_ll_usb.c:2050:19:USB_FlushTxFifo	0	static
 ../Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_ll_usb.c:2069:19:USB_FlushRxFifo	0	static
-../Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_ll_usb.c:2090:19:USB_ActivateEndpoint	16	static
-../Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_ll_usb.c:2223:19:USB_DeactivateEndpoint	4	static
-../Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_ll_usb.c:2282:19:USB_EPStartXfer	48	static
+../Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_ll_usb.c:2090:19:USB_ActivateEndpoint	8	static
+../Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_ll_usb.c:2223:19:USB_DeactivateEndpoint	0	static
 ../Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_ll_usb.c:2502:19:USB_EPSetStall	0	static
 ../Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_ll_usb.c:2522:19:USB_EPClearStall	0	static
 ../Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_ll_usb.c:2554:19:USB_EPStopXfer	0	static
@@ -25,4 +24,5 @@
 ../Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_ll_usb.c:2790:19:USB_ActivateRemoteWakeup	0	static
 ../Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_ll_usb.c:2802:19:USB_DeActivateRemoteWakeup	0	static
 ../Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_ll_usb.c:2817:6:USB_WritePMA	0	static
-../Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_ll_usb.c:2852:6:USB_ReadPMA	16	static
+../Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_ll_usb.c:2282:19:USB_EPStartXfer	16	static
+../Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_ll_usb.c:2852:6:USB_ReadPMA	4	static

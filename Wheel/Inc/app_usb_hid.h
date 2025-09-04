@@ -13,7 +13,7 @@
 #include "usb_device.h"
 #include "usbd_customhid.h"
 
-#define USBD_CUSTOMHID_INREPORT_BUF_SIZE 9
+#define USBD_CUSTOMHID_INREPORT_BUF_SIZE 10
 #define DEFERRED_PROCESSING_UNSENT_REPORT_THRESHOLD 25
 
 typedef enum {
@@ -26,7 +26,7 @@ typedef enum {
 
 typedef struct _USB_HID_HandleTypeDef {
 	uint8_t tx_buffer[USBD_CUSTOMHID_INREPORT_BUF_SIZE];
-	uint8_t rx_buffer[0];
+	uint8_t rx_buffer[USBD_CUSTOMHID_OUTREPORT_BUF_SIZE];
 	Report_State report_state;
 	Report_Processing_State processing_state;
 	uint8_t unsent_reports;

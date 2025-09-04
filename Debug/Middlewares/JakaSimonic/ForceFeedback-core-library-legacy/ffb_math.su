@@ -1,0 +1,6 @@
+../Middlewares/JakaSimonic/ForceFeedback-core-library-legacy/ffb_math.c:25:7:FfbCos	8	static
+../Middlewares/JakaSimonic/ForceFeedback-core-library-legacy/ffb_math.c:31:7:FfbSin	8	static
+../Middlewares/JakaSimonic/ForceFeedback-core-library-legacy/ffb_math.c:37:9:ApplyGain	0	static
+../Middlewares/JakaSimonic/ForceFeedback-core-library-legacy/ffb_math.c:43:9:ApplyEnvelope	16	static
+../Middlewares/JakaSimonic/ForceFeedback-core-library-legacy/ffb_math.c:72:6:ApplyDirection	24	static
+../Middlewares/JakaSimonic/ForceFeedback-core-library-legacy/ffb_math.c:101:6:CalcCondition	64	static

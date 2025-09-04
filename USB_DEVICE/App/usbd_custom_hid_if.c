@@ -91,57 +91,7 @@
 __ALIGN_BEGIN static uint8_t CUSTOM_HID_ReportDesc_FS[USBD_CUSTOM_HID_REPORT_DESC_SIZE] __ALIGN_END =
 {
   /* USER CODE BEGIN 0 */
-		// Application
-		0x05, 0x01,       // USAGE_PAGE (Generic Desktop)
-		0x09, 0x04,       // USAGE (Joystick)
-		0xA1, 0x01,       // COLLECTION (Application)
-
-		// D-pad axis (4 bits)
-		0x09, 0x39,       // Usage (Hat Switch)
-		0x15, 0x00,       // Logical Minimum (0)
-		0x25, 0x07,       // Logical Maximum (7)
-		0x75, 0x04,       // Report Size (4 bits)
-		0x95, 0x01,       // Report Count (1)
-		0x81, 0x42,       // Input (Data,Var,Abs,Null)
-
-		// Buttons 1–20 (20 bits)
-		0x05, 0x09,       // USAGE_PAGE (Button)
-		0x19, 0x01,       // USAGE_MINIMUM (Button 1)
-		0x29, 0x14,       // USAGE_MAXIMUM (Button 20)
-		0x15, 0x00,       // LOGICAL_MINIMUM (0)
-		0x25, 0x01,       // LOGICAL_MAXIMUM (1)
-		0x75, 0x01,       // REPORT_SIZE (1)
-		0x95, 0x14,       // REPORT_COUNT (20)
-		0x81, 0x02,       // INPUT (Data,Var,Abs)
-		// Padding (1 bit)
-		0x95, 0x01,       // REPORT_COUNT (1)
-		0x81, 0x01,       // INPUT (Const)
-		// Shifter buttons 21-27 (7 bits)
-		0x19, 0x14,       // USAGE_MINIMUM (Button 1)
-		0x29, 0x2B,       // USAGE_MAXIMUM (Button 20)
-		0x95, 0x07,       // REPORT_COUNT (7)
-		0x81, 0x02,       // INPUT (Data,Var,Abs)
-
-		// X Axis (Steering)
-		0x05, 0x01,       // USAGE_PAGE (Generic Desktop)
-		0x09, 0x30,       // USAGE (X)
-		0x16, 0x00, 0x80, // LOGICAL_MINIMUM (-32768)
-		0x26, 0xFF, 0x7F, // LOGICAL_MAXIMUM (32767)
-		0x75, 0x10,       // REPORT_SIZE (16)
-		0x95, 0x01,       // REPORT_COUNT (1)
-		0x81, 0x42,       // INPUT (Data,Var,Abs,Null State)
-
-		// Pedal Axes (Y, Z, Rx)
-		0x09, 0x31,       // USAGE (Y) - for clutch
-		0x09, 0x32,       // USAGE (Z) - for brake
-		0x09, 0x33,       // USAGE (Rx) - for throttle
-		0x15, 0x00,       // LOGICAL_MINIMUM (0)
-		0x26, 0xFF, 0x00, // LOGICAL_MAXIMUM (255+)
-//		0x35, 0x00,       // PHYSICAL_MINIMUM (0)
-//		0x46, 0xFF, 0x00, // PHYSICAL_MAXIMUM (255+)
-		0x75, 0x08,       // REPORT_SIZE (8 bits)
-		0x95, 0x03,       // REPORT_COUNT (3)
-		0x81, 0x02,       // INPUT (Data,Var,Abs)
+		//THE HID DESCRIPTOR IS INSIDE app_hid_desc.h
   /* USER CODE END 0 */
   0xC0    /*     END_COLLECTION	             */
 };

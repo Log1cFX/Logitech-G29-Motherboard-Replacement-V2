@@ -6,12 +6,16 @@
  */
 
 #include "app_usb_hid.h"
+#include "app_hid_desc.h"
+#include "ffb.h"
 
 extern USBD_HandleTypeDef hUsbDeviceFS;
 extern Wheel_HandleTypeDef wheel;
 
 static uint8_t app_usb_hid_SOF_CB(USBD_HandleTypeDef *pdev);
 static uint8_t app_usb_hid_DataInStage_CB(USBD_HandleTypeDef *pdev,
+		uint8_t epnum);
+static uint8_t app_usb_hid_DataOutStage_CB(USBD_HandleTypeDef *pdev,
 		uint8_t epnum);
 static uint8_t hat_switch_from_msb(uint8_t byte);
 
@@ -26,12 +30,19 @@ Wheel_Status app_usb_hid_init(USB_HID_HandleTypeDef *hUsbHid) {
 Wheel_Status app_usb_hid_start() {
 	wheel.hUsbHid->usb_device->pClass->SOF = app_usb_hid_SOF_CB;
 	wheel.hUsbHid->usb_device->pClass->DataIn = app_usb_hid_DataInStage_CB;
+	wheel.hUsbHid->usb_device->pClass->DataOut = app_usb_hid_DataOutStage_CB;
+//	USBD_LL_PrepareReceive(wheel.hUsbHid->usb_device, CUSTOM_HID_EPOUT_ADDR,
+//			((USBD_CUSTOM_HID_HandleTypeDef*) wheel.hUsbHid->usb_device->pClassData)->Report_buf,
+//			USBD_CUSTOMHID_OUTREPORT_BUF_SIZE);
+
 	return WHEEL_OK;
 }
 
 Wheel_Status app_usb_hid_stop() {
 	wheel.hUsbHid->usb_device->pClass->SOF = NULL;
 	wheel.hUsbHid->usb_device->pClass->DataIn = NULL;
+	((USBD_CUSTOM_HID_ItfTypeDef*) wheel.hUsbHid->usb_device->pUserData)->OutEvent =
+	NULL;
 	return WHEEL_OK;
 }
 
@@ -51,17 +62,24 @@ void app_usb_hid_send_report() {
 		return;
 	}
 	uint8_t *tx = wheel.hUsbHid->tx_buffer;
-	tx[0] = 0;
-	tx[0] |= 0x0F & hat_switch_from_msb(wheel.hButtons->buttons_state);
-	tx[0] |= 0xF0 & (wheel.hButtons->buttons_state << 4);
-	tx[1] = wheel.hButtons->buttons_state >> 8;
-	tx[2] = wheel.hButtons->buttons_state >> 16;
-	tx[3] = 1U<<wheel.hShifter->speed;
-	tx[4] = wheel.hSensor->virtual_axis;
-	tx[5] = wheel.hSensor->virtual_axis >> 8;
-	tx[6] = wheel.hPedals->clutch;
-	tx[7] = wheel.hPedals->brake;
-	tx[8] = wheel.hPedals->throtle;
+	// assign the report ID
+	tx[0] = HID_JOYSTICK_REPORT_ID;
+	// fill the first byte with d_pad buttons and the first 4 buttons
+	tx[1] = 0;
+	tx[1] |= 0x0F & hat_switch_from_msb((uint8_t)wheel.hButtons->buttons_state);
+	tx[1] |= 0xF0 & (wheel.hButtons->buttons_state << 4);
+	// set the next buttons
+	tx[2] = wheel.hButtons->buttons_state >> 8;
+	tx[3] = wheel.hButtons->buttons_state >> 16;
+	// activate one of 7 buttons depending on the shifter's speed
+	tx[4] = 1U << wheel.hShifter->speed;
+	// set the steering axis
+	tx[5] = wheel.hSensor->virtual_axis;
+	tx[6] = wheel.hSensor->virtual_axis >> 8;
+	// set the pedals
+	tx[7] = wheel.hPedals->clutch;
+	tx[8] = wheel.hPedals->brake;
+	tx[9] = wheel.hPedals->throtle;
 	USBD_CUSTOM_HID_SendReport(&hUsbDeviceFS, tx,
 	USBD_CUSTOMHID_INREPORT_BUF_SIZE);
 	wheel.hUsbHid->report_state = USB_REPORT_NOT_READY;
@@ -115,11 +133,22 @@ static uint8_t app_usb_hid_SOF_CB(USBD_HandleTypeDef *pdev) {
 
 // Replaces the dynamically called DataIn function of the USB interface
 // Is called when the EP finishes successful a Tx transfer
-// Creates an interrupt on the EXTI line
+// Creates a software interrupt on the EXTI line for deferred usb processing
 static uint8_t app_usb_hid_DataInStage_CB(USBD_HandleTypeDef *pdev,
 		uint8_t epnum) {
 	((USBD_CUSTOM_HID_HandleTypeDef*) pdev->pClassData)->state =
 			CUSTOM_HID_IDLE; // Enable the next report to be sent
 	__HAL_GPIO_EXTI_GENERATE_SWIT(wheel.hSwit.usb_process_data_pin); // Create a software interrupt for deferred processing
+	return USBD_OK;
+}
+
+static uint8_t app_usb_hid_DataOutStage_CB(USBD_HandleTypeDef *pdev,
+		uint8_t epnum) {
+	USBD_CUSTOM_HID_HandleTypeDef *hhid =
+			(USBD_CUSTOM_HID_HandleTypeDef*) pdev->pClassData;
+//	memcpy(wheel.hUsbHid->rx_buffer, hhid->Report_buf, USBD_CUSTOMHID_OUTREPORT_BUF_SIZE);
+//	FfbOnUsbData(wheel.hUsbHid->rx_buffer, USBD_CUSTOMHID_OUTREPORT_BUF_SIZE);
+	USBD_LL_PrepareReceive(pdev, CUSTOM_HID_EPOUT_ADDR, hhid->Report_buf,
+	USBD_CUSTOMHID_OUTREPORT_BUF_SIZE);
 	return USBD_OK;
 }
