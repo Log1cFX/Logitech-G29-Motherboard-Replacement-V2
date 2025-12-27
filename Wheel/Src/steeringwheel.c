@@ -23,7 +23,7 @@ extern Sensor_HandleTypeDef hSensor;
 extern Analog_HandleTypeDef hAnalog;
 extern Pedals_HandleTypeDef hPedals;
 extern Shifter_HandleTypeDef hShifter;
-USB_HID_HandleTypeDef hUsbHid;
+USB_HID_HandleTypeDef hUsbHidPid;
 
 static void init_buttons();
 static void init_sensor();
@@ -31,7 +31,8 @@ static void init_analog();
 static void configure_software_exti();
 static void init_wheel_handle();
 
-int16_t test_pos;
+int16_t out[2];
+int16_t in[2];
 
 void wheel_startup() {
 	/* INIT */
@@ -39,7 +40,7 @@ void wheel_startup() {
 	init_buttons();
 	init_sensor();
 	configure_software_exti();
-	app_usb_hid_init(&hUsbHid);
+	app_usb_hid_init(&hUsbHidPid);
 	init_wheel_handle();
 
 	/* START MODULES */
@@ -48,7 +49,7 @@ void wheel_startup() {
 	wheel.hButtons->Start_TIM(wheel.hButtons);
 	wheel.hSensor->hw_magnetometer->Start_TIM(wheel.hSensor->hw_magnetometer);
 
-	app_usb_hid_start();
+	app_usb_start();
 
 	/* temporary code for live calibration and force feedback testing */
 	wheel.hSensor->min = 1;
@@ -63,8 +64,10 @@ void wheel_startup() {
 		}
 		wheel.hSensor->axis_scale = (float) (0xFFFF / 2)
 				/ (wheel.hSensor->distance / 2);
-		HAL_Delay(10);
-//		FfbGetFeedbackValue(&wheel.hSensor->virtual_axis, &test_pos);
+		HAL_Delay(1);
+		in[0] = wheel.hSensor->virtual_axis;
+		in[1] = wheel.hSensor->virtual_axis;
+		FfbGetFeedbackValue(in, out);
 	}
 }
 
@@ -136,7 +139,7 @@ static void init_wheel_handle() {
 	wheel.hSensor = &hSensor;
 	wheel.hPedals = &hPedals;
 	wheel.hShifter = &hShifter;
-	wheel.hUsbHid = &hUsbHid;
+	wheel.hUsbHid = &hUsbHidPid;
 }
 
 /* 		APPLICATION SPECIFIC FUNCTIONS 		*/
@@ -165,7 +168,7 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
 		app_usb_hid_send_report();
 	}
 	if (GPIO_Pin == wheel.hSwit.usb_process_data_pin) {
-		app_usb_hid_deferred_processing();
+		app_usb_start_deferred_processing();
 	}
 }
 

@@ -8,6 +8,10 @@
 #ifndef SRC_SW_MAGNETOMETER_H_
 #define SRC_SW_MAGNETOMETER_H_
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include "common_types.h"
 #include "hw_magnetometer.h"
 
@@ -35,5 +39,9 @@ typedef struct _Sensor_HandleTypeDef {
 
 	Magnetometer_HandleTypeDef *hw_magnetometer;
 } Sensor_HandleTypeDef;
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* SRC_SW_MAGNETOMETER_H_ */

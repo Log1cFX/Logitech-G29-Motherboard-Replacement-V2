@@ -23,10 +23,14 @@ this software.
 #ifndef _FFB_MATH_
 #define _FFB_MATH_
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <ffb.h>
 
 #define WHEEL_SAMPLE_RATE_MS 	  10
-#define WHEEL_RANGE   					0x03B7
+#define WHEEL_RANGE   					0x7FFF
 
 #define PI                      (float)3.14159265359 //consider using library defined value of PI
 #define DEG_TO_RAD     					((float)(PI/180))
@@ -40,6 +44,10 @@ int32_t ApplyGain(uint8_t value, uint8_t gain);
 int32_t ApplyEnvelope(TEffectState effect, int32_t value);
 void ApplyDirection(TEffectState effect, int32_t force, int32_t* axes);
 void CalcCondition(TEffectState effect, int32_t * outValue, int32_t* inValue);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif 
 

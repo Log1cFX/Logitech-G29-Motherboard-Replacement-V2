@@ -8,6 +8,10 @@
 #ifndef INC_SW_BUTTONS_H_
 #define INC_SW_BUTTONS_H_
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include "common_types.h"
 #include "hw_digital_input.h"
 
@@ -50,5 +54,9 @@ typedef struct _Buttons_HandleTypeDef {
 	TIM_HandleTypeDef *htim;
 	DigitalInput_HandleTypeDef *hw_buttons;
 } Buttons_HandleTypeDef;
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* INC_SW_BUTTONS_H_ */

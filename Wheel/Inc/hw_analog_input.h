@@ -8,6 +8,10 @@
 #ifndef INC_HW_ANALOG_INPUT_H_
 #define INC_HW_ANALOG_INPUT_H_
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include "common_types.h"
 
 #define ANALOG_INPUT_NUM 5
@@ -48,5 +52,9 @@ typedef struct _Pedals_HandleTypeDef {
 
 	Analog_HandleTypeDef *hw_analog;
 } Pedals_HandleTypeDef;
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* INC_HW_ANALOG_INPUT_H_ */

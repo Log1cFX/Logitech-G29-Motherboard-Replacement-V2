@@ -6,8 +6,7 @@
 # Add inputs and outputs from these tool invocations to the build variables 
 C_SRCS += \
 ../Wheel/Src/app_hid_desc.c \
-../Wheel/Src/app_usb_hid.c \
-../Wheel/Src/app_usb_pid.c \
+../Wheel/Src/app_usb_hid_pid.c \
 ../Wheel/Src/hw_analog_input.c \
 ../Wheel/Src/hw_digital_input.c \
 ../Wheel/Src/hw_magnetometer.c \
@@ -19,8 +18,7 @@ C_SRCS += \
 
 OBJS += \
 ./Wheel/Src/app_hid_desc.o \
-./Wheel/Src/app_usb_hid.o \
-./Wheel/Src/app_usb_pid.o \
+./Wheel/Src/app_usb_hid_pid.o \
 ./Wheel/Src/hw_analog_input.o \
 ./Wheel/Src/hw_digital_input.o \
 ./Wheel/Src/hw_magnetometer.o \
@@ -32,8 +30,7 @@ OBJS += \
 
 C_DEPS += \
 ./Wheel/Src/app_hid_desc.d \
-./Wheel/Src/app_usb_hid.d \
-./Wheel/Src/app_usb_pid.d \
+./Wheel/Src/app_usb_hid_pid.d \
 ./Wheel/Src/hw_analog_input.d \
 ./Wheel/Src/hw_digital_input.d \
 ./Wheel/Src/hw_magnetometer.d \
@@ -51,7 +48,7 @@ Wheel/Src/%.o Wheel/Src/%.su Wheel/Src/%.cyclo: ../Wheel/Src/%.c Wheel/Src/subdi
 clean: clean-Wheel-2f-Src
 
 clean-Wheel-2f-Src:
-	-$(RM) ./Wheel/Src/app_hid_desc.cyclo ./Wheel/Src/app_hid_desc.d ./Wheel/Src/app_hid_desc.o ./Wheel/Src/app_hid_desc.su ./Wheel/Src/app_usb_hid.cyclo ./Wheel/Src/app_usb_hid.d ./Wheel/Src/app_usb_hid.o ./Wheel/Src/app_usb_hid.su ./Wheel/Src/app_usb_pid.cyclo ./Wheel/Src/app_usb_pid.d ./Wheel/Src/app_usb_pid.o ./Wheel/Src/app_usb_pid.su ./Wheel/Src/hw_analog_input.cyclo ./Wheel/Src/hw_analog_input.d ./Wheel/Src/hw_analog_input.o ./Wheel/Src/hw_analog_input.su ./Wheel/Src/hw_digital_input.cyclo ./Wheel/Src/hw_digital_input.d ./Wheel/Src/hw_digital_input.o ./Wheel/Src/hw_digital_input.su ./Wheel/Src/hw_magnetometer.cyclo ./Wheel/Src/hw_magnetometer.d ./Wheel/Src/hw_magnetometer.o ./Wheel/Src/hw_magnetometer.su ./Wheel/Src/steeringwheel.cyclo ./Wheel/Src/steeringwheel.d ./Wheel/Src/steeringwheel.o ./Wheel/Src/steeringwheel.su ./Wheel/Src/sw_buttons.cyclo ./Wheel/Src/sw_buttons.d ./Wheel/Src/sw_buttons.o ./Wheel/Src/sw_buttons.su ./Wheel/Src/sw_sensor.cyclo ./Wheel/Src/sw_sensor.d ./Wheel/Src/sw_sensor.o ./Wheel/Src/sw_sensor.su ./Wheel/Src/sw_shifter.cyclo ./Wheel/Src/sw_shifter.d ./Wheel/Src/sw_shifter.o ./Wheel/Src/sw_shifter.su ./Wheel/Src/util.cyclo ./Wheel/Src/util.d ./Wheel/Src/util.o ./Wheel/Src/util.su
+	-$(RM) ./Wheel/Src/app_hid_desc.cyclo ./Wheel/Src/app_hid_desc.d ./Wheel/Src/app_hid_desc.o ./Wheel/Src/app_hid_desc.su ./Wheel/Src/app_usb_hid_pid.cyclo ./Wheel/Src/app_usb_hid_pid.d ./Wheel/Src/app_usb_hid_pid.o ./Wheel/Src/app_usb_hid_pid.su ./Wheel/Src/hw_analog_input.cyclo ./Wheel/Src/hw_analog_input.d ./Wheel/Src/hw_analog_input.o ./Wheel/Src/hw_analog_input.su ./Wheel/Src/hw_digital_input.cyclo ./Wheel/Src/hw_digital_input.d ./Wheel/Src/hw_digital_input.o ./Wheel/Src/hw_digital_input.su ./Wheel/Src/hw_magnetometer.cyclo ./Wheel/Src/hw_magnetometer.d ./Wheel/Src/hw_magnetometer.o ./Wheel/Src/hw_magnetometer.su ./Wheel/Src/steeringwheel.cyclo ./Wheel/Src/steeringwheel.d ./Wheel/Src/steeringwheel.o ./Wheel/Src/steeringwheel.su ./Wheel/Src/sw_buttons.cyclo ./Wheel/Src/sw_buttons.d ./Wheel/Src/sw_buttons.o ./Wheel/Src/sw_buttons.su ./Wheel/Src/sw_sensor.cyclo ./Wheel/Src/sw_sensor.d ./Wheel/Src/sw_sensor.o ./Wheel/Src/sw_sensor.su ./Wheel/Src/sw_shifter.cyclo ./Wheel/Src/sw_shifter.d ./Wheel/Src/sw_shifter.o ./Wheel/Src/sw_shifter.su ./Wheel/Src/util.cyclo ./Wheel/Src/util.d ./Wheel/Src/util.o ./Wheel/Src/util.su
 
 .PHONY: clean-Wheel-2f-Src
 

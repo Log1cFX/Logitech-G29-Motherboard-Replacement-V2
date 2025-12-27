@@ -8,6 +8,10 @@
 #ifndef INC_STEERINGWHEEL_H_
 #define INC_STEERINGWHEEL_H_
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include "common_types.h"
 #include "hw_digital_input.h"
 #include "sw_buttons.h"
@@ -15,7 +19,7 @@
 #include "sw_sensor.h"
 #include "hw_analog_input.h"
 #include "sw_shifter.h"
-#include "app_usb_hid.h"
+#include "app_usb_hid_pid.h"
 
 #define MAX_PEDALS 3
 
@@ -38,5 +42,9 @@ typedef struct {
 
 void wheel_startup();
 Wheel_Status wheel_get_all_component_states();
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* INC_STEERINGWHEEL_H_ */

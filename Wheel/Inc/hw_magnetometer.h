@@ -8,6 +8,10 @@
 #ifndef INC_MLX90363_H_
 #define INC_MLX90363_H_
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include "common_types.h"
 
 #define GET1_OPCODE 				0x13
@@ -46,5 +50,9 @@ typedef struct _Magnetometer_HandleTypeDef {
 	SPI_HandleTypeDef *hspi;
 	TIM_HandleTypeDef *htim; // TIM handle to work with DMA for timed Transfers
 } Magnetometer_HandleTypeDef;
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* INC_MLX90363_H_ */

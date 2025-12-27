@@ -25,6 +25,10 @@
 #ifndef _FFB_
 #define _FFB_
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /* Type Defines: */
 /** Type define for the joystick HID report structure, for creating and sending HID reports to the host PC.
  *  This mirrors the layout described to the host in the HID report descriptor, in Descriptors.c.
@@ -259,6 +263,8 @@ typedef struct {
 
 	} TEffectState;
 
-
+#ifdef __cplusplus
+}
+#endif
 
 #endif 

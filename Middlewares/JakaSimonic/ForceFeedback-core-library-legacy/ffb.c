@@ -125,9 +125,10 @@ void SetRampForce(USB_FFBReport_SetRampForce_Output_Data_t* data, volatile TEffe
 
 
 // Handle incoming data from USB 
-void FfbOnUsbData(uint8_t* data, uint16_t len)
+void FfbOnUsbData(uint8_t* buf_data, uint16_t len)
 {
-
+	uint8_t data[len];
+	memcpy(data, buf_data, len);
 	uint8_t effectId = data[1]; // effectBlockIndex is always the second byte.
 
 	switch (data[0])    // reportID

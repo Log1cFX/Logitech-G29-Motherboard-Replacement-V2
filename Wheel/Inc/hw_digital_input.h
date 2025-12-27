@@ -8,6 +8,10 @@
 #ifndef INC_HW_DIGITAL_INPUT_H_
 #define INC_HW_DIGITAL_INPUT_H_
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include "common_types.h"
 
 #define BUTTONS_NUM 24U
@@ -33,5 +37,9 @@ typedef struct _DigitalInput_HandleTypeDef {
 
 	uint32_t buttons_state; // the raw state of the read buttons
 } DigitalInput_HandleTypeDef;
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* INC_HW_DIGITAL_INPUT_H_ */

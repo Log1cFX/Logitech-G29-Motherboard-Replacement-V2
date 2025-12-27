@@ -45,7 +45,7 @@ EndBSPDependencies */
 /* Includes ------------------------------------------------------------------*/
 #include "usbd_customhid.h"
 #include "usbd_ctlreq.h"
-#include "app_usb_pid.h"
+#include "app_usb_hid_pid.h"
 
 /** @addtogroup STM32_USB_DEVICE_LIBRARY
   * @{
@@ -386,7 +386,7 @@ static uint8_t  USBD_CUSTOM_HID_Init(USBD_HandleTypeDef *pdev,
     ((USBD_CUSTOM_HID_ItfTypeDef *)pdev->pUserData)->Init();
 
     /* Prepare Out endpoint to receive 1st packet */
-    USBD_LL_PrepareReceive(pdev, CUSTOM_HID_EPOUT_ADDR, hhid->Report_buf,
+    USBD_LL_PrepareReceive(pdev, CUSTOM_HID_EPOUT_ADDR, hUsbHidPid.Ep0Out_buffer,
                            USBD_CUSTOMHID_OUTREPORT_BUF_SIZE);
   }
 
@@ -440,7 +440,7 @@ static uint8_t  USBD_CUSTOM_HID_Setup(USBD_HandleTypeDef *pdev,
   switch (req->bmRequest & USB_REQ_TYPE_MASK)
   {
     case USB_REQ_TYPE_CLASS :
-    	if(USB_HID_PID_CTL_PARSER(req)==1){
+    	if(USB_HID_PID_CTL_PARSER(pdev, req)==1){
     		return USBD_OK;
     	}
       switch (req->bRequest)
@@ -463,7 +463,7 @@ static uint8_t  USBD_CUSTOM_HID_Setup(USBD_HandleTypeDef *pdev,
 
         case CUSTOM_HID_REQ_SET_REPORT:
           hhid->IsReportAvailable = 1U;
-          USBD_CtlPrepareRx(pdev, hhid->Report_buf, req->wLength);
+          USBD_CtlPrepareRx(pdev, hUsbHidPid.Ep0Out_buffer, req->wLength);
           break;
 
         default:

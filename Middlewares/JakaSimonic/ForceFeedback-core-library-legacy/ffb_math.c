@@ -51,6 +51,10 @@ int32_t ApplyEnvelope(TEffectState effect, int32_t value)
 	int32_t elapsedTime = effect.elapsedTime;
 	int32_t duration = effect.duration;
 
+	if(attackTime==0){
+		return value;
+	}
+
 	if (elapsedTime < attackTime)
 	{
 		newValue = (magnitude - attackLevel) * elapsedTime;

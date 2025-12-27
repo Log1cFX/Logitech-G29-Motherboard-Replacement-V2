@@ -8,6 +8,10 @@
 #ifndef SRC_SW_SHIFTER_H_
 #define SRC_SW_SHIFTER_H_
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include "hw_analog_input.h"
 
 typedef struct {
@@ -36,5 +40,9 @@ typedef struct _Shifter_HandleTypeDef {
 	GPIO_TypeDef *modifier_port;
 	Analog_HandleTypeDef *hw_analog;
 } Shifter_HandleTypeDef;
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* SRC_SW_SHIFTER_H_ */

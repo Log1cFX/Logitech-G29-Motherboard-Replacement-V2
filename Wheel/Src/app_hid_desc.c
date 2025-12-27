@@ -15,7 +15,7 @@ __ALIGN_BEGIN uint8_t HID_report_desc[USBD_CUSTOM_HID_REPORT_DESC_SIZE] __ALIGN_
 0x09, 0x04, // USAGE (Joystick)
 0xA1, 0x01, // COLLECTION (Application)
 	0xA1, 0x00, // COLLECTION (Physical)
-		0x85, HID_JOYSTICK_REPORT_ID,	// REPORT_ID (01)
+		0x85, HID_JOYSTICK_REPORT_ID,	// REPORT_ID (0x0F)
 		// D-pad axis (4 bits)
 		0x09, 0x39,	// Usage (Hat Switch)
 		0x15, 0x00,	// Logical Minimum (0)
