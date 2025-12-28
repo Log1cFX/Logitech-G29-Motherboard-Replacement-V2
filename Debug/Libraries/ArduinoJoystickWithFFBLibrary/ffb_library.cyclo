@@ -2,13 +2,14 @@
 ../Libraries/ArduinoJoystickWithFFBLibrary/FfbEngine.h:86:9:int8_t FfbEngine::setGains(Gains*)	2
 ../Libraries/ArduinoJoystickWithFFBLibrary/FfbEngine.h:95:9:int8_t FfbEngine::setEffectParams(EffectParams*)	2
 ../Libraries/ArduinoJoystickWithFFBLibrary/ffb_library.cpp:17:14:Wheel_Status ffb_init()	1
-../Libraries/ArduinoJoystickWithFFBLibrary/ffb_library.cpp:24:10:uint8_t* FfbOnPIDBlockLoad()	1
-../Libraries/ArduinoJoystickWithFFBLibrary/ffb_library.cpp:27:10:uint8_t* FfbOnPIDPool()	1
-../Libraries/ArduinoJoystickWithFFBLibrary/ffb_library.cpp:30:10:uint8_t* FfbOnPIDStatus()	1
-../Libraries/ArduinoJoystickWithFFBLibrary/ffb_library.cpp:33:6:void FfbOnUsbData(uint8_t*, uint8_t)	1
-../Libraries/ArduinoJoystickWithFFBLibrary/ffb_library.cpp:36:6:void FfbOnCreateNewEffect(USB_FFBReport_CreateNewEffect_Feature_Data_t*)	1
-../Libraries/ArduinoJoystickWithFFBLibrary/ffb_library.cpp:40:6:void ffb_getForces(int32_t*)	1
-../Libraries/ArduinoJoystickWithFFBLibrary/ffb_library.cpp:42:1:void __static_initialization_and_destruction_0()	1
-../Libraries/ArduinoJoystickWithFFBLibrary/ffb_library.cpp:42:1:void __static_initialization_and_destruction_1()	1
-../Libraries/ArduinoJoystickWithFFBLibrary/ffb_library.cpp:42:1:cpp)	1
-../Libraries/ArduinoJoystickWithFFBLibrary/ffb_library.cpp:42:1:cpp)	1
+../Libraries/ArduinoJoystickWithFFBLibrary/ffb_library.cpp:26:6:void ffb_updateAxis(int32_t)	1
+../Libraries/ArduinoJoystickWithFFBLibrary/ffb_library.cpp:31:10:uint8_t* FfbOnPIDBlockLoad()	1
+../Libraries/ArduinoJoystickWithFFBLibrary/ffb_library.cpp:34:10:uint8_t* FfbOnPIDPool()	1
+../Libraries/ArduinoJoystickWithFFBLibrary/ffb_library.cpp:37:10:uint8_t* FfbOnPIDStatus()	1
+../Libraries/ArduinoJoystickWithFFBLibrary/ffb_library.cpp:40:6:void FfbOnUsbData(uint8_t*, uint8_t)	1
+../Libraries/ArduinoJoystickWithFFBLibrary/ffb_library.cpp:43:6:void FfbOnCreateNewEffect(USB_FFBReport_CreateNewEffect_Feature_Data_t*)	1
+../Libraries/ArduinoJoystickWithFFBLibrary/ffb_library.cpp:47:6:void ffb_getForces(int32_t*)	1
+../Libraries/ArduinoJoystickWithFFBLibrary/ffb_library.cpp:49:1:void __static_initialization_and_destruction_0()	1
+../Libraries/ArduinoJoystickWithFFBLibrary/ffb_library.cpp:49:1:void __static_initialization_and_destruction_1()	1
+../Libraries/ArduinoJoystickWithFFBLibrary/ffb_library.cpp:49:1:cpp)	1
+../Libraries/ArduinoJoystickWithFFBLibrary/ffb_library.cpp:49:1:cpp)	1

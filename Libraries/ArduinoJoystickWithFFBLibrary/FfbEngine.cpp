@@ -67,12 +67,12 @@ int32_t FfbEngine::getEffectForce(volatile TEffectState &effect, Gains _gains,
 			condition = 0; // only one Condition Parameter Block is defined
 		}
 	} else {
-		direction = axis == 0 ? effect.directionX : effect.directionY;
+		direction = (axis == 0) ? effect.directionX : effect.directionY;
 		condition = axis;
 	}
 
 	float angle = (direction * 360.0 / 255.0) * DEG_TO_RAD;
-	float angle_ratio = axis == 0 ? sinf(angle) : -1 * cosf(angle);
+	float angle_ratio = (axis == 0 )? sinf(angle) : -1 * cosf(angle);
 	int32_t force = 0;
 	switch (effect.effectType) {
 	case USB_EFFECT_CONSTANT: //1
@@ -361,13 +361,17 @@ inline int32_t FfbEngine::ApplyEnvelope(volatile TEffectState &effect,
 		newValue = (magnitude - attackLevel) * elapsedTime / attackTime;
 		newValue += attackLevel;
 	}
+
 	if (elapsedTime > (duration - fadeTime)) {
 		newValue = (magnitude - fadeLevel) * (duration - elapsedTime);
-		newValue /= fadeTime;
+		if (fadeTime != 0) {
+			newValue /= fadeTime;
+		}
 		newValue += fadeLevel;
 	}
-	newValue = newValue * value / magnitude;
+	if (magnitude != 0) {
+		newValue = newValue * value / magnitude;
+	}
 	return newValue;
 }
-
 

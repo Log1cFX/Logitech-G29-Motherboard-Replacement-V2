@@ -25,8 +25,8 @@ typedef struct _Sensor_HandleTypeDef {
 	Wheel_Status (*Update)(struct _Sensor_HandleTypeDef *sensor);
 	Wheel_Status (*GetAxis)(struct _Sensor_HandleTypeDef *sensor);
 
-	int16_t virtual_axis;
-	uint16_t physical_axis;
+	int16_t virtual_axis; // the actual value that's sent, using full range
+	uint16_t physical_axis; // essential for calculation logic, uses full range
 	uint16_t previous_sensor_capture;
 	uint16_t current_sensor_capture;
 	int32_t steering_pos;

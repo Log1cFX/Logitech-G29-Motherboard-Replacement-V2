@@ -7,6 +7,7 @@
 
 #include "common_types.h"
 #include "steeringwheel.h"
+#include "ffb_library.h"
 
 Wheel_HandleTypeDef wheel;
 
@@ -30,8 +31,7 @@ static void init_analog();
 static void configure_software_exti();
 static void init_wheel_handle();
 
-int16_t out[2];
-int16_t in[2];
+int32_t forces[2];
 
 void wheel_startup() {
 	/* INIT */
@@ -48,6 +48,7 @@ void wheel_startup() {
 	wheel.hButtons->Start_TIM(wheel.hButtons);
 	wheel.hSensor->hw_magnetometer->Start_TIM(wheel.hSensor->hw_magnetometer);
 
+	ffb_init();
 	app_usb_start();
 
 	/* temporary code for live calibration and force feedback testing */
@@ -64,9 +65,9 @@ void wheel_startup() {
 		}
 		wheel.hSensor->axis_scale = (float) (0xFFFF / 2)
 				/ (wheel.hSensor->distance / 2);
-		HAL_Delay(100);
-		in[0] = wheel.hSensor->virtual_axis;
-//		FfbGetFeedbackValue(in, out);
+		HAL_Delay(10);
+		ffb_updateAxis(wheel.hSensor->virtual_axis);
+		ffb_getForces(forces);
 	}
 }
 

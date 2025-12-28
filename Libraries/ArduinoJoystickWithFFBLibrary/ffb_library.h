@@ -16,6 +16,7 @@ extern "C" {
 #include "PIDReportType.h"
 
 Wheel_Status ffb_init();
+void ffb_updateAxis(int32_t updated_value);
 uint8_t* FfbOnPIDBlockLoad();
 uint8_t* FfbOnPIDPool();
 uint8_t* FfbOnPIDStatus();

@@ -16,9 +16,16 @@ static EffectParams effectparams[2];
 
 Wheel_Status ffb_init() {
 	int8_t ret = 0;
+	effectparams[0].springMaxPosition = 0x7FFF;
+	effectparams[1].springMaxPosition = 0x7FFF;
 	ret = ffbEngine.setEffectParams(effectparams);
 	ret = ffbEngine.setGains(gains);
 	return (ret==0)? WHEEL_OK : WHEEL_ERROR;
+}
+
+void ffb_updateAxis(int32_t updated_value){
+	effectparams[0].springPosition = updated_value;
+	effectparams[1].springPosition = updated_value;
 }
 
 uint8_t* FfbOnPIDBlockLoad() {

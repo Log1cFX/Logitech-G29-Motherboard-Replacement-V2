@@ -1,6 +1,6 @@
 Middlewares/ST/STM32_USB_Device_Library/Class/CustomHID/Src/usbd_customhid.o: \
  ../Middlewares/ST/STM32_USB_Device_Library/Class/CustomHID/Src/usbd_customhid.c \
- ../Wheel/Inc/app_usb_device.h ../Wheel/Inc/steeringwheel.h \
+ ../Wheel/Inc/app_usb_hid.h ../Wheel/Inc/steeringwheel.h \
  ../Wheel/Inc/common_types.h ../Core/Inc/main.h \
  ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal.h \
  ../Core/Inc/stm32f1xx_hal_conf.h \
@@ -35,8 +35,7 @@ Middlewares/ST/STM32_USB_Device_Library/Class/CustomHID/Src/usbd_customhid.o: \
  ../Wheel/Inc/util.h ../Wheel/Inc/hw_digital_input.h \
  ../Wheel/Inc/sw_buttons.h ../Wheel/Inc/hw_magnetometer.h \
  ../Wheel/Inc/sw_sensor.h ../Wheel/Inc/hw_analog_input.h \
- ../Wheel/Inc/sw_shifter.h ../Wheel/Inc/app_usb_device.h \
- ../USB_DEVICE/App/usb_device.h \
+ ../Wheel/Inc/sw_shifter.h ../USB_DEVICE/App/usb_device.h \
  ../Middlewares/ST/STM32_USB_Device_Library/Core/Inc/usbd_def.h \
  ../USB_DEVICE/Target/usbd_conf.h \
  ../Middlewares/ST/STM32_USB_Device_Library/Class/CustomHID/Inc/usbd_customhid.h \
@@ -46,7 +45,7 @@ Middlewares/ST/STM32_USB_Device_Library/Class/CustomHID/Src/usbd_customhid.o: \
  ../Middlewares/ST/STM32_USB_Device_Library/Core/Inc/usbd_ioreq.h \
  ../Middlewares/ST/STM32_USB_Device_Library/Core/Inc/usbd_ctlreq.h \
  ../Middlewares/ST/STM32_USB_Device_Library/Core/Inc/usbd_ctlreq.h
-../Wheel/Inc/app_usb_device.h:
+../Wheel/Inc/app_usb_hid.h:
 ../Wheel/Inc/steeringwheel.h:
 ../Wheel/Inc/common_types.h:
 ../Core/Inc/main.h:
@@ -87,7 +86,6 @@ Middlewares/ST/STM32_USB_Device_Library/Class/CustomHID/Src/usbd_customhid.o: \
 ../Wheel/Inc/sw_sensor.h:
 ../Wheel/Inc/hw_analog_input.h:
 ../Wheel/Inc/sw_shifter.h:
-../Wheel/Inc/app_usb_device.h:
 ../USB_DEVICE/App/usb_device.h:
 ../Middlewares/ST/STM32_USB_Device_Library/Core/Inc/usbd_def.h:
 ../USB_DEVICE/Target/usbd_conf.h:

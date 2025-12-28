@@ -14,4 +14,4 @@ C:\Program Files\STMicroelectronics\STM32CubeIDE_1.16.0\STM32CubeIDE\plugins\com
 ../Libraries/ArduinoJoystickWithFFBLibrary/FfbEngine.cpp:293:9:int32_t FfbEngine::ConditionForceCalculator(volatile TEffectState&, float, uint8_t)	9
 ../Libraries/ArduinoJoystickWithFFBLibrary/FfbEngine.cpp:340:14:float FfbEngine::NormalizeRange(int32_t, int32_t)	1
 ../Libraries/ArduinoJoystickWithFFBLibrary/FfbEngine.cpp:344:16:int32_t FfbEngine::ApplyGain(int16_t, uint8_t)	1
-../Libraries/ArduinoJoystickWithFFBLibrary/FfbEngine.cpp:349:16:int32_t FfbEngine::ApplyEnvelope(volatile TEffectState&, int32_t)	3
+../Libraries/ArduinoJoystickWithFFBLibrary/FfbEngine.cpp:349:16:int32_t FfbEngine::ApplyEnvelope(volatile TEffectState&, int32_t)	5
