@@ -8,13 +8,13 @@ C_SRCS += \
 ../Middlewares/JakaSimonic/ForceFeedback-core-library-legacy/ffb.c \
 ../Middlewares/JakaSimonic/ForceFeedback-core-library-legacy/ffb_math.c 
 
-OBJS += \
-./Middlewares/JakaSimonic/ForceFeedback-core-library-legacy/ffb.o \
-./Middlewares/JakaSimonic/ForceFeedback-core-library-legacy/ffb_math.o 
-
 C_DEPS += \
 ./Middlewares/JakaSimonic/ForceFeedback-core-library-legacy/ffb.d \
 ./Middlewares/JakaSimonic/ForceFeedback-core-library-legacy/ffb_math.d 
+
+OBJS += \
+./Middlewares/JakaSimonic/ForceFeedback-core-library-legacy/ffb.o \
+./Middlewares/JakaSimonic/ForceFeedback-core-library-legacy/ffb_math.o 
 
 
 # Each subdirectory must supply rules for building sources it contributes

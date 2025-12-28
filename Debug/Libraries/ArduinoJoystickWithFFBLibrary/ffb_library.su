@@ -1,0 +1,14 @@
+../Libraries/ArduinoJoystickWithFFBLibrary/FfbEngine.h:63:2:FfbEngine::FfbEngine(PIDReportHandler*)	16	static
+../Libraries/ArduinoJoystickWithFFBLibrary/FfbEngine.h:86:9:int8_t FfbEngine::setGains(Gains*)	16	static
+../Libraries/ArduinoJoystickWithFFBLibrary/FfbEngine.h:95:9:int8_t FfbEngine::setEffectParams(EffectParams*)	16	static
+../Libraries/ArduinoJoystickWithFFBLibrary/ffb_library.cpp:17:14:Wheel_Status ffb_init()	16	static
+../Libraries/ArduinoJoystickWithFFBLibrary/ffb_library.cpp:24:10:uint8_t* FfbOnPIDBlockLoad()	8	static
+../Libraries/ArduinoJoystickWithFFBLibrary/ffb_library.cpp:27:10:uint8_t* FfbOnPIDPool()	8	static
+../Libraries/ArduinoJoystickWithFFBLibrary/ffb_library.cpp:30:10:uint8_t* FfbOnPIDStatus()	8	static
+../Libraries/ArduinoJoystickWithFFBLibrary/ffb_library.cpp:33:6:void FfbOnUsbData(uint8_t*, uint8_t)	16	static
+../Libraries/ArduinoJoystickWithFFBLibrary/ffb_library.cpp:36:6:void FfbOnCreateNewEffect(USB_FFBReport_CreateNewEffect_Feature_Data_t*)	16	static
+../Libraries/ArduinoJoystickWithFFBLibrary/ffb_library.cpp:40:6:void ffb_getForces(int32_t*)	16	static
+../Libraries/ArduinoJoystickWithFFBLibrary/ffb_library.cpp:42:1:void __static_initialization_and_destruction_0()	8	static
+../Libraries/ArduinoJoystickWithFFBLibrary/ffb_library.cpp:42:1:void __static_initialization_and_destruction_1()	8	static
+../Libraries/ArduinoJoystickWithFFBLibrary/ffb_library.cpp:42:1:cpp)	8	static
+../Libraries/ArduinoJoystickWithFFBLibrary/ffb_library.cpp:42:1:cpp)	8	static

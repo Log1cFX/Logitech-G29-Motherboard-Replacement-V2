@@ -1,7 +1,9 @@
-Middlewares/JakaSimonic/ForceFeedback-core-library-legacy/ffb.o: \
- ../Middlewares/JakaSimonic/ForceFeedback-core-library-legacy/ffb.c \
- ../Middlewares/JakaSimonic/ForceFeedback-core-library-legacy/ffb.h \
- ../Core/Inc/main.h ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal.h \
+Libraries/ArduinoJoystickWithFFBLibrary/PIDReportHandler.o: \
+ ../Libraries/ArduinoJoystickWithFFBLibrary/PIDReportHandler.cpp \
+ ../Libraries/ArduinoJoystickWithFFBLibrary/PIDReportHandler.h \
+ ../Libraries/ArduinoJoystickWithFFBLibrary/PIDReportType.h \
+ ../Wheel/Inc/common_types.h ../Core/Inc/main.h \
+ ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal.h \
  ../Core/Inc/stm32f1xx_hal_conf.h \
  ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_rcc.h \
  ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_def.h \
@@ -31,9 +33,10 @@ Middlewares/JakaSimonic/ForceFeedback-core-library-legacy/ffb.o: \
  ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_pcd.h \
  ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_ll_usb.h \
  ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_pcd_ex.h \
- ../Middlewares/JakaSimonic/ForceFeedback-core-library-legacy/ffb_math.h \
- ../Middlewares/JakaSimonic/ForceFeedback-core-library-legacy/ffb.h
-../Middlewares/JakaSimonic/ForceFeedback-core-library-legacy/ffb.h:
+ ../Wheel/Inc/util.h
+../Libraries/ArduinoJoystickWithFFBLibrary/PIDReportHandler.h:
+../Libraries/ArduinoJoystickWithFFBLibrary/PIDReportType.h:
+../Wheel/Inc/common_types.h:
 ../Core/Inc/main.h:
 ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal.h:
 ../Core/Inc/stm32f1xx_hal_conf.h:
@@ -65,5 +68,4 @@ Middlewares/JakaSimonic/ForceFeedback-core-library-legacy/ffb.o: \
 ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_pcd.h:
 ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_ll_usb.h:
 ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_pcd_ex.h:
-../Middlewares/JakaSimonic/ForceFeedback-core-library-legacy/ffb_math.h:
-../Middlewares/JakaSimonic/ForceFeedback-core-library-legacy/ffb.h:
+../Wheel/Inc/util.h:

@@ -43,9 +43,9 @@
 EndBSPDependencies */
 
 /* Includes ------------------------------------------------------------------*/
+#include "app_usb_hid.h"
 #include "usbd_customhid.h"
 #include "usbd_ctlreq.h"
-#include "app_usb_hid_pid.h"
 
 /** @addtogroup STM32_USB_DEVICE_LIBRARY
   * @{

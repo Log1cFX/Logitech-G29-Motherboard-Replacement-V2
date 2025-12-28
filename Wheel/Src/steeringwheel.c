@@ -7,7 +7,6 @@
 
 #include "common_types.h"
 #include "steeringwheel.h"
-#include "ffb.h"
 
 Wheel_HandleTypeDef wheel;
 
@@ -55,6 +54,7 @@ void wheel_startup() {
 	wheel.hSensor->min = 1;
 	wheel.hSensor->max = 1;
 
+
 	while (1) {
 		if (wheel.hSensor->steering_pos < wheel.hSensor->min) {
 			wheel.hSensor->min = wheel.hSensor->steering_pos;
@@ -64,10 +64,9 @@ void wheel_startup() {
 		}
 		wheel.hSensor->axis_scale = (float) (0xFFFF / 2)
 				/ (wheel.hSensor->distance / 2);
-		HAL_Delay(1);
+		HAL_Delay(100);
 		in[0] = wheel.hSensor->virtual_axis;
-		in[1] = wheel.hSensor->virtual_axis;
-		FfbGetFeedbackValue(in, out);
+//		FfbGetFeedbackValue(in, out);
 	}
 }
 

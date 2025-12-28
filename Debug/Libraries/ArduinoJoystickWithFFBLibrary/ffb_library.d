@@ -1,5 +1,6 @@
-Wheel/Src/app_usb_hid_pid.o: ../Wheel/Src/app_usb_hid_pid.c \
- ../Wheel/Inc/app_usb_hid_pid.h ../Wheel/Inc/steeringwheel.h \
+Libraries/ArduinoJoystickWithFFBLibrary/ffb_library.o: \
+ ../Libraries/ArduinoJoystickWithFFBLibrary/ffb_library.cpp \
+ ../Libraries/ArduinoJoystickWithFFBLibrary/FfbEngine.h \
  ../Wheel/Inc/common_types.h ../Core/Inc/main.h \
  ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal.h \
  ../Core/Inc/stm32f1xx_hal_conf.h \
@@ -31,23 +32,11 @@ Wheel/Src/app_usb_hid_pid.o: ../Wheel/Src/app_usb_hid_pid.c \
  ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_pcd.h \
  ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_ll_usb.h \
  ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_pcd_ex.h \
- ../Wheel/Inc/util.h ../Wheel/Inc/hw_digital_input.h \
- ../Wheel/Inc/sw_buttons.h ../Wheel/Inc/hw_magnetometer.h \
- ../Wheel/Inc/sw_sensor.h ../Wheel/Inc/hw_analog_input.h \
- ../Wheel/Inc/sw_shifter.h ../Wheel/Inc/app_usb_hid_pid.h \
- ../USB_DEVICE/App/usb_device.h \
- ../Middlewares/ST/STM32_USB_Device_Library/Core/Inc/usbd_def.h \
- ../USB_DEVICE/Target/usbd_conf.h \
- ../Middlewares/ST/STM32_USB_Device_Library/Class/CustomHID/Inc/usbd_customhid.h \
- ../Middlewares/ST/STM32_USB_Device_Library/Core/Inc/usbd_ioreq.h \
- ../Middlewares/ST/STM32_USB_Device_Library/Core/Inc/usbd_def.h \
- ../Middlewares/ST/STM32_USB_Device_Library/Core/Inc/usbd_core.h \
- ../Middlewares/ST/STM32_USB_Device_Library/Core/Inc/usbd_ioreq.h \
- ../Middlewares/ST/STM32_USB_Device_Library/Core/Inc/usbd_ctlreq.h \
- ../Wheel/Inc/app_hid_desc.h \
- ../Middlewares/JakaSimonic/ForceFeedback-core-library-legacy/ffb.h
-../Wheel/Inc/app_usb_hid_pid.h:
-../Wheel/Inc/steeringwheel.h:
+ ../Wheel/Inc/util.h \
+ ../Libraries/ArduinoJoystickWithFFBLibrary/PIDReportType.h \
+ ../Libraries/ArduinoJoystickWithFFBLibrary/PIDReportHandler.h \
+ ../Libraries/ArduinoJoystickWithFFBLibrary/ffb_library.h
+../Libraries/ArduinoJoystickWithFFBLibrary/FfbEngine.h:
 ../Wheel/Inc/common_types.h:
 ../Core/Inc/main.h:
 ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal.h:
@@ -81,21 +70,6 @@ Wheel/Src/app_usb_hid_pid.o: ../Wheel/Src/app_usb_hid_pid.c \
 ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_ll_usb.h:
 ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_pcd_ex.h:
 ../Wheel/Inc/util.h:
-../Wheel/Inc/hw_digital_input.h:
-../Wheel/Inc/sw_buttons.h:
-../Wheel/Inc/hw_magnetometer.h:
-../Wheel/Inc/sw_sensor.h:
-../Wheel/Inc/hw_analog_input.h:
-../Wheel/Inc/sw_shifter.h:
-../Wheel/Inc/app_usb_hid_pid.h:
-../USB_DEVICE/App/usb_device.h:
-../Middlewares/ST/STM32_USB_Device_Library/Core/Inc/usbd_def.h:
-../USB_DEVICE/Target/usbd_conf.h:
-../Middlewares/ST/STM32_USB_Device_Library/Class/CustomHID/Inc/usbd_customhid.h:
-../Middlewares/ST/STM32_USB_Device_Library/Core/Inc/usbd_ioreq.h:
-../Middlewares/ST/STM32_USB_Device_Library/Core/Inc/usbd_def.h:
-../Middlewares/ST/STM32_USB_Device_Library/Core/Inc/usbd_core.h:
-../Middlewares/ST/STM32_USB_Device_Library/Core/Inc/usbd_ioreq.h:
-../Middlewares/ST/STM32_USB_Device_Library/Core/Inc/usbd_ctlreq.h:
-../Wheel/Inc/app_hid_desc.h:
-../Middlewares/JakaSimonic/ForceFeedback-core-library-legacy/ffb.h:
+../Libraries/ArduinoJoystickWithFFBLibrary/PIDReportType.h:
+../Libraries/ArduinoJoystickWithFFBLibrary/PIDReportHandler.h:
+../Libraries/ArduinoJoystickWithFFBLibrary/ffb_library.h:

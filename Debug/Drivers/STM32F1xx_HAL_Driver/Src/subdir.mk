@@ -25,27 +25,6 @@ C_SRCS += \
 ../Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_tim_ex.c \
 ../Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_ll_usb.c 
 
-OBJS += \
-./Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal.o \
-./Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_adc.o \
-./Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_adc_ex.o \
-./Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_cortex.o \
-./Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dma.o \
-./Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_exti.o \
-./Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_flash.o \
-./Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_flash_ex.o \
-./Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_gpio.o \
-./Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_gpio_ex.o \
-./Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_pcd.o \
-./Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_pcd_ex.o \
-./Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_pwr.o \
-./Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_rcc.o \
-./Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_rcc_ex.o \
-./Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_spi.o \
-./Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_tim.o \
-./Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_tim_ex.o \
-./Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_ll_usb.o 
-
 C_DEPS += \
 ./Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal.d \
 ./Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_adc.d \
@@ -67,10 +46,31 @@ C_DEPS += \
 ./Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_tim_ex.d \
 ./Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_ll_usb.d 
 
+OBJS += \
+./Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal.o \
+./Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_adc.o \
+./Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_adc_ex.o \
+./Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_cortex.o \
+./Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dma.o \
+./Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_exti.o \
+./Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_flash.o \
+./Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_flash_ex.o \
+./Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_gpio.o \
+./Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_gpio_ex.o \
+./Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_pcd.o \
+./Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_pcd_ex.o \
+./Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_pwr.o \
+./Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_rcc.o \
+./Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_rcc_ex.o \
+./Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_spi.o \
+./Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_tim.o \
+./Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_tim_ex.o \
+./Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_ll_usb.o 
+
 
 # Each subdirectory must supply rules for building sources it contributes
 Drivers/STM32F1xx_HAL_Driver/Src/%.o Drivers/STM32F1xx_HAL_Driver/Src/%.su Drivers/STM32F1xx_HAL_Driver/Src/%.cyclo: ../Drivers/STM32F1xx_HAL_Driver/Src/%.c Drivers/STM32F1xx_HAL_Driver/Src/subdir.mk
-	arm-none-eabi-gcc "$<" -mcpu=cortex-m3 -std=gnu11 -g3 -DDEBUG -DUSE_HAL_DRIVER -DSTM32F103xB -c -I../Core/Inc -I../Drivers/STM32F1xx_HAL_Driver/Inc/Legacy -I../Drivers/STM32F1xx_HAL_Driver/Inc -I../Drivers/CMSIS/Device/ST/STM32F1xx/Include -I../Drivers/CMSIS/Include -I../USB_DEVICE/App -I../USB_DEVICE/Target -I../Middlewares/ST/STM32_USB_Device_Library/Core/Inc -I../Middlewares/ST/STM32_USB_Device_Library/Class/CustomHID/Inc -I../Wheel/Inc -I../Middlewares/JakaSimonic/ForceFeedback-core-library-legacy -Og -ffunction-sections -fdata-sections -mslow-flash-data -Wall -fstack-usage -fcyclomatic-complexity -MMD -MP -MF"$(@:%.o=%.d)" -MT"$@" --specs=nano.specs -mfloat-abi=soft -mthumb -o "$@"
+	arm-none-eabi-gcc "$<" -mcpu=cortex-m3 -std=gnu11 -g3 -DDEBUG -DUSE_HAL_DRIVER -DSTM32F103xB -c -I../Core/Inc -I../Drivers/STM32F1xx_HAL_Driver/Inc/Legacy -I../Drivers/STM32F1xx_HAL_Driver/Inc -I../Drivers/CMSIS/Device/ST/STM32F1xx/Include -I../Drivers/CMSIS/Include -I../USB_DEVICE/App -I../USB_DEVICE/Target -I../Middlewares/ST/STM32_USB_Device_Library/Core/Inc -I../Middlewares/ST/STM32_USB_Device_Library/Class/CustomHID/Inc -I../Wheel/Inc -I../Libraries/ArduinoJoystickWithFFBLibrary -Og -ffunction-sections -fdata-sections -mslow-flash-data -Wall -fstack-usage -fcyclomatic-complexity -MMD -MP -MF"$(@:%.o=%.d)" -MT"$@" --specs=nano.specs -mfloat-abi=soft -mthumb -o "$@"
 
 clean: clean-Drivers-2f-STM32F1xx_HAL_Driver-2f-Src
 

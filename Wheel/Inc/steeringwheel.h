@@ -19,7 +19,7 @@ extern "C" {
 #include "sw_sensor.h"
 #include "hw_analog_input.h"
 #include "sw_shifter.h"
-#include "app_usb_hid_pid.h"
+#include <app_usb_hid.h>
 
 #define MAX_PEDALS 3
 

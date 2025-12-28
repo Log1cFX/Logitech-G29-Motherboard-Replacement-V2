@@ -5,10 +5,9 @@
  *      Author: raffi
  */
 
-#include "app_usb_hid_pid.h"
+#include "app_usb_hid.h"
 #include "app_hid_desc.h"
-#include "ffb.h"
-#include "ffb.h"
+#include "ffb_library.h"
 
 extern USBD_HandleTypeDef hUsbDeviceFS;
 extern Wheel_HandleTypeDef wheel;
