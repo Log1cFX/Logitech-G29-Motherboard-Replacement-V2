@@ -1,12 +1,12 @@
 /*
- * MLX90363.h
+ * hw_magnetometer.h
  *
  *  Created on: Sep 22, 2024
  *      Author: raffi
  */
 
-#ifndef INC_MLX90363_H_
-#define INC_MLX90363_H_
+#ifndef INC_HW_MAGNETOMETER_H_
+#define INC_HW_MAGNETOMETER_H_
 
 #ifdef __cplusplus
 extern "C" {
@@ -55,4 +55,4 @@ typedef struct _Magnetometer_HandleTypeDef {
 }
 #endif
 
-#endif /* INC_MLX90363_H_ */
+#endif /* INC_HW_MAGNETOMETER_H_ */

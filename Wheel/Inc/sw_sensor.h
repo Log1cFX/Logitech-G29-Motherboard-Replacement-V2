@@ -1,12 +1,12 @@
 /*
- * sw_magnetometer.h
+ * sw_sensor.h
  *
  *  Created on: Aug 4, 2025
  *      Author: raffi
  */
 
-#ifndef SRC_SW_MAGNETOMETER_H_
-#define SRC_SW_MAGNETOMETER_H_
+#ifndef INC_SW_SENSOR_H_
+#define INC_SW_SENSOR_H_
 
 #ifdef __cplusplus
 extern "C" {
@@ -44,4 +44,4 @@ typedef struct _Sensor_HandleTypeDef {
 }
 #endif
 
-#endif /* SRC_SW_MAGNETOMETER_H_ */
+#endif /* INC_SW_SENSOR_H_ */

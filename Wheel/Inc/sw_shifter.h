@@ -5,8 +5,8 @@
  *      Author: raffi
  */
 
-#ifndef SRC_SW_SHIFTER_H_
-#define SRC_SW_SHIFTER_H_
+#ifndef INC_SW_SHIFTER_H_
+#define INC_SW_SHIFTER_H_
 
 #ifdef __cplusplus
 extern "C" {
@@ -45,4 +45,4 @@ typedef struct _Shifter_HandleTypeDef {
 }
 #endif
 
-#endif /* SRC_SW_SHIFTER_H_ */
+#endif /* INC_SW_SHIFTER_H_ */

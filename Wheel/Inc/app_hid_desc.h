@@ -1,5 +1,5 @@
 /*
- * hid_desc.h
+ * app_hid_desc.h
  *
  *  Created on: Sep 1, 2025
  *      Author: raffi

@@ -1,5 +1,6 @@
-Wheel/Src/hw_mlx90363.o: ../Wheel/Src/hw_mlx90363.c \
- ../Wheel/Inc/hw_mlx90363.h ../Wheel/Inc/wheel_types.h ../Core/Inc/main.h \
+Wheel/Src/sw_actuator.o: ../Wheel/Src/sw_actuator.c \
+ ../Wheel/Inc/sw_actuator.h ../Wheel/Inc/hw_motor_driver.h \
+ ../Wheel/Inc/common_types.h ../Core/Inc/main.h \
  ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal.h \
  ../Core/Inc/stm32f1xx_hal_conf.h \
  ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_rcc.h \
@@ -29,9 +30,11 @@ Wheel/Src/hw_mlx90363.o: ../Wheel/Src/hw_mlx90363.c \
  ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_tim_ex.h \
  ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_pcd.h \
  ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_ll_usb.h \
- ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_pcd_ex.h
-../Wheel/Inc/hw_mlx90363.h:
-../Wheel/Inc/wheel_types.h:
+ ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_pcd_ex.h \
+ ../Wheel/Inc/util.h
+../Wheel/Inc/sw_actuator.h:
+../Wheel/Inc/hw_motor_driver.h:
+../Wheel/Inc/common_types.h:
 ../Core/Inc/main.h:
 ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal.h:
 ../Core/Inc/stm32f1xx_hal_conf.h:
@@ -63,3 +66,4 @@ Wheel/Src/hw_mlx90363.o: ../Wheel/Src/hw_mlx90363.c \
 ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_pcd.h:
 ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_ll_usb.h:
 ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_pcd_ex.h:
+../Wheel/Inc/util.h:

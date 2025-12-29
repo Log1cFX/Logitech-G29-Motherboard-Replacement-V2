@@ -1,4 +1,0 @@
-../Wheel/Src/axis.c:12:13:calculateMagnetRotation	0	static
-../Wheel/Src/axis.c:32:13:getWheelPos	16	static
-../Wheel/Src/axis.c:37:6:axis_CalculateWheelPos	8	static
-../Wheel/Src/axis.c:41:6:axis_CalculateWheelAxis	8	static

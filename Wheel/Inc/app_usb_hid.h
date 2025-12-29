@@ -5,8 +5,8 @@
  *      Author: raffi
  */
 
-#ifndef SRC_APP_USB_HID_H_
-#define SRC_APP_USB_HID_H_
+#ifndef INC_APP_USB_HID_H_
+#define INC_APP_USB_HID_H_
 
 #ifdef __cplusplus
 extern "C" {
@@ -64,4 +64,4 @@ extern USB_HID_HandleTypeDef hUsbHidPid;
 }
 #endif
 
-#endif /* SRC_APP_USB_HID_H_ */
+#endif /* INC_APP_USB_HID_H_ */

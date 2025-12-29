@@ -34,7 +34,9 @@ Wheel/Src/app_usb_hid.o: ../Wheel/Src/app_usb_hid.c \
  ../Wheel/Inc/util.h ../Wheel/Inc/hw_digital_input.h \
  ../Wheel/Inc/sw_buttons.h ../Wheel/Inc/hw_magnetometer.h \
  ../Wheel/Inc/sw_sensor.h ../Wheel/Inc/hw_analog_input.h \
- ../Wheel/Inc/sw_shifter.h ../USB_DEVICE/App/usb_device.h \
+ ../Wheel/Inc/sw_shifter.h ../Wheel/Inc/hw_motor_driver.h \
+ ../Wheel/Inc/sw_actuator.h ../Wheel/Inc/app_usb_hid.h \
+ ../USB_DEVICE/App/usb_device.h \
  ../Middlewares/ST/STM32_USB_Device_Library/Core/Inc/usbd_def.h \
  ../USB_DEVICE/Target/usbd_conf.h \
  ../Middlewares/ST/STM32_USB_Device_Library/Class/CustomHID/Inc/usbd_customhid.h \
@@ -88,6 +90,9 @@ Wheel/Src/app_usb_hid.o: ../Wheel/Src/app_usb_hid.c \
 ../Wheel/Inc/sw_sensor.h:
 ../Wheel/Inc/hw_analog_input.h:
 ../Wheel/Inc/sw_shifter.h:
+../Wheel/Inc/hw_motor_driver.h:
+../Wheel/Inc/sw_actuator.h:
+../Wheel/Inc/app_usb_hid.h:
 ../USB_DEVICE/App/usb_device.h:
 ../Middlewares/ST/STM32_USB_Device_Library/Core/Inc/usbd_def.h:
 ../USB_DEVICE/Target/usbd_conf.h:

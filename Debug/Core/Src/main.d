@@ -36,6 +36,7 @@ Core/Src/main.o: ../Core/Src/main.c ../Core/Inc/main.h \
  ../Wheel/Inc/hw_digital_input.h ../Wheel/Inc/sw_buttons.h \
  ../Wheel/Inc/hw_magnetometer.h ../Wheel/Inc/sw_sensor.h \
  ../Wheel/Inc/hw_analog_input.h ../Wheel/Inc/sw_shifter.h \
+ ../Wheel/Inc/hw_motor_driver.h ../Wheel/Inc/sw_actuator.h \
  ../Wheel/Inc/app_usb_hid.h ../Wheel/Inc/steeringwheel.h \
  ../Middlewares/ST/STM32_USB_Device_Library/Class/CustomHID/Inc/usbd_customhid.h \
  ../Middlewares/ST/STM32_USB_Device_Library/Core/Inc/usbd_ioreq.h \
@@ -86,6 +87,8 @@ Core/Src/main.o: ../Core/Src/main.c ../Core/Inc/main.h \
 ../Wheel/Inc/sw_sensor.h:
 ../Wheel/Inc/hw_analog_input.h:
 ../Wheel/Inc/sw_shifter.h:
+../Wheel/Inc/hw_motor_driver.h:
+../Wheel/Inc/sw_actuator.h:
 ../Wheel/Inc/app_usb_hid.h:
 ../Wheel/Inc/steeringwheel.h:
 ../Middlewares/ST/STM32_USB_Device_Library/Class/CustomHID/Inc/usbd_customhid.h:

@@ -1,5 +1,6 @@
-Wheel/Src/axis.o: ../Wheel/Src/axis.c ../Wheel/Inc/axis.h \
- ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal.h \
+Wheel/Src/hw_motor_driver.o: ../Wheel/Src/hw_motor_driver.c \
+ ../Wheel/Inc/hw_motor_driver.h ../Wheel/Inc/common_types.h \
+ ../Core/Inc/main.h ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal.h \
  ../Core/Inc/stm32f1xx_hal_conf.h \
  ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_rcc.h \
  ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_def.h \
@@ -28,8 +29,11 @@ Wheel/Src/axis.o: ../Wheel/Src/axis.c ../Wheel/Inc/axis.h \
  ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_tim_ex.h \
  ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_pcd.h \
  ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_ll_usb.h \
- ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_pcd_ex.h
-../Wheel/Inc/axis.h:
+ ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_pcd_ex.h \
+ ../Wheel/Inc/util.h
+../Wheel/Inc/hw_motor_driver.h:
+../Wheel/Inc/common_types.h:
+../Core/Inc/main.h:
 ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal.h:
 ../Core/Inc/stm32f1xx_hal_conf.h:
 ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_rcc.h:
@@ -60,3 +64,4 @@ Wheel/Src/axis.o: ../Wheel/Src/axis.c ../Wheel/Inc/axis.h \
 ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_pcd.h:
 ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_ll_usb.h:
 ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_pcd_ex.h:
+../Wheel/Inc/util.h:

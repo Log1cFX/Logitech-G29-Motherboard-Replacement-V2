@@ -1,4 +1,4 @@
-/*
+ /*
  * startupWheel.c
  *
  *  Created on: Jul 7, 2025
@@ -13,6 +13,7 @@ Wheel_HandleTypeDef wheel;
 
 extern ADC_HandleTypeDef hadc1;
 extern SPI_HandleTypeDef hspi2;
+extern TIM_HandleTypeDef htim1;
 extern TIM_HandleTypeDef htim3;
 extern TIM_HandleTypeDef htim4;
 
@@ -23,11 +24,14 @@ extern Sensor_HandleTypeDef hSensor;
 extern Analog_HandleTypeDef hAnalog;
 extern Pedals_HandleTypeDef hPedals;
 extern Shifter_HandleTypeDef hShifter;
+extern MotorDriver_HandleTypeDef hMotorDriver;
+extern Actuator_HandleTypeDef hActuator;
 USB_HID_HandleTypeDef hUsbHidPid;
 
 static void init_buttons();
 static void init_sensor();
 static void init_analog();
+static void init_motor_driver();
 static void configure_software_exti();
 static void init_wheel_handle();
 
@@ -38,36 +42,44 @@ void wheel_startup() {
 	init_analog();
 	init_buttons();
 	init_sensor();
+	init_motor_driver();
 	configure_software_exti();
 	app_usb_hid_init(&hUsbHidPid);
 	init_wheel_handle();
 
+	// from here acces handles from the wheel handle
 	/* START MODULES */
-	wheel.hPedals->hw_analog->Start_CONTINIOUS_SCAN_DMA(
-			wheel.hPedals->hw_analog);
-	wheel.hButtons->Start_TIM(wheel.hButtons);
-	wheel.hSensor->hw_magnetometer->Start_TIM(wheel.hSensor->hw_magnetometer);
+	Analog_HandleTypeDef *analog = wheel.hPedals->hw_analog;
+	Buttons_HandleTypeDef *buttons = wheel.hButtons;
+	Magnetometer_HandleTypeDef *magnetometer = wheel.hSensor->hw_magnetometer;
+	analog->Start_CONTINIOUS_SCAN_DMA(analog);
+	buttons->Start_TIM(buttons);
+	magnetometer->Start_TIM(magnetometer);
 
 	ffb_init();
 	app_usb_start();
 
 	/* temporary code for live calibration and force feedback testing */
-	wheel.hSensor->min = 1;
-	wheel.hSensor->max = 1;
+	Sensor_HandleTypeDef *sensor = wheel.hSensor;
+	sensor->min = 1;
+	sensor->max = 1;
 
+	forces[0] = 0;
+	forces[1] = 0;
 
 	while (1) {
-		if (wheel.hSensor->steering_pos < wheel.hSensor->min) {
-			wheel.hSensor->min = wheel.hSensor->steering_pos;
+		if (sensor->steering_pos < sensor->min) {
+			sensor->min = sensor->steering_pos;
 		}
-		if (wheel.hSensor->steering_pos > wheel.hSensor->max) {
-			wheel.hSensor->max = wheel.hSensor->steering_pos;
+		if (sensor->steering_pos > sensor->max) {
+			sensor->max = sensor->steering_pos;
 		}
-		wheel.hSensor->axis_scale = (float) (0xFFFF / 2)
-				/ (wheel.hSensor->distance / 2);
+		sensor->axis_scale = (float) (0xFFFF / 2) / (sensor->distance / 2);
+
 		HAL_Delay(10);
-		ffb_updateAxis(wheel.hSensor->virtual_axis);
+		ffb_updateAxis(sensor->virtual_axis);
 		ffb_getForces(forces);
+		wheel.hActuator->Apply_Force(wheel.hActuator, (int16_t) forces[1]);
 	}
 }
 
@@ -110,17 +122,45 @@ static void init_sensor() {
 static void init_analog() {
 	Analog_ConfigHandleTypeDef config1 = { 0 };
 	config1.hadc = &hadc1;
-	hAnalog.INIT(&hAnalog, &config1);
+	if (hAnalog.INIT(&hAnalog, &config1) == WHEEL_ERROR) {
+		Error_Handler();
+	}
 
 	Pedals_ConfigHandleTypeDef config2 = { 0 };
 	config2.hw_analog = &hAnalog;
-	hPedals.INIT(&hPedals, &config2);
+	if (hPedals.INIT(&hPedals, &config2) == WHEEL_ERROR) {
+		Error_Handler();
+	}
 
 	Shifter_ConfigHandleTypeDef config3 = { 0 };
 	config3.hw_analog = &hAnalog;
 	config3.modifier_port = SHIFTER_MODIFIER_GPIO_Port;
 	config3.modifier_pin = SHIFTER_MODIFIER_Pin;
-	hShifter.INIT(&hShifter, &config3);
+	if (hShifter.INIT(&hShifter, &config3) == WHEEL_ERROR) {
+		Error_Handler();
+	}
+}
+
+static void init_motor_driver() {
+	MotorDriver_ConfigHandleTypeDef config1 = { 0 };
+	config1.L_EN_pin = PWM_L_EN_Pin;
+	config1.R_EN_pin = PWM_R_EN_Pin;
+	config1.L_EN_port = PWM_L_EN_GPIO_Port;
+	config1.R_EN_port = PWM_R_EN_GPIO_Port;
+	config1.pwm_timer = &htim1;
+	config1.left_channel = TIM_CHANNEL_1;
+	config1.right_channel = TIM_CHANNEL_2;
+	config1.left_compareRegister = &TIM1->CCR1;
+	config1.right_compareRegister = &TIM1->CCR2;
+	if (hMotorDriver.INIT(&hMotorDriver, &config1) == WHEEL_ERROR) {
+		Error_Handler();
+	}
+
+	Actuator_ConfigHandleTypeDef config2 = { 0 };
+	config2.hMotorDriver = &hMotorDriver;
+	if(hActuator.INIT(&hActuator, &config2)== WHEEL_ERROR){
+		Error_Handler();
+	}
 }
 
 static void configure_software_exti() {
@@ -140,6 +180,7 @@ static void init_wheel_handle() {
 	wheel.hPedals = &hPedals;
 	wheel.hShifter = &hShifter;
 	wheel.hUsbHid = &hUsbHidPid;
+	wheel.hActuator = &hActuator;
 }
 
 /* 		APPLICATION SPECIFIC FUNCTIONS 		*/

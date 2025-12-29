@@ -19,7 +19,9 @@ extern "C" {
 #include "sw_sensor.h"
 #include "hw_analog_input.h"
 #include "sw_shifter.h"
-#include <app_usb_hid.h>
+#include "hw_motor_driver.h"
+#include "sw_actuator.h"
+#include "app_usb_hid.h"
 
 #define MAX_PEDALS 3
 
@@ -36,6 +38,7 @@ typedef struct {
 	Sensor_HandleTypeDef *hSensor;
 	Pedals_HandleTypeDef *hPedals;
 	Shifter_HandleTypeDef *hShifter;
+	Actuator_HandleTypeDef *hActuator;
 	Wheel_SWIT_HandleTypeDef hSwit;
 	struct _USB_HID_HandleTypeDef *hUsbHid;
 } Wheel_HandleTypeDef;
