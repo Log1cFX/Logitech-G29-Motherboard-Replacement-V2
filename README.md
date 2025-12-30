@@ -2,6 +2,8 @@ The project is unfinished. In this current state, it is usable but not perfect, 
 
 The goal of this project is to make a replacement for the g29 motherboard (doesn't include buttons' moderboard), requiring only an stm32f103c8t3 (bluepill) and a BTS7960 motor driver (and soldering skills but I can try to make a custom PCB).
 
+here's the preview video : https://www.youtube.com/watch?v=nr4qi34aRIo
+
 What has been done:
 - Reading and calculating wheel angle
 - Buttons + debounce logic
@@ -13,6 +15,9 @@ What has been done:
 
 What needs to be done:
 - Fix the force feedback as it isn't very reliable and some effects don't work at all
+- Change the name of the device in windows
+- Make the LED work
+- use the additional pins on the shifter to find if it is connected to the wheel 
 - Make a custom PCB to make it accessible to everyone
 
 This project already has taken an enormous amount of time, probably +1000 Hours for research learning experimenting and everything that comes with it. The V2 in the name is because this is a direct try to improve propos' version of making a motherboard replacement for g29. It is also [his project](https://github.com/popos123/Logitech-G29-Motherboard-Replacement) that gave me inspiration to create my own version from litteraly scratch.
