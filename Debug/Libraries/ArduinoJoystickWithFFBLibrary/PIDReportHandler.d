@@ -2,7 +2,7 @@ Libraries/ArduinoJoystickWithFFBLibrary/PIDReportHandler.o: \
  ../Libraries/ArduinoJoystickWithFFBLibrary/PIDReportHandler.cpp \
  ../Libraries/ArduinoJoystickWithFFBLibrary/PIDReportHandler.h \
  ../Libraries/ArduinoJoystickWithFFBLibrary/PIDReportType.h \
- ../Wheel/Inc/common_types.h ../Core/Inc/main.h \
+ ../Wheel/common_templates/common_types.h ../Core/Inc/main.h \
  ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal.h \
  ../Core/Inc/stm32f1xx_hal_conf.h \
  ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_rcc.h \
@@ -33,10 +33,10 @@ Libraries/ArduinoJoystickWithFFBLibrary/PIDReportHandler.o: \
  ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_pcd.h \
  ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_ll_usb.h \
  ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_pcd_ex.h \
- ../Wheel/Inc/util.h
+ ../Wheel/util.h
 ../Libraries/ArduinoJoystickWithFFBLibrary/PIDReportHandler.h:
 ../Libraries/ArduinoJoystickWithFFBLibrary/PIDReportType.h:
-../Wheel/Inc/common_types.h:
+../Wheel/common_templates/common_types.h:
 ../Core/Inc/main.h:
 ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal.h:
 ../Core/Inc/stm32f1xx_hal_conf.h:
@@ -68,4 +68,4 @@ Libraries/ArduinoJoystickWithFFBLibrary/PIDReportHandler.o: \
 ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_pcd.h:
 ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_ll_usb.h:
 ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_pcd_ex.h:
-../Wheel/Inc/util.h:
+../Wheel/util.h:

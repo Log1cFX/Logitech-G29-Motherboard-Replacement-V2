@@ -18,8 +18,8 @@ Wheel_Status ffb_init() {
 	int8_t ret = 0;
 	effectparams[0].springMaxPosition = 0x7FFF;
 	effectparams[1].springMaxPosition = 0x7FFF;
-	ret = ffbEngine.setEffectParams(effectparams);
-	ret = ffbEngine.setGains(gains);
+	ret |= ffbEngine.setEffectParams(effectparams);
+	ret |= ffbEngine.setGains(gains);
 	return (ret==0)? WHEEL_OK : WHEEL_ERROR;
 }
 

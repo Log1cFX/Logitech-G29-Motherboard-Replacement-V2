@@ -5,6 +5,7 @@
   Copyright 2016  Jaka Simonic (telesimke [at] gmail [dot] com)
   Copyright 2019  Hoan Tran (tranvanhoan206 [at] gmail [dot] com)
   Copyright 2020  Yo Law (lymmm3 [at] gmail [dot] com)
+  Copyright 2025 Log1cFX
   MIT License.
   Permission to use, copy, modify, distribute, and sell this
   software and its documentation for any purpose is hereby granted

@@ -1,0 +1,10 @@
+../Wheel/software_modules/sw_buttons.c:28:21:Buttons_INIT	0	static
+../Wheel/software_modules/sw_buttons.c:40:21:Buttons_DeINIT	8	static
+../Wheel/software_modules/sw_buttons.c:79:13:get_debounced_state	56	static
+../Wheel/software_modules/sw_buttons.c:127:13:get_current_knob_state	0	static
+../Wheel/software_modules/sw_buttons.c:73:21:Buttons_GetState	8	static
+../Wheel/software_modules/sw_buttons.c:143:13:read_knob_button_state	24	static
+../Wheel/software_modules/sw_buttons.c:186:13:update_knob_button_state	8	static
+../Wheel/software_modules/sw_buttons.c:61:21:Buttons_Update	8	static
+../Wheel/software_modules/sw_buttons.c:55:21:Buttons_Stop	8	static
+../Wheel/software_modules/sw_buttons.c:49:21:Buttons_Start_TIM	8	static

@@ -1,0 +1,6 @@
+../Wheel/software_modules/sw_sensor.c:22:21:Sensor_INIT	3
+../Wheel/software_modules/sw_sensor.c:36:21:Sensor_DeINIT	2
+../Wheel/software_modules/sw_sensor.c:90:20:calculate_magnet_rotations	3
+../Wheel/software_modules/sw_sensor.c:45:21:Sensor_Update	2
+../Wheel/software_modules/sw_sensor.c:105:20:get_steering_pos	1
+../Wheel/software_modules/sw_sensor.c:56:21:Sensor_GetAxis	5

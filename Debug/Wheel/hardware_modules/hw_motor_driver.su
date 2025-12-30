@@ -1,0 +1,7 @@
+../Wheel/hardware_modules/hw_motor_driver.c:59:20:disable_motors	8	static
+../Wheel/hardware_modules/hw_motor_driver.c:101:21:MotorDriver_Coast	8	static
+../Wheel/hardware_modules/hw_motor_driver.c:53:20:enable_motors	8	static
+../Wheel/hardware_modules/hw_motor_driver.c:81:21:MotorDriver_Drive_Right	8	static
+../Wheel/hardware_modules/hw_motor_driver.c:91:21:MotorDriver_Drive_Left	8	static
+../Wheel/hardware_modules/hw_motor_driver.c:65:21:MotorDriver_DeINIT	16	static
+../Wheel/hardware_modules/hw_motor_driver.c:22:21:MotorDriver_INIT	16	static

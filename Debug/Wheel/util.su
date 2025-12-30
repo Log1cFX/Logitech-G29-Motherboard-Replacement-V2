@@ -1,0 +1,2 @@
+../Wheel/util.c:10:6:debug_start_external_time_test	8	static
+../Wheel/util.c:14:6:debug_stop_external_time_test	8	static

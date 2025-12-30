@@ -1,3 +1,0 @@
-../Wheel/Src/sw_shifter.c:18:21:Shifter_INIT	0	static
-../Wheel/Src/sw_shifter.c:41:21:Shifter_getSpeed	16	static
-../Wheel/Src/sw_shifter.c:33:21:Shifter_DeINIT	8	static

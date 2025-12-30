@@ -1,0 +1,11 @@
+../Wheel/app_usb_hid.c:91:16:hat_switch_from_msb	8	static
+../Wheel/app_usb_hid.c:121:16:app_usb_SOF_CB	0	static
+../Wheel/app_usb_hid.c:205:16:app_usb_DataInStage_CB	0	static
+../Wheel/app_usb_hid.c:232:16:app_usb_EP0_recieve_CB	8	static
+../Wheel/app_usb_hid.c:217:16:app_usb_DataOutStage_CB	16	static
+../Wheel/app_usb_hid.c:21:14:app_usb_hid_init	0	static
+../Wheel/app_usb_hid.c:29:14:app_usb_start	0	static
+../Wheel/app_usb_hid.c:37:14:app_usb_stop	0	static
+../Wheel/app_usb_hid.c:47:6:app_usb_start_deferred_processing	8	static
+../Wheel/app_usb_hid.c:61:6:app_usb_hid_send_report	24	static
+../Wheel/app_usb_hid.c:138:9:USB_HID_PID_CTL_PARSER	32	static

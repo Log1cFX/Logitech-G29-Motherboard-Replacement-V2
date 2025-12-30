@@ -9,7 +9,9 @@ RM := rm -rf
 
 # All of the sources participating in the build are defined here
 -include sources.mk
--include Wheel/Src/subdir.mk
+-include Wheel/software_modules/subdir.mk
+-include Wheel/hardware_modules/subdir.mk
+-include Wheel/subdir.mk
 -include USB_DEVICE/Target/subdir.mk
 -include USB_DEVICE/App/subdir.mk
 -include Middlewares/ST/STM32_USB_Device_Library/Core/Src/subdir.mk

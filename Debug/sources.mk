@@ -46,5 +46,7 @@ Middlewares/ST/STM32_USB_Device_Library/Class/CustomHID/Src \
 Middlewares/ST/STM32_USB_Device_Library/Core/Src \
 USB_DEVICE/App \
 USB_DEVICE/Target \
-Wheel/Src \
+Wheel \
+Wheel/hardware_modules \
+Wheel/software_modules \
 

@@ -31,13 +31,18 @@ Core/Src/main.o: ../Core/Src/main.c ../Core/Inc/main.h \
  ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_pcd_ex.h \
  ../USB_DEVICE/App/usb_device.h \
  ../Middlewares/ST/STM32_USB_Device_Library/Core/Inc/usbd_def.h \
- ../USB_DEVICE/Target/usbd_conf.h ../Wheel/Inc/steeringwheel.h \
- ../Wheel/Inc/common_types.h ../Wheel/Inc/util.h \
- ../Wheel/Inc/hw_digital_input.h ../Wheel/Inc/sw_buttons.h \
- ../Wheel/Inc/hw_magnetometer.h ../Wheel/Inc/sw_sensor.h \
- ../Wheel/Inc/hw_analog_input.h ../Wheel/Inc/sw_shifter.h \
- ../Wheel/Inc/hw_motor_driver.h ../Wheel/Inc/sw_actuator.h \
- ../Wheel/Inc/app_usb_hid.h ../Wheel/Inc/steeringwheel.h \
+ ../USB_DEVICE/Target/usbd_conf.h ../Wheel/steeringwheel.h \
+ ../Wheel/common_templates/common_types.h ../Wheel/util.h \
+ ../Wheel/common_templates/wheel_def.h \
+ ../Wheel/common_templates/common_types.h \
+ ../Wheel/common_templates/hw_digital_input.h \
+ ../Wheel/common_templates/sw_buttons.h \
+ ../Wheel/common_templates/hw_magnetometer.h \
+ ../Wheel/common_templates/sw_sensor.h \
+ ../Wheel/common_templates/hw_analog_input.h \
+ ../Wheel/common_templates/sw_shifter.h \
+ ../Wheel/common_templates/hw_motor_driver.h \
+ ../Wheel/common_templates/sw_actuator.h ../Wheel/app_usb_hid.h \
  ../Middlewares/ST/STM32_USB_Device_Library/Class/CustomHID/Inc/usbd_customhid.h \
  ../Middlewares/ST/STM32_USB_Device_Library/Core/Inc/usbd_ioreq.h \
  ../Middlewares/ST/STM32_USB_Device_Library/Core/Inc/usbd_def.h \
@@ -78,19 +83,20 @@ Core/Src/main.o: ../Core/Src/main.c ../Core/Inc/main.h \
 ../USB_DEVICE/App/usb_device.h:
 ../Middlewares/ST/STM32_USB_Device_Library/Core/Inc/usbd_def.h:
 ../USB_DEVICE/Target/usbd_conf.h:
-../Wheel/Inc/steeringwheel.h:
-../Wheel/Inc/common_types.h:
-../Wheel/Inc/util.h:
-../Wheel/Inc/hw_digital_input.h:
-../Wheel/Inc/sw_buttons.h:
-../Wheel/Inc/hw_magnetometer.h:
-../Wheel/Inc/sw_sensor.h:
-../Wheel/Inc/hw_analog_input.h:
-../Wheel/Inc/sw_shifter.h:
-../Wheel/Inc/hw_motor_driver.h:
-../Wheel/Inc/sw_actuator.h:
-../Wheel/Inc/app_usb_hid.h:
-../Wheel/Inc/steeringwheel.h:
+../Wheel/steeringwheel.h:
+../Wheel/common_templates/common_types.h:
+../Wheel/util.h:
+../Wheel/common_templates/wheel_def.h:
+../Wheel/common_templates/common_types.h:
+../Wheel/common_templates/hw_digital_input.h:
+../Wheel/common_templates/sw_buttons.h:
+../Wheel/common_templates/hw_magnetometer.h:
+../Wheel/common_templates/sw_sensor.h:
+../Wheel/common_templates/hw_analog_input.h:
+../Wheel/common_templates/sw_shifter.h:
+../Wheel/common_templates/hw_motor_driver.h:
+../Wheel/common_templates/sw_actuator.h:
+../Wheel/app_usb_hid.h:
 ../Middlewares/ST/STM32_USB_Device_Library/Class/CustomHID/Inc/usbd_customhid.h:
 ../Middlewares/ST/STM32_USB_Device_Library/Core/Inc/usbd_ioreq.h:
 ../Middlewares/ST/STM32_USB_Device_Library/Core/Inc/usbd_def.h:

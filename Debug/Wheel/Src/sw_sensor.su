@@ -1,6 +1,0 @@
-../Wheel/Src/sw_sensor.c:22:21:Sensor_INIT	0	static
-../Wheel/Src/sw_sensor.c:33:21:Sensor_DeINIT	8	static
-../Wheel/Src/sw_sensor.c:87:20:calculate_magnet_rotations	0	static
-../Wheel/Src/sw_sensor.c:42:21:Sensor_Update	8	static
-../Wheel/Src/sw_sensor.c:102:20:get_steering_pos	16	static
-../Wheel/Src/sw_sensor.c:53:21:Sensor_GetAxis	16	static

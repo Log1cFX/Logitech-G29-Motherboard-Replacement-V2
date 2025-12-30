@@ -1,0 +1,12 @@
+../Wheel/hardware_modules/hw_magnetometer.c:36:21:MLX90363_INIT	0	static
+../Wheel/hardware_modules/hw_magnetometer.c:125:16:calculate_crc	0	static
+../Wheel/hardware_modules/hw_magnetometer.c:140:13:set_Tx_GET1	8	static
+../Wheel/hardware_modules/hw_magnetometer.c:151:13:set_Tx_NOP	8	static
+../Wheel/hardware_modules/hw_magnetometer.c:177:21:getData	16	static
+../Wheel/hardware_modules/hw_magnetometer.c:94:21:MLX90363_TxRxDone_CB	8	static
+../Wheel/hardware_modules/hw_magnetometer.c:83:21:MLX90363_TransmitRecieve_DMA	8	static
+../Wheel/hardware_modules/hw_magnetometer.c:77:21:MLX90363_Stop	8	static
+../Wheel/hardware_modules/hw_magnetometer.c:52:21:MLX90363_DeINIT	8	static
+../Wheel/hardware_modules/hw_magnetometer.c:162:13:transmit_blocking	8	static
+../Wheel/hardware_modules/hw_magnetometer.c:169:13:reset_roll_counter	8	static
+../Wheel/hardware_modules/hw_magnetometer.c:63:21:MLX90363_Start_TIM	8	static
