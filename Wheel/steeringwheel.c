@@ -36,6 +36,13 @@ static void configure_software_exti();
 static void register_initialization_error();
 
 int32_t forces[2];
+int32_t force;
+
+int16_t map(int16_t x, int16_t in_min, int16_t in_max, int16_t out_min, int16_t out_max) {
+
+  return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
+
+}
 
 void wheel_startup() {
 	/* INIT */
@@ -81,7 +88,8 @@ void wheel_startup() {
 		HAL_Delay(10);
 		ffb_updateAxis(sensor->virtual_axis);
 		ffb_getForces(forces);
-		if(wheel.hActuator->Apply_Force(wheel.hActuator, (int16_t) forces[1]) == WHEEL_ERROR){
+		force = map(forces[0], -10000, 10000, -250, 250);
+		if(wheel.hActuator->Apply_Force(wheel.hActuator, (int16_t) force) == WHEEL_ERROR){
 			wheel.wheel_error_count++;
 		}
 	}

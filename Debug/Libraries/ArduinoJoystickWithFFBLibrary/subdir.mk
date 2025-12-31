@@ -6,17 +6,20 @@
 # Add inputs and outputs from these tool invocations to the build variables 
 CPP_SRCS += \
 ../Libraries/ArduinoJoystickWithFFBLibrary/FfbEngine.cpp \
-../Libraries/ArduinoJoystickWithFFBLibrary/PIDReportHandler.cpp \
+../Libraries/ArduinoJoystickWithFFBLibrary/FfbReportHandler.cpp \
+../Libraries/ArduinoJoystickWithFFBLibrary/UserInput.cpp \
 ../Libraries/ArduinoJoystickWithFFBLibrary/ffb_library.cpp 
 
 OBJS += \
 ./Libraries/ArduinoJoystickWithFFBLibrary/FfbEngine.o \
-./Libraries/ArduinoJoystickWithFFBLibrary/PIDReportHandler.o \
+./Libraries/ArduinoJoystickWithFFBLibrary/FfbReportHandler.o \
+./Libraries/ArduinoJoystickWithFFBLibrary/UserInput.o \
 ./Libraries/ArduinoJoystickWithFFBLibrary/ffb_library.o 
 
 CPP_DEPS += \
 ./Libraries/ArduinoJoystickWithFFBLibrary/FfbEngine.d \
-./Libraries/ArduinoJoystickWithFFBLibrary/PIDReportHandler.d \
+./Libraries/ArduinoJoystickWithFFBLibrary/FfbReportHandler.d \
+./Libraries/ArduinoJoystickWithFFBLibrary/UserInput.d \
 ./Libraries/ArduinoJoystickWithFFBLibrary/ffb_library.d 
 
 
@@ -27,7 +30,7 @@ Libraries/ArduinoJoystickWithFFBLibrary/%.o Libraries/ArduinoJoystickWithFFBLibr
 clean: clean-Libraries-2f-ArduinoJoystickWithFFBLibrary
 
 clean-Libraries-2f-ArduinoJoystickWithFFBLibrary:
-	-$(RM) ./Libraries/ArduinoJoystickWithFFBLibrary/FfbEngine.cyclo ./Libraries/ArduinoJoystickWithFFBLibrary/FfbEngine.d ./Libraries/ArduinoJoystickWithFFBLibrary/FfbEngine.o ./Libraries/ArduinoJoystickWithFFBLibrary/FfbEngine.su ./Libraries/ArduinoJoystickWithFFBLibrary/PIDReportHandler.cyclo ./Libraries/ArduinoJoystickWithFFBLibrary/PIDReportHandler.d ./Libraries/ArduinoJoystickWithFFBLibrary/PIDReportHandler.o ./Libraries/ArduinoJoystickWithFFBLibrary/PIDReportHandler.su ./Libraries/ArduinoJoystickWithFFBLibrary/ffb_library.cyclo ./Libraries/ArduinoJoystickWithFFBLibrary/ffb_library.d ./Libraries/ArduinoJoystickWithFFBLibrary/ffb_library.o ./Libraries/ArduinoJoystickWithFFBLibrary/ffb_library.su
+	-$(RM) ./Libraries/ArduinoJoystickWithFFBLibrary/FfbEngine.cyclo ./Libraries/ArduinoJoystickWithFFBLibrary/FfbEngine.d ./Libraries/ArduinoJoystickWithFFBLibrary/FfbEngine.o ./Libraries/ArduinoJoystickWithFFBLibrary/FfbEngine.su ./Libraries/ArduinoJoystickWithFFBLibrary/FfbReportHandler.cyclo ./Libraries/ArduinoJoystickWithFFBLibrary/FfbReportHandler.d ./Libraries/ArduinoJoystickWithFFBLibrary/FfbReportHandler.o ./Libraries/ArduinoJoystickWithFFBLibrary/FfbReportHandler.su ./Libraries/ArduinoJoystickWithFFBLibrary/UserInput.cyclo ./Libraries/ArduinoJoystickWithFFBLibrary/UserInput.d ./Libraries/ArduinoJoystickWithFFBLibrary/UserInput.o ./Libraries/ArduinoJoystickWithFFBLibrary/UserInput.su ./Libraries/ArduinoJoystickWithFFBLibrary/ffb_library.cyclo ./Libraries/ArduinoJoystickWithFFBLibrary/ffb_library.d ./Libraries/ArduinoJoystickWithFFBLibrary/ffb_library.o ./Libraries/ArduinoJoystickWithFFBLibrary/ffb_library.su
 
 .PHONY: clean-Libraries-2f-ArduinoJoystickWithFFBLibrary
 

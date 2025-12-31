@@ -146,15 +146,13 @@ uint8_t USB_HID_PID_CTL_PARSER(USBD_HandleTypeDef *pdev,
 		case FEATURE_REPORT:
 			switch (LOBYTE(req->wValue)) {
 			case HID_FfbOnPIDBlockLoad_REPORT_ID:
-				memcpy(wheel.hUsbHid->Ep0In_buffer, FfbOnPIDBlockLoad(),
-						sizeof(USB_FFBReport_PIDBlockLoad_Feature_Data_t));
+				memcpy(wheel.hUsbHid->Ep0In_buffer, FfbOnPIDBlockLoad(), 5);
 				USBD_CtlSendData(pdev, wheel.hUsbHid->Ep0In_buffer,
 						req->wLength);
 				ret = 1;
 				break;
 			case HID_FfbOnPIDPool_REPORT_ID:
-				memcpy(wheel.hUsbHid->Ep0In_buffer, FfbOnPIDPool(),
-						sizeof(USB_FFBReport_PIDPool_Feature_Data_t));
+				memcpy(wheel.hUsbHid->Ep0In_buffer, FfbOnPIDPool(), 5);
 				USBD_CtlSendData(pdev, wheel.hUsbHid->Ep0In_buffer,
 						req->wLength);
 				ret = 1;
@@ -164,8 +162,7 @@ uint8_t USB_HID_PID_CTL_PARSER(USBD_HandleTypeDef *pdev,
 		case INPUT_REPORT:
 			switch (LOBYTE(req->wValue)) {
 			case HID_FfbOnPIDStatus_REPORT_ID:
-				memcpy(wheel.hUsbHid->Ep0In_buffer, FfbOnPIDStatus(),
-						sizeof(USB_FFBReport_PIDStatus_Input_Data_t));
+				memcpy(wheel.hUsbHid->Ep0In_buffer, FfbOnPIDStatus(), 3);
 				USBD_CtlSendData(pdev, wheel.hUsbHid->Ep0In_buffer,
 						req->wLength);
 				ret = 1;
@@ -233,8 +230,7 @@ static uint8_t app_usb_EP0_recieve_CB(USBD_HandleTypeDef *pdev) {
 	USBD_CUSTOM_HID_HandleTypeDef *hhid =
 			(USBD_CUSTOM_HID_HandleTypeDef*) pdev->pClassData;
 	if (hhid->IsReportAvailable == 1U && wheel.hUsbHid->on_new_effect_request) {
-		FfbOnCreateNewEffect(
-				(USB_FFBReport_CreateNewEffect_Feature_Data_t*) wheel.hUsbHid->Ep0Out_buffer);
+		FfbOnCreateNewEffect(wheel.hUsbHid->Ep0Out_buffer);
 		hhid->IsReportAvailable = 0U;
 		wheel.hUsbHid->on_new_effect_request = 0;
 	}

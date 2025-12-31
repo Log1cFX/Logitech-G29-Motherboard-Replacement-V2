@@ -50,8 +50,7 @@ Wheel/app_usb_hid.o: ../Wheel/app_usb_hid.c ../Wheel/app_usb_hid.h \
  ../Middlewares/ST/STM32_USB_Device_Library/Core/Inc/usbd_ioreq.h \
  ../Middlewares/ST/STM32_USB_Device_Library/Core/Inc/usbd_ctlreq.h \
  ../Wheel/app_hid_desc.h \
- ../Libraries/ArduinoJoystickWithFFBLibrary/ffb_library.h \
- ../Libraries/ArduinoJoystickWithFFBLibrary/PIDReportType.h
+ ../Libraries/ArduinoJoystickWithFFBLibrary/ffb_library.h
 ../Wheel/app_usb_hid.h:
 ../Wheel/common_templates/common_types.h:
 ../Core/Inc/main.h:
@@ -108,4 +107,3 @@ Wheel/app_usb_hid.o: ../Wheel/app_usb_hid.c ../Wheel/app_usb_hid.h \
 ../Middlewares/ST/STM32_USB_Device_Library/Core/Inc/usbd_ctlreq.h:
 ../Wheel/app_hid_desc.h:
 ../Libraries/ArduinoJoystickWithFFBLibrary/ffb_library.h:
-../Libraries/ArduinoJoystickWithFFBLibrary/PIDReportType.h:

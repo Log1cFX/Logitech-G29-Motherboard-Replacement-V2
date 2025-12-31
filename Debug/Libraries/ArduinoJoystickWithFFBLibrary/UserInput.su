@@ -1,0 +1,6 @@
+../Libraries/ArduinoJoystickWithFFBLibrary/UserInput.cpp:26:1:UserInput::UserInput()	16	static
+../Libraries/ArduinoJoystickWithFFBLibrary/UserInput.cpp:30:6:void UserInput::UpdatePosition(const int32_t*)	32	static
+../Libraries/ArduinoJoystickWithFFBLibrary/UserInput.cpp:43:6:void UserInput::UpdateMetrics(const int32_t*, const int32_t*, const int32_t*)	32	static
+../Libraries/ArduinoJoystickWithFFBLibrary/UserInput.cpp:53:6:void UserInput::UpdateButtons(int8_t)	16	static
+../Libraries/ArduinoJoystickWithFFBLibrary/UserInput.cpp:58:16:const int32_t* UserInput::GetMetric(Metric)	16	static
+../Libraries/ArduinoJoystickWithFFBLibrary/UserInput.cpp:63:9:uint8_t UserInput::GetButtons()	16	static

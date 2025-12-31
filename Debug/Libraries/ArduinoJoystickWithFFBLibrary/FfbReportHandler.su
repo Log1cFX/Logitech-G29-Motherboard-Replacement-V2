@@ -1,0 +1,31 @@
+C:\Program Files\STMicroelectronics\STM32CubeIDE_1.16.0\STM32CubeIDE\plugins\com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.13.3.rel1.win32_1.0.0.202411081344\tools\arm-none-eabi\include\c++\13.3.1\cmath:177:3:constexpr float std::cos(float)	16	static
+C:\Program Files\STMicroelectronics\STM32CubeIDE_1.16.0\STM32CubeIDE\plugins\com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.13.3.rel1.win32_1.0.0.202411081344\tools\arm-none-eabi\include\c++\13.3.1\cmath:400:3:constexpr float std::sin(float)	16	static
+../Libraries/ArduinoJoystickWithFFBLibrary/HIDReportType.h:268:3:TEffectState::TEffectState()	16	static
+../Libraries/ArduinoJoystickWithFFBLibrary/FfbReportHandler.cpp:31:1:FfbReportHandler::FfbReportHandler(uint32_t (*)())	24	static
+../Libraries/ArduinoJoystickWithFFBLibrary/FfbReportHandler.cpp:38:1:FfbReportHandler::~FfbReportHandler()	16	static
+../Libraries/ArduinoJoystickWithFFBLibrary/FfbReportHandler.cpp:43:15:TEffectState* FfbReportHandler::GetEffect(uint8_t)	16	static
+../Libraries/ArduinoJoystickWithFFBLibrary/FfbReportHandler.cpp:52:21:const TEffectState* FfbReportHandler::GetEffectStates()	16	static
+../Libraries/ArduinoJoystickWithFFBLibrary/FfbReportHandler.cpp:57:9:uint8_t FfbReportHandler::GetNextFreeEffect()	24	static
+../Libraries/ArduinoJoystickWithFFBLibrary/FfbReportHandler.cpp:70:6:void FfbReportHandler::StopAllEffects()	24	static
+../Libraries/ArduinoJoystickWithFFBLibrary/FfbReportHandler.cpp:76:6:void FfbReportHandler::StartEffect(TEffectState*)	16	static
+../Libraries/ArduinoJoystickWithFFBLibrary/FfbReportHandler.cpp:85:6:void FfbReportHandler::StopEffect(TEffectState*)	16	static
+../Libraries/ArduinoJoystickWithFFBLibrary/FfbReportHandler.cpp:90:6:void FfbReportHandler::FreeEffect(uint8_t)	24	static
+../Libraries/ArduinoJoystickWithFFBLibrary/FfbReportHandler.cpp:102:6:void FfbReportHandler::FreeAllEffects()	16	static
+../Libraries/ArduinoJoystickWithFFBLibrary/FfbReportHandler.cpp:108:6:void FfbReportHandler::FfbHandle_EffectOperation(USB_FFBReport_EffectOperation_Output_Data_t*)	24	static
+../Libraries/ArduinoJoystickWithFFBLibrary/FfbReportHandler.cpp:143:6:void FfbReportHandler::FfbHandle_BlockFree(USB_FFBReport_BlockFree_Output_Data_t*)	24	static
+../Libraries/ArduinoJoystickWithFFBLibrary/FfbReportHandler.cpp:157:6:void FfbReportHandler::FfbHandle_DeviceControl(USB_FFBReport_DeviceControl_Output_Data_t*)	32	static
+../Libraries/ArduinoJoystickWithFFBLibrary/FfbReportHandler.cpp:204:6:void FfbReportHandler::FfbHandle_DeviceGain(USB_FFBReport_DeviceGain_Output_Data_t*)	16	static
+../Libraries/ArduinoJoystickWithFFBLibrary/FfbReportHandler.cpp:209:6:void FfbReportHandler::FfbHandle_SetCustomForce(USB_FFBReport_SetCustomForce_Output_Data_t*)	16	static
+../Libraries/ArduinoJoystickWithFFBLibrary/FfbReportHandler.cpp:213:6:void FfbReportHandler::FfbHandle_SetCustomForceData(USB_FFBReport_SetCustomForceData_Output_Data_t*)	16	static
+../Libraries/ArduinoJoystickWithFFBLibrary/FfbReportHandler.cpp:217:6:void FfbReportHandler::FfbHandle_SetDownloadForceSample(USB_FFBReport_SetDownloadForceSample_Output_Data_t*)	16	static
+../Libraries/ArduinoJoystickWithFFBLibrary/FfbReportHandler.cpp:221:6:void FfbReportHandler::FfbHandle_SetEffect(USB_FFBReport_SetEffect_Output_Data_t*)	40	static
+../Libraries/ArduinoJoystickWithFFBLibrary/FfbReportHandler.cpp:251:6:void FfbReportHandler::SetEnvelope(USB_FFBReport_SetEnvelope_Output_Data_t*)	24	static
+../Libraries/ArduinoJoystickWithFFBLibrary/FfbReportHandler.cpp:264:6:void FfbReportHandler::SetCondition(USB_FFBReport_SetCondition_Output_Data_t*)	32	static
+../Libraries/ArduinoJoystickWithFFBLibrary/FfbReportHandler.cpp:280:6:void FfbReportHandler::SetPeriodic(USB_FFBReport_SetPeriodic_Output_Data_t*)	24	static
+../Libraries/ArduinoJoystickWithFFBLibrary/FfbReportHandler.cpp:292:6:void FfbReportHandler::SetConstantForce(USB_FFBReport_SetConstantForce_Output_Data_t*)	24	static
+../Libraries/ArduinoJoystickWithFFBLibrary/FfbReportHandler.cpp:304:6:void FfbReportHandler::SetRampForce(USB_FFBReport_SetRampForce_Output_Data_t*)	24	static
+../Libraries/ArduinoJoystickWithFFBLibrary/FfbReportHandler.cpp:316:6:void FfbReportHandler::FfbOnCreateNewEffect(USB_FFBReport_CreateNewEffect_Feature_Data_t*)	24	static
+../Libraries/ArduinoJoystickWithFFBLibrary/FfbReportHandler.cpp:338:10:uint8_t* FfbReportHandler::FfbOnPIDPool()	16	static
+../Libraries/ArduinoJoystickWithFFBLibrary/FfbReportHandler.cpp:349:10:uint8_t* FfbReportHandler::FfbOnPIDBlockLoad()	16	static
+../Libraries/ArduinoJoystickWithFFBLibrary/FfbReportHandler.cpp:354:10:uint8_t* FfbReportHandler::FfbOnPIDStatus()	16	static
+../Libraries/ArduinoJoystickWithFFBLibrary/FfbReportHandler.cpp:359:6:void FfbReportHandler::FfbOnUsbData(uint8_t*, uint16_t)	24	static

@@ -1,17 +1,12 @@
-C:\Program Files\STMicroelectronics\STM32CubeIDE_1.16.0\STM32CubeIDE\plugins\com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.13.3.rel1.win32_1.0.0.202411081344\tools\arm-none-eabi\include\c++\13.3.1\bits\std_abs.h:75:3:constexpr float std::abs(float)	1
 C:\Program Files\STMicroelectronics\STM32CubeIDE_1.16.0\STM32CubeIDE\plugins\com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.13.3.rel1.win32_1.0.0.202411081344\tools\arm-none-eabi\include\c++\13.3.1\cmath:400:3:constexpr float std::sin(float)	1
-../Libraries/ArduinoJoystickWithFFBLibrary/FfbEngine.cpp:47:6:long int map(long int, long int, long int, long int, long int)	1
-../Libraries/ArduinoJoystickWithFFBLibrary/FfbEngine.cpp:51:6:void FfbEngine::getForce(int32_t*)	1
-../Libraries/ArduinoJoystickWithFFBLibrary/FfbEngine.cpp:55:9:int32_t FfbEngine::getEffectForce(volatile TEffectState&, Gains, EffectParams, uint8_t)	26
-../Libraries/ArduinoJoystickWithFFBLibrary/FfbEngine.cpp:160:6:void FfbEngine::forceCalculator(int32_t*)	7
-../Libraries/ArduinoJoystickWithFFBLibrary/FfbEngine.cpp:183:9:int32_t FfbEngine::ConstantForceCalculator(volatile TEffectState&)	1
-../Libraries/ArduinoJoystickWithFFBLibrary/FfbEngine.cpp:187:9:int32_t FfbEngine::RampForceCalculator(volatile TEffectState&)	1
-../Libraries/ArduinoJoystickWithFFBLibrary/FfbEngine.cpp:195:9:int32_t FfbEngine::SquareForceCalculator(volatile TEffectState&)	2
-../Libraries/ArduinoJoystickWithFFBLibrary/FfbEngine.cpp:215:9:int32_t FfbEngine::SinForceCalculator(volatile TEffectState&)	2
-../Libraries/ArduinoJoystickWithFFBLibrary/FfbEngine.cpp:230:9:int32_t FfbEngine::TriangleForceCalculator(volatile TEffectState&)	2
-../Libraries/ArduinoJoystickWithFFBLibrary/FfbEngine.cpp:253:9:int32_t FfbEngine::SawtoothDownForceCalculator(volatile TEffectState&)	1
-../Libraries/ArduinoJoystickWithFFBLibrary/FfbEngine.cpp:273:9:int32_t FfbEngine::SawtoothUpForceCalculator(volatile TEffectState&)	1
-../Libraries/ArduinoJoystickWithFFBLibrary/FfbEngine.cpp:293:9:int32_t FfbEngine::ConditionForceCalculator(volatile TEffectState&, float, uint8_t)	9
-../Libraries/ArduinoJoystickWithFFBLibrary/FfbEngine.cpp:340:14:float FfbEngine::NormalizeRange(int32_t, int32_t)	1
-../Libraries/ArduinoJoystickWithFFBLibrary/FfbEngine.cpp:344:16:int32_t FfbEngine::ApplyGain(int16_t, uint8_t)	1
-../Libraries/ArduinoJoystickWithFFBLibrary/FfbEngine.cpp:349:16:int32_t FfbEngine::ApplyEnvelope(volatile TEffectState&, int32_t)	5
+../Libraries/ArduinoJoystickWithFFBLibrary/FfbEngine.cpp:28:1:FfbEngine::FfbEngine(FfbReportHandler&, UserInput&, uint32_t (*)(), int32_t (*)(float, int8_t, int8_t))	1
+../Libraries/ArduinoJoystickWithFFBLibrary/FfbEngine.cpp:39:1:FfbEngine::~FfbEngine()	1
+../Libraries/ArduinoJoystickWithFFBLibrary/FfbEngine.cpp:43:7:float FfbEngine::ConstantForceCalculator(const TEffectState&)	1
+../Libraries/ArduinoJoystickWithFFBLibrary/FfbEngine.cpp:48:7:float FfbEngine::RampForceCalculator(const TEffectState&, float)	1
+../Libraries/ArduinoJoystickWithFFBLibrary/FfbEngine.cpp:56:7:float FfbEngine::PeriodiceForceCalculator(uint8_t, const TEffectState&, float)	8
+../Libraries/ArduinoJoystickWithFFBLibrary/FfbEngine.cpp:119:9:int32_t ApplyCondition(int32_t, uint8_t, const USB_FFBReport_SetCondition_Output_Data_t&)	5
+../Libraries/ArduinoJoystickWithFFBLibrary/FfbEngine.cpp:146:6:void FfbEngine::ConditionForceCalculator(const TEffectState&, const int32_t*, float*)	6
+../Libraries/ArduinoJoystickWithFFBLibrary/FfbEngine.cpp:181:6:void FfbEngine::ForceCalculator(int32_t*)	21
+../Libraries/ArduinoJoystickWithFFBLibrary/FfbEngine.cpp:301:7:float FfbEngine::GetEnvelope(const USB_FFBReport_SetEnvelope_Output_Data_t&, uint32_t, uint16_t)	4
+../Libraries/ArduinoJoystickWithFFBLibrary/FfbEngine.cpp:333:6:bool IsTriggerEffectPlaying(TEffectState&, uint8_t, uint32_t)	5
+../Libraries/ArduinoJoystickWithFFBLibrary/FfbEngine.cpp:365:6:bool FfbEngine::IsEffectPlaying(const TEffectState&, uint32_t)	5

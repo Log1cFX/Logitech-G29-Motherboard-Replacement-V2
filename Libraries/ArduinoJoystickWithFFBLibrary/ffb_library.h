@@ -37,7 +37,6 @@ extern "C" {
 #endif
 
 #include "common_types.h"
-#include "PIDReportType.h"
 
 Wheel_Status ffb_init();
 void ffb_updateAxis(int32_t updated_value);
@@ -45,7 +44,7 @@ uint8_t* FfbOnPIDBlockLoad();
 uint8_t* FfbOnPIDPool();
 uint8_t* FfbOnPIDStatus();
 void FfbOnUsbData(uint8_t *data, uint8_t size);
-void FfbOnCreateNewEffect(USB_FFBReport_CreateNewEffect_Feature_Data_t *data);
+void FfbOnCreateNewEffect(uint8_t *data);
 void ffb_getForces(int32_t *forces);
 
 #ifdef __cplusplus

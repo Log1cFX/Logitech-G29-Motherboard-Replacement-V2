@@ -49,8 +49,7 @@ Wheel/steeringwheel.o: ../Wheel/steeringwheel.c ../Wheel/steeringwheel.h \
  ../Middlewares/ST/STM32_USB_Device_Library/Core/Inc/usbd_core.h \
  ../Middlewares/ST/STM32_USB_Device_Library/Core/Inc/usbd_ioreq.h \
  ../Middlewares/ST/STM32_USB_Device_Library/Core/Inc/usbd_ctlreq.h \
- ../Libraries/ArduinoJoystickWithFFBLibrary/ffb_library.h \
- ../Libraries/ArduinoJoystickWithFFBLibrary/PIDReportType.h
+ ../Libraries/ArduinoJoystickWithFFBLibrary/ffb_library.h
 ../Wheel/steeringwheel.h:
 ../Wheel/common_templates/common_types.h:
 ../Core/Inc/main.h:
@@ -106,4 +105,3 @@ Wheel/steeringwheel.o: ../Wheel/steeringwheel.c ../Wheel/steeringwheel.h \
 ../Middlewares/ST/STM32_USB_Device_Library/Core/Inc/usbd_ioreq.h:
 ../Middlewares/ST/STM32_USB_Device_Library/Core/Inc/usbd_ctlreq.h:
 ../Libraries/ArduinoJoystickWithFFBLibrary/ffb_library.h:
-../Libraries/ArduinoJoystickWithFFBLibrary/PIDReportType.h:
