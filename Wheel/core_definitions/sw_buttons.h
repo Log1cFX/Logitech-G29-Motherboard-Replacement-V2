@@ -29,8 +29,8 @@
  *      Author: raffi
  */
 
-#ifndef COMMON_TEMPLATES_SW_BUTTONS_H_
-#define COMMON_TEMPLATES_SW_BUTTONS_H_
+#ifndef CORE_DEFINITIONS_SW_BUTTONS_H_
+#define CORE_DEFINITIONS_SW_BUTTONS_H_
 
 #ifdef __cplusplus
 extern "C" {
@@ -65,7 +65,7 @@ typedef struct _Buttons_HandleTypeDef {
 	Wheel_Status (*INIT)(struct _Buttons_HandleTypeDef *buttons,
 			Buttons_ConfigHandleTypeDef *config);
 	Wheel_Status (*DeINIT)(struct _Buttons_HandleTypeDef *buttons);
-	Wheel_Status (*Start_TIM)(struct _Buttons_HandleTypeDef *buttons);
+	Wheel_Status (*Start_TIM_POLL)(struct _Buttons_HandleTypeDef *buttons);
 	Wheel_Status (*Stop)(struct _Buttons_HandleTypeDef *buttons);
 	Wheel_Status (*Update)(struct _Buttons_HandleTypeDef *buttons); // Must be called by the timer
 	// Call GetState before reading the state from buttons_state
@@ -87,4 +87,4 @@ typedef struct _Buttons_HandleTypeDef {
 }
 #endif
 
-#endif /* COMMON_TEMPLATES_SW_BUTTONS_H_ */
+#endif /* CORE_DEFINITIONS_SW_BUTTONS_H_ */

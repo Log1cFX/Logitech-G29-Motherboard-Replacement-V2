@@ -52,7 +52,7 @@
 									<listOptionValue builtIn="false" value="../Middlewares/ST/STM32_USB_Device_Library/Core/Inc"/>
 									<listOptionValue builtIn="false" value="../Middlewares/ST/STM32_USB_Device_Library/Class/CustomHID/Inc"/>
 									<listOptionValue builtIn="false" value="../Wheel"/>
-									<listOptionValue builtIn="false" value="../Wheel/common_templates"/>
+									<listOptionValue builtIn="false" value="../Wheel/core_definitions"/>
 									<listOptionValue builtIn="false" value="../Libraries/ArduinoJoystickWithFFBLibrary"/>
 								</option>
 								<option id="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.c.compiler.option.fnostrictaliasing.1122573073" name="Disable &quot;strict aliasing&quot; optimization (-fno-strict-aliasing)" superClass="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.c.compiler.option.fnostrictaliasing" useByScannerDiscovery="false" value="false" valueType="boolean"/>
@@ -73,7 +73,7 @@
 									<listOptionValue builtIn="false" value="../Middlewares/ST/STM32_USB_Device_Library/Core/Inc"/>
 									<listOptionValue builtIn="false" value="../Middlewares/ST/STM32_USB_Device_Library/Class/CustomHID/Inc"/>
 									<listOptionValue builtIn="false" value="../Wheel"/>
-									<listOptionValue builtIn="false" value="../Wheel/common_templates"/>
+									<listOptionValue builtIn="false" value="../Wheel/core_definitions"/>
 									<listOptionValue builtIn="false" value="../Libraries/ArduinoJoystickWithFFBLibrary"/>
 								</option>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.cpp.compiler.option.definedsymbols.68024386" name="Define symbols (-D)" superClass="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.cpp.compiler.option.definedsymbols" useByScannerDiscovery="false" valueType="definedSymbols">
@@ -131,9 +131,9 @@
 									<listOptionValue builtIn="false" value="../USB_DEVICE/Target"/>
 									<listOptionValue builtIn="false" value="../Middlewares/ST/STM32_USB_Device_Library/Core/Inc"/>
 									<listOptionValue builtIn="false" value="../Middlewares/ST/STM32_USB_Device_Library/Class/CustomHID/Inc"/>
-									<listOptionValue builtIn="false" value="../Wheel/common_templates"/>
 									<listOptionValue builtIn="false" value="../Libraries/ArduinoJoystickWithFFBLibrary"/>
 									<listOptionValue builtIn="false" value="../Wheel"/>
+									<listOptionValue builtIn="false" value="../Wheel/core_definitions"/>
 								</option>
 								<inputType id="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.c.compiler.input.c.1362511082" superClass="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.c.compiler.input.c"/>
 							</tool>
@@ -148,8 +148,8 @@
 									<listOptionValue builtIn="false" value="../USB_DEVICE/Target"/>
 									<listOptionValue builtIn="false" value="../Middlewares/ST/STM32_USB_Device_Library/Core/Inc"/>
 									<listOptionValue builtIn="false" value="../Middlewares/ST/STM32_USB_Device_Library/Class/CustomHID/Inc"/>
-									<listOptionValue builtIn="false" value="../Wheel/common_templates"/>
 									<listOptionValue builtIn="false" value="../Libraries/ArduinoJoystickWithFFBLibrary"/>
+									<listOptionValue builtIn="false" value="../Wheel/core_definitions"/>
 									<listOptionValue builtIn="false" value="../Wheel"/>
 								</option>
 								<inputType id="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.cpp.compiler.input.cpp.1875952131" superClass="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.cpp.compiler.input.cpp"/>
@@ -190,7 +190,7 @@
 									<listOptionValue builtIn="false" value="../Middlewares/ST/STM32_USB_Device_Library/Core/Inc"/>
 									<listOptionValue builtIn="false" value="../Middlewares/ST/STM32_USB_Device_Library/Class/CustomHID/Inc"/>
 									<listOptionValue builtIn="false" value="../Wheel"/>
-									<listOptionValue builtIn="false" value="../Wheel/common_templates"/>
+									<listOptionValue builtIn="false" value="../Wheel/core_definitions"/>
 									<listOptionValue builtIn="false" value="../Libraries/ArduinoJoystickWithFFBLibrary"/>
 								</option>
 								<inputType id="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.c.compiler.input.c.1032295682" superClass="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.c.compiler.input.c"/>
@@ -207,7 +207,7 @@
 									<listOptionValue builtIn="false" value="../Middlewares/ST/STM32_USB_Device_Library/Core/Inc"/>
 									<listOptionValue builtIn="false" value="../Middlewares/ST/STM32_USB_Device_Library/Class/CustomHID/Inc"/>
 									<listOptionValue builtIn="false" value="../Wheel"/>
-									<listOptionValue builtIn="false" value="../Wheel/common_templates"/>
+									<listOptionValue builtIn="false" value="../Wheel/core_definitions"/>
 									<listOptionValue builtIn="false" value="../Libraries/ArduinoJoystickWithFFBLibrary"/>
 								</option>
 								<inputType id="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.cpp.compiler.input.cpp.2029759522" superClass="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.cpp.compiler.input.cpp"/>

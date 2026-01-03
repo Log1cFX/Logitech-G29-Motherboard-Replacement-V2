@@ -29,15 +29,16 @@
  *      Author: raffi
  */
 
-#ifndef COMMON_TEMPLATES_WHEEL_DEF_H_
-#define COMMON_TEMPLATES_WHEEL_DEF_H_
+#ifndef CORE_DEFINITIONS_WHEEL_DEF_H_
+#define CORE_DEFINITIONS_WHEEL_DEF_H_
 
-/* This file contains all the imports for every template and the wheel handle.
- * I should also probably tell you what I mean by "template".
- * I wanted to abstract the functioning of every module as much as possible to make changing the code easier.
+/* This file contains all the imports for every "template" and the wheel handle.
+ * I should also probably tell you what I mean by "template" (note: this file was initially named common_templates).
+ * I wanted to abstract the functioning of every module as much as possible to make changing the implementation easier.
  * Let's say the buttons. It is a module. Each module has a hardware part and a software part.
- * The hardware part deals with hardware specific stuff, which doesn't mean it doesn't use low level functions.
- * The software part uses lower stack's output, through standardized functions, to do calculations on a higher level.
+ * The hardware part deals with hardware specific stuff.
+ * The software part uses lower hardware's output, through standardized functions, to do calculations on a higher level,
+ * which doesn't mean it doesn't use low level functions like writing on pin.
  * The next step is my code, which seamlessly uses the template functions to get data.
  * I decided to make it work that way to be able to swap the modules easily,
  * that is also why dynamically called function pointers have been chosen over compile time calls.
@@ -83,4 +84,4 @@ Wheel_Status wheel_get_all_component_states();
 }
 #endif
 
-#endif /* COMMON_TEMPLATES_WHEEL_DEF_H_ */
+#endif /* CORE_DEFINITIONS_WHEEL_DEF_H_ */

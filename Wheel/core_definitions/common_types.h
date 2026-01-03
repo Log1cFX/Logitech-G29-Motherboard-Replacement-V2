@@ -23,52 +23,34 @@
  */
 
 /*
- * sw_shifter.h
+ * common_types.h
  *
- *  Created on: Aug 14, 2025
+ *  Created on: Aug 1, 2025
  *      Author: raffi
  */
 
-#ifndef COMMON_TEMPLATES_SW_SHIFTER_H_
-#define COMMON_TEMPLATES_SW_SHIFTER_H_
+#ifndef CORE_DEFINITIONS_COMMON_TYPES_H_
+#define CORE_DEFINITIONS_COMMON_TYPES_H_
+
+/*
+ * By importing this file, you get access to the HAL library functions
+ * as well as types commonly used in this project.
+ */
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-#include "common_types.h"
-#include "hw_analog_input.h"
+#include "main.h"
+#include "util.h"
 
-typedef struct {
-	uint16_t x;
-	uint16_t y;
-}Point;
-
-typedef struct {
-	Analog_HandleTypeDef *hw_analog;
-	uint16_t modifier_pin;
-	GPIO_TypeDef *modifier_port;
-}Shifter_ConfigHandleTypeDef;
-
-typedef struct _Shifter_HandleTypeDef {
-	Wheel_Status (*INIT)(struct _Shifter_HandleTypeDef *shifter,
-			Shifter_ConfigHandleTypeDef *config);
-	Wheel_Status (*DeINIT)(struct _Shifter_HandleTypeDef *shifter);
-	Wheel_Status (*GetState)(struct _Shifter_HandleTypeDef *shifter); // call this before reading gear
-
-	uint16_t modifier_pin;
-	GPIO_TypeDef *modifier_port;
-
-	Point min;
-	Point max;
-	Point current_pos;
-	uint8_t gear;
-
-	Analog_HandleTypeDef *hw_analog;
-}Shifter_HandleTypeDef;
+typedef enum {
+	WHEEL_OK, // good
+	WHEEL_ERROR // not good
+} Wheel_Status;
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* COMMON_TEMPLATES_SW_SHIFTER_H_ */
+#endif /* CORE_DEFINITIONS_COMMON_TYPES_H_ */

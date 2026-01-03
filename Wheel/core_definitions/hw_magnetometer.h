@@ -29,8 +29,8 @@
  *      Author: raffi
  */
 
-#ifndef COMMON_TEMPLATES_HW_MAGNETOMETER_H_
-#define COMMON_TEMPLATES_HW_MAGNETOMETER_H_
+#ifndef CORE_DEFINITIONS_HW_MAGNETOMETER_H_
+#define CORE_DEFINITIONS_HW_MAGNETOMETER_H_
 
 #ifdef __cplusplus
 extern "C" {
@@ -49,7 +49,7 @@ typedef struct _Magnetometer_HandleTypeDef {
 	Wheel_Status (*INIT)(struct _Magnetometer_HandleTypeDef *sensor,
 			Magnetometer_ConfigHandleTypeDef *config);
 	Wheel_Status (*DeINIT)(struct _Magnetometer_HandleTypeDef *sensor);
-	Wheel_Status (*Start_TIM)(struct _Magnetometer_HandleTypeDef *sensor);
+	Wheel_Status (*Start_TIM_POLL)(struct _Magnetometer_HandleTypeDef *sensor);
 	Wheel_Status (*Stop)(struct _Magnetometer_HandleTypeDef *sensor);
 	// TransmitRecieve_DMA should be called by the timer (from its callback called by HAL)
 	Wheel_Status (*TransmitRecieve_DMA)(
@@ -75,4 +75,4 @@ typedef struct _Magnetometer_HandleTypeDef {
 }
 #endif
 
-#endif /* COMMON_TEMPLATES_HW_MAGNETOMETER_H_ */
+#endif /* CORE_DEFINITIONS_HW_MAGNETOMETER_H_ */

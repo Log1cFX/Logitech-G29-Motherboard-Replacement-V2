@@ -1,7 +1,7 @@
 Wheel/software_modules/sw_shifter.o: \
  ../Wheel/software_modules/sw_shifter.c \
- ../Wheel/common_templates/sw_shifter.h \
- ../Wheel/common_templates/common_types.h ../Core/Inc/main.h \
+ ../Wheel/core_definitions/sw_shifter.h \
+ ../Wheel/core_definitions/common_types.h ../Core/Inc/main.h \
  ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal.h \
  ../Core/Inc/stm32f1xx_hal_conf.h \
  ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_rcc.h \
@@ -32,9 +32,9 @@ Wheel/software_modules/sw_shifter.o: \
  ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_pcd.h \
  ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_ll_usb.h \
  ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_pcd_ex.h \
- ../Wheel/util.h ../Wheel/common_templates/hw_analog_input.h
-../Wheel/common_templates/sw_shifter.h:
-../Wheel/common_templates/common_types.h:
+ ../Wheel/util.h ../Wheel/core_definitions/hw_analog_input.h
+../Wheel/core_definitions/sw_shifter.h:
+../Wheel/core_definitions/common_types.h:
 ../Core/Inc/main.h:
 ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal.h:
 ../Core/Inc/stm32f1xx_hal_conf.h:
@@ -67,4 +67,4 @@ Wheel/software_modules/sw_shifter.o: \
 ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_ll_usb.h:
 ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_pcd_ex.h:
 ../Wheel/util.h:
-../Wheel/common_templates/hw_analog_input.h:
+../Wheel/core_definitions/hw_analog_input.h:

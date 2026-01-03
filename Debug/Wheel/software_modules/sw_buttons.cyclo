@@ -7,4 +7,4 @@
 ../Wheel/software_modules/sw_buttons.c:186:13:update_knob_button_state	2
 ../Wheel/software_modules/sw_buttons.c:61:21:Buttons_Update	2
 ../Wheel/software_modules/sw_buttons.c:55:21:Buttons_Stop	1
-../Wheel/software_modules/sw_buttons.c:49:21:Buttons_Start_TIM	1
+../Wheel/software_modules/sw_buttons.c:49:21:Buttons_Start_TIM_POLL	1

@@ -23,33 +23,47 @@
  */
 
 /*
- * sw_actuator.h
+ * hw_digital_input.h
  *
- *  Created on: Dec 28, 2025
+ *  Created on: Aug 1, 2025
  *      Author: raffi
  */
 
-#ifndef COMMON_TEMPLATES_SW_ACTUATOR_H_
-#define COMMON_TEMPLATES_SW_ACTUATOR_H_
+#ifndef CORE_DEFINITIONS_HW_DIGITAL_INPUT_H_
+#define CORE_DEFINITIONS_HW_DIGITAL_INPUT_H_
 
-#include "hw_motor_driver.h"
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include "common_types.h"
 
-#define MOTOR_MAX_FORCE 255
-#define MOTOR_MIN_FORCE -255
+#define BUTTONS_NUM 24U
+#define MAX_BUTTONS 32U
 
-typedef struct _Actuator_ConfigHandleTypeDef {
-	MotorDriver_HandleTypeDef *hMotorDriver;
-} Actuator_ConfigHandleTypeDef;
+typedef struct {
+	uint16_t clk_pin;
+	uint16_t lock_pin;
+	uint16_t in_pin;
+	GPIO_TypeDef *buttons_port;
+} DigitalInput_ConfigHandleTypeDef;
 
-typedef struct _Actuator_HandleTypeDef {
-	Wheel_Status (*INIT)(struct _Actuator_HandleTypeDef *hActuator,
-			Actuator_ConfigHandleTypeDef *config);
-	Wheel_Status (*DeINIT)(struct _Actuator_HandleTypeDef *hActuator);
-	Wheel_Status (*Apply_Force)(struct _Actuator_HandleTypeDef *hActuator,
-			int16_t force); // full range -> [-255;+255]
+typedef struct _DigitalInput_HandleTypeDef {
+	Wheel_Status (*INIT)(struct _DigitalInput_HandleTypeDef *buttons,
+			DigitalInput_ConfigHandleTypeDef *config);
+	Wheel_Status (*DeINIT)(struct _DigitalInput_HandleTypeDef *buttons);
+	Wheel_Status (*ReadState)(struct _DigitalInput_HandleTypeDef *buttons);
 
-	MotorDriver_HandleTypeDef *hMotorDriver;
-} Actuator_HandleTypeDef;
+	uint16_t clk_pin;
+	uint16_t lock_pin;
+	uint16_t in_pin;
+	GPIO_TypeDef *buttons_port;
 
-#endif /* COMMON_TEMPLATES_SW_ACTUATOR_H_ */
+	uint32_t buttons_state; // the raw state of the read buttons
+} DigitalInput_HandleTypeDef;
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif /* CORE_DEFINITIONS_HW_DIGITAL_INPUT_H_ */

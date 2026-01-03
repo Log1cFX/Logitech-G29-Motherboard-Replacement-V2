@@ -1,6 +1,6 @@
 Wheel/software_modules/sw_sensor.o: ../Wheel/software_modules/sw_sensor.c \
- ../Wheel/common_templates/sw_sensor.h \
- ../Wheel/common_templates/common_types.h ../Core/Inc/main.h \
+ ../Wheel/core_definitions/sw_sensor.h \
+ ../Wheel/core_definitions/common_types.h ../Core/Inc/main.h \
  ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal.h \
  ../Core/Inc/stm32f1xx_hal_conf.h \
  ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_rcc.h \
@@ -31,9 +31,9 @@ Wheel/software_modules/sw_sensor.o: ../Wheel/software_modules/sw_sensor.c \
  ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_pcd.h \
  ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_ll_usb.h \
  ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_pcd_ex.h \
- ../Wheel/util.h ../Wheel/common_templates/hw_magnetometer.h
-../Wheel/common_templates/sw_sensor.h:
-../Wheel/common_templates/common_types.h:
+ ../Wheel/util.h ../Wheel/core_definitions/hw_magnetometer.h
+../Wheel/core_definitions/sw_sensor.h:
+../Wheel/core_definitions/common_types.h:
 ../Core/Inc/main.h:
 ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal.h:
 ../Core/Inc/stm32f1xx_hal_conf.h:
@@ -66,4 +66,4 @@ Wheel/software_modules/sw_sensor.o: ../Wheel/software_modules/sw_sensor.c \
 ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_ll_usb.h:
 ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_pcd_ex.h:
 ../Wheel/util.h:
-../Wheel/common_templates/hw_magnetometer.h:
+../Wheel/core_definitions/hw_magnetometer.h:

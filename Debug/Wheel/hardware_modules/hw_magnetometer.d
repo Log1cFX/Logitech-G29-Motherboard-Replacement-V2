@@ -1,7 +1,7 @@
 Wheel/hardware_modules/hw_magnetometer.o: \
  ../Wheel/hardware_modules/hw_magnetometer.c \
- ../Wheel/common_templates/hw_magnetometer.h \
- ../Wheel/common_templates/common_types.h ../Core/Inc/main.h \
+ ../Wheel/core_definitions/hw_magnetometer.h \
+ ../Wheel/core_definitions/common_types.h ../Core/Inc/main.h \
  ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal.h \
  ../Core/Inc/stm32f1xx_hal_conf.h \
  ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_rcc.h \
@@ -33,8 +33,8 @@ Wheel/hardware_modules/hw_magnetometer.o: \
  ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_ll_usb.h \
  ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_pcd_ex.h \
  ../Wheel/util.h
-../Wheel/common_templates/hw_magnetometer.h:
-../Wheel/common_templates/common_types.h:
+../Wheel/core_definitions/hw_magnetometer.h:
+../Wheel/core_definitions/common_types.h:
 ../Core/Inc/main.h:
 ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal.h:
 ../Core/Inc/stm32f1xx_hal_conf.h:

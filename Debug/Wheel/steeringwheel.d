@@ -1,5 +1,5 @@
 Wheel/steeringwheel.o: ../Wheel/steeringwheel.c ../Wheel/steeringwheel.h \
- ../Wheel/common_templates/common_types.h ../Core/Inc/main.h \
+ ../Wheel/core_definitions/common_types.h ../Core/Inc/main.h \
  ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal.h \
  ../Core/Inc/stm32f1xx_hal_conf.h \
  ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_rcc.h \
@@ -30,16 +30,16 @@ Wheel/steeringwheel.o: ../Wheel/steeringwheel.c ../Wheel/steeringwheel.h \
  ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_pcd.h \
  ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_ll_usb.h \
  ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_pcd_ex.h \
- ../Wheel/util.h ../Wheel/common_templates/wheel_def.h \
- ../Wheel/common_templates/common_types.h \
- ../Wheel/common_templates/hw_digital_input.h \
- ../Wheel/common_templates/sw_buttons.h \
- ../Wheel/common_templates/hw_magnetometer.h \
- ../Wheel/common_templates/sw_sensor.h \
- ../Wheel/common_templates/hw_analog_input.h \
- ../Wheel/common_templates/sw_shifter.h \
- ../Wheel/common_templates/hw_motor_driver.h \
- ../Wheel/common_templates/sw_actuator.h ../Wheel/app_usb_hid.h \
+ ../Wheel/util.h ../Wheel/core_definitions/wheel_def.h \
+ ../Wheel/core_definitions/common_types.h \
+ ../Wheel/core_definitions/hw_digital_input.h \
+ ../Wheel/core_definitions/sw_buttons.h \
+ ../Wheel/core_definitions/hw_magnetometer.h \
+ ../Wheel/core_definitions/sw_sensor.h \
+ ../Wheel/core_definitions/hw_analog_input.h \
+ ../Wheel/core_definitions/sw_shifter.h \
+ ../Wheel/core_definitions/hw_motor_driver.h \
+ ../Wheel/core_definitions/sw_actuator.h ../Wheel/app_usb_hid.h \
  ../USB_DEVICE/App/usb_device.h \
  ../Middlewares/ST/STM32_USB_Device_Library/Core/Inc/usbd_def.h \
  ../USB_DEVICE/Target/usbd_conf.h \
@@ -52,7 +52,7 @@ Wheel/steeringwheel.o: ../Wheel/steeringwheel.c ../Wheel/steeringwheel.h \
  ../Libraries/ArduinoJoystickWithFFBLibrary/ffb_library.h \
  ../Libraries/ArduinoJoystickWithFFBLibrary/PIDReportType.h
 ../Wheel/steeringwheel.h:
-../Wheel/common_templates/common_types.h:
+../Wheel/core_definitions/common_types.h:
 ../Core/Inc/main.h:
 ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal.h:
 ../Core/Inc/stm32f1xx_hal_conf.h:
@@ -85,16 +85,16 @@ Wheel/steeringwheel.o: ../Wheel/steeringwheel.c ../Wheel/steeringwheel.h \
 ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_ll_usb.h:
 ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_pcd_ex.h:
 ../Wheel/util.h:
-../Wheel/common_templates/wheel_def.h:
-../Wheel/common_templates/common_types.h:
-../Wheel/common_templates/hw_digital_input.h:
-../Wheel/common_templates/sw_buttons.h:
-../Wheel/common_templates/hw_magnetometer.h:
-../Wheel/common_templates/sw_sensor.h:
-../Wheel/common_templates/hw_analog_input.h:
-../Wheel/common_templates/sw_shifter.h:
-../Wheel/common_templates/hw_motor_driver.h:
-../Wheel/common_templates/sw_actuator.h:
+../Wheel/core_definitions/wheel_def.h:
+../Wheel/core_definitions/common_types.h:
+../Wheel/core_definitions/hw_digital_input.h:
+../Wheel/core_definitions/sw_buttons.h:
+../Wheel/core_definitions/hw_magnetometer.h:
+../Wheel/core_definitions/sw_sensor.h:
+../Wheel/core_definitions/hw_analog_input.h:
+../Wheel/core_definitions/sw_shifter.h:
+../Wheel/core_definitions/hw_motor_driver.h:
+../Wheel/core_definitions/sw_actuator.h:
 ../Wheel/app_usb_hid.h:
 ../USB_DEVICE/App/usb_device.h:
 ../Middlewares/ST/STM32_USB_Device_Library/Core/Inc/usbd_def.h:

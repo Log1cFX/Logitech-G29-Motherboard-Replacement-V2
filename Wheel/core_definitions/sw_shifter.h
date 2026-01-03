@@ -23,49 +23,52 @@
  */
 
 /*
- * sw_sensor.h
+ * sw_shifter.h
  *
- *  Created on: Aug 4, 2025
+ *  Created on: Aug 14, 2025
  *      Author: raffi
  */
 
-#ifndef COMMON_TEMPLATES_SW_SENSOR_H_
-#define COMMON_TEMPLATES_SW_SENSOR_H_
+#ifndef CORE_DEFINITIONS_SW_SHIFTER_H_
+#define CORE_DEFINITIONS_SW_SHIFTER_H_
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 #include "common_types.h"
-#include "hw_magnetometer.h"
+#include "hw_analog_input.h"
 
 typedef struct {
-	Magnetometer_HandleTypeDef *hw_magnetometer;
-}Sensor_ConfigHandleTypeDef;
+	uint16_t x;
+	uint16_t y;
+}Point;
 
-typedef struct _Sensor_HandleTypeDef {
-	Wheel_Status (*INIT)(struct _Sensor_HandleTypeDef *sensor, Sensor_ConfigHandleTypeDef *config);
-	Wheel_Status (*DeINIT)(struct _Sensor_HandleTypeDef *sensor);
-	Wheel_Status (*Update)(struct _Sensor_HandleTypeDef *sensor);
-	Wheel_Status (*GetAxis)(struct _Sensor_HandleTypeDef *sensor);
+typedef struct {
+	Analog_HandleTypeDef *hw_analog;
+	uint16_t modifier_pin;
+	GPIO_TypeDef *modifier_port;
+}Shifter_ConfigHandleTypeDef;
 
-	int16_t virtual_axis; // the actual value that's sent, using full range
-	uint16_t physical_axis;// essential for calculation logic, uses full range
-	uint16_t previous_sensor_capture;
-	uint16_t current_sensor_capture;
-	int32_t steering_pos;
-	int8_t magnet_full_rotation_cnt;
-	int32_t min;
-	int32_t max;
-	uint8_t start_settling_cnt;
-	uint16_t distance;
-	float axis_scale;
+typedef struct _Shifter_HandleTypeDef {
+	Wheel_Status (*INIT)(struct _Shifter_HandleTypeDef *shifter,
+			Shifter_ConfigHandleTypeDef *config);
+	Wheel_Status (*DeINIT)(struct _Shifter_HandleTypeDef *shifter);
+	Wheel_Status (*GetState)(struct _Shifter_HandleTypeDef *shifter); // call this before reading gear
 
-	Magnetometer_HandleTypeDef *hw_magnetometer;
-}Sensor_HandleTypeDef;
+	uint16_t modifier_pin;
+	GPIO_TypeDef *modifier_port;
+
+	Point min;
+	Point max;
+	Point current_pos;
+	uint8_t gear;
+
+	Analog_HandleTypeDef *hw_analog;
+}Shifter_HandleTypeDef;
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* COMMON_TEMPLATES_SW_SENSOR_H_ */
+#endif /* CORE_DEFINITIONS_SW_SHIFTER_H_ */

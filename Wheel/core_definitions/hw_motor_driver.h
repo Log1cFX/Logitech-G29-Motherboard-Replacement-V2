@@ -29,8 +29,8 @@
  *      Author: raffi
  */
 
-#ifndef COMMON_TEMPLATES_HW_MOTOR_DRIVER_H_
-#define COMMON_TEMPLATES_HW_MOTOR_DRIVER_H_
+#ifndef CORE_DEFINITIONS_HW_MOTOR_DRIVER_H_
+#define CORE_DEFINITIONS_HW_MOTOR_DRIVER_H_
 
 #include "common_types.h"
 

@@ -9,4 +9,4 @@
 ../Wheel/hardware_modules/hw_magnetometer.c:52:21:MLX90363_DeINIT	8	static
 ../Wheel/hardware_modules/hw_magnetometer.c:162:13:transmit_blocking	8	static
 ../Wheel/hardware_modules/hw_magnetometer.c:169:13:reset_roll_counter	8	static
-../Wheel/hardware_modules/hw_magnetometer.c:63:21:MLX90363_Start_TIM	8	static
+../Wheel/hardware_modules/hw_magnetometer.c:63:21:MLX90363_Start_TIM_POLL	8	static

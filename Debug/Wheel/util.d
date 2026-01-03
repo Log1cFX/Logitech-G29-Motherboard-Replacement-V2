@@ -1,5 +1,5 @@
 Wheel/util.o: ../Wheel/util.c ../Wheel/util.h \
- ../Wheel/common_templates/common_types.h ../Core/Inc/main.h \
+ ../Wheel/core_definitions/common_types.h ../Core/Inc/main.h \
  ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal.h \
  ../Core/Inc/stm32f1xx_hal_conf.h \
  ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_rcc.h \
@@ -32,7 +32,7 @@ Wheel/util.o: ../Wheel/util.c ../Wheel/util.h \
  ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_pcd_ex.h \
  ../Wheel/util.h
 ../Wheel/util.h:
-../Wheel/common_templates/common_types.h:
+../Wheel/core_definitions/common_types.h:
 ../Core/Inc/main.h:
 ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal.h:
 ../Core/Inc/stm32f1xx_hal_conf.h:

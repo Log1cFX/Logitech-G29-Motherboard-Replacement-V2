@@ -1,7 +1,7 @@
 Libraries/ArduinoJoystickWithFFBLibrary/FfbEngine.o: \
  ../Libraries/ArduinoJoystickWithFFBLibrary/FfbEngine.cpp \
  ../Libraries/ArduinoJoystickWithFFBLibrary/FfbEngine.h \
- ../Wheel/common_templates/common_types.h ../Core/Inc/main.h \
+ ../Wheel/core_definitions/common_types.h ../Core/Inc/main.h \
  ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal.h \
  ../Core/Inc/stm32f1xx_hal_conf.h \
  ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_rcc.h \
@@ -36,7 +36,7 @@ Libraries/ArduinoJoystickWithFFBLibrary/FfbEngine.o: \
  ../Libraries/ArduinoJoystickWithFFBLibrary/PIDReportType.h \
  ../Libraries/ArduinoJoystickWithFFBLibrary/PIDReportHandler.h
 ../Libraries/ArduinoJoystickWithFFBLibrary/FfbEngine.h:
-../Wheel/common_templates/common_types.h:
+../Wheel/core_definitions/common_types.h:
 ../Core/Inc/main.h:
 ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal.h:
 ../Core/Inc/stm32f1xx_hal_conf.h:

@@ -23,34 +23,33 @@
  */
 
 /*
- * common_types.h
+ * sw_actuator.h
  *
- *  Created on: Aug 1, 2025
+ *  Created on: Dec 28, 2025
  *      Author: raffi
  */
 
-#ifndef COMMON_TEMPLATES_COMMON_TYPES_H_
-#define COMMON_TEMPLATES_COMMON_TYPES_H_
+#ifndef CORE_DEFINITIONS_SW_ACTUATOR_H_
+#define CORE_DEFINITIONS_SW_ACTUATOR_H_
 
-/*
- * By importing this file, you get access to the HAL library functions
- * as well as types commonly used in this project.
- */
+#include "hw_motor_driver.h"
+#include "common_types.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+#define MOTOR_MAX_FORCE 255
+#define MOTOR_MIN_FORCE -255
 
-#include "main.h"
-#include "util.h"
+typedef struct _Actuator_ConfigHandleTypeDef {
+	MotorDriver_HandleTypeDef *hMotorDriver;
+} Actuator_ConfigHandleTypeDef;
 
-typedef enum {
-	WHEEL_OK, // good
-	WHEEL_ERROR // not good
-} Wheel_Status;
+typedef struct _Actuator_HandleTypeDef {
+	Wheel_Status (*INIT)(struct _Actuator_HandleTypeDef *hActuator,
+			Actuator_ConfigHandleTypeDef *config);
+	Wheel_Status (*DeINIT)(struct _Actuator_HandleTypeDef *hActuator);
+	Wheel_Status (*Apply_Force)(struct _Actuator_HandleTypeDef *hActuator,
+			int16_t force); // full range -> [-255;+255]
 
-#ifdef __cplusplus
-}
-#endif
+	MotorDriver_HandleTypeDef *hMotorDriver;
+} Actuator_HandleTypeDef;
 
-#endif /* COMMON_TEMPLATES_COMMON_TYPES_H_ */
+#endif /* CORE_DEFINITIONS_SW_ACTUATOR_H_ */

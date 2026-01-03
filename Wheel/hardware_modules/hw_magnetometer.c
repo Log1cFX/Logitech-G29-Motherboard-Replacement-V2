@@ -16,14 +16,14 @@
 static Wheel_Status MLX90363_INIT(Magnetometer_HandleTypeDef *sensor,
 		Magnetometer_ConfigHandleTypeDef *config);
 static Wheel_Status MLX90363_DeINIT(Magnetometer_HandleTypeDef *sensor);
-static Wheel_Status MLX90363_Start_TIM(Magnetometer_HandleTypeDef *sensor);
+static Wheel_Status MLX90363_Start_TIM_POLL(Magnetometer_HandleTypeDef *sensor);
 static Wheel_Status MLX90363_Stop(Magnetometer_HandleTypeDef *sensor);
 static Wheel_Status MLX90363_TransmitRecieve_DMA(
 		Magnetometer_HandleTypeDef *sensor);
 static Wheel_Status MLX90363_TxRxDone_CB(Magnetometer_HandleTypeDef *sensor);
 
 Magnetometer_HandleTypeDef hmlx90363 = { MLX90363_INIT, MLX90363_DeINIT,
-		MLX90363_Start_TIM, MLX90363_Stop, MLX90363_TransmitRecieve_DMA,
+		MLX90363_Start_TIM_POLL, MLX90363_Stop, MLX90363_TransmitRecieve_DMA,
 		MLX90363_TxRxDone_CB };
 
 static uint8_t calculate_crc(uint8_t *message);
@@ -60,7 +60,7 @@ static Wheel_Status MLX90363_DeINIT(Magnetometer_HandleTypeDef *sensor) {
 	return WHEEL_OK;
 }
 
-static Wheel_Status MLX90363_Start_TIM(Magnetometer_HandleTypeDef *sensor) {
+static Wheel_Status MLX90363_Start_TIM_POLL(Magnetometer_HandleTypeDef *sensor) {
 	if (sensor->htim == 0) {
 		return WHEEL_ERROR;
 	}

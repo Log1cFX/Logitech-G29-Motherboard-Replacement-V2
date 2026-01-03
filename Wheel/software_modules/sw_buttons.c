@@ -12,7 +12,7 @@
 static Wheel_Status Buttons_INIT(Buttons_HandleTypeDef *buttons,
 		Buttons_ConfigHandleTypeDef *config);
 static Wheel_Status Buttons_DeINIT(Buttons_HandleTypeDef *buttons);
-static Wheel_Status Buttons_Start_TIM(Buttons_HandleTypeDef *buttons);
+static Wheel_Status Buttons_Start_TIM_POLL(Buttons_HandleTypeDef *buttons);
 static Wheel_Status Buttons_Stop(Buttons_HandleTypeDef *buttons);
 static Wheel_Status Buttons_Update(Buttons_HandleTypeDef *buttons);
 static Wheel_Status Buttons_GetState(Buttons_HandleTypeDef *buttons);
@@ -23,7 +23,7 @@ static void update_knob_button_state(Buttons_HandleTypeDef *buttons);
 static void get_current_knob_state(Buttons_HandleTypeDef *buttons);
 
 Buttons_HandleTypeDef hButtons = { Buttons_INIT, Buttons_DeINIT,
-		Buttons_Start_TIM, Buttons_Stop, Buttons_Update, Buttons_GetState };
+		Buttons_Start_TIM_POLL, Buttons_Stop, Buttons_Update, Buttons_GetState };
 
 static Wheel_Status Buttons_INIT(Buttons_HandleTypeDef *buttons,
 		Buttons_ConfigHandleTypeDef *config) {
@@ -46,7 +46,7 @@ static Wheel_Status Buttons_DeINIT(Buttons_HandleTypeDef *buttons) {
 	return WHEEL_OK;
 }
 
-static Wheel_Status Buttons_Start_TIM(Buttons_HandleTypeDef *buttons) {
+static Wheel_Status Buttons_Start_TIM_POLL(Buttons_HandleTypeDef *buttons) {
 	HAL_StatusTypeDef ret = HAL_OK;
 	ret = HAL_TIM_Base_Start_IT(buttons->htim);
 	return (ret == HAL_OK) ? WHEEL_OK : WHEEL_ERROR;

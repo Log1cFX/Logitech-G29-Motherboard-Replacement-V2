@@ -7,6 +7,7 @@
 
 #include "steeringwheel.h"
 #include "ffb_library.h"
+#include <math.h>
 
 Wheel_HandleTypeDef wheel;
 
@@ -35,6 +36,12 @@ static void init_motor_driver();
 static void configure_software_exti();
 static void register_initialization_error();
 
+static Wheel_Status wheel_axis_calibration();
+
+#define CALIBRATION_FORCE 150
+#define CALIBRATION_MAX_TRIES 3
+#define STEERING_RESISTANCE_START 30000
+
 int32_t forces[2];
 
 void wheel_startup() {
@@ -47,43 +54,117 @@ void wheel_startup() {
 	configure_software_exti();
 	app_usb_hid_init(&hUsbHidPid);
 
-	/* from here access handles from the wheel handle */
 	/* START MODULES */
+	Sensor_HandleTypeDef *sensor = wheel.hSensor;
 	Analog_HandleTypeDef *analog = wheel.hPedals->hw_analog;
 	Buttons_HandleTypeDef *buttons = wheel.hButtons;
 	Magnetometer_HandleTypeDef *magnetometer = wheel.hSensor->hw_magnetometer;
-	analog->Start_CONTINUOUS_SCAN_DMA(analog);
-	buttons->Start_TIM(buttons);
-	magnetometer->Start_TIM(magnetometer);
-
+	if (analog->Start_CONTINUOUS_SCAN_DMA(analog) == WHEEL_ERROR) {
+		register_initialization_error();
+	}
+	if (buttons->Start_TIM_POLL(buttons) == WHEEL_ERROR) {
+		register_initialization_error();
+	}
+	if (magnetometer->Start_TIM_POLL(magnetometer) == WHEEL_ERROR) {
+		register_initialization_error();
+	}
 	if (ffb_init() == WHEEL_ERROR) {
 		register_initialization_error();
 	}
-	app_usb_start();
+	if (app_usb_start() == WHEEL_ERROR) {
+		register_initialization_error();
+	}
 
-	/* temporary code for live calibration and force feedback testing */
-	Sensor_HandleTypeDef *sensor = wheel.hSensor;
-	sensor->min = 1;
-	sensor->max = 1;
+	HAL_Delay(3000); // waiting for a bit won't do any harm
 
+	// try calibration until succeeds or the max attempts number is reached
+	uint8_t calibration_tries = 0;
+	while (wheel_axis_calibration() == WHEEL_ERROR) {
+		HAL_Delay(3000);
+		calibration_tries++;
+		if (calibration_tries > CALIBRATION_MAX_TRIES) {
+			Error_Handler();
+		}
+	}
+
+	/* temporary code for force feedback testing */
 	forces[0] = 0;
 	forces[1] = 0;
-
+	const int16_t max = MOTOR_MAX_FORCE;
+	const int16_t min = MOTOR_MIN_FORCE;
+	const int16_t range = STEERING_RESISTANCE_START;
+	const int16_t normalizer = (0x7FFF - STEERING_RESISTANCE_START)
+			* (70.f / 100.f);
 	while (1) {
-		if (sensor->steering_pos < sensor->min) {
-			sensor->min = sensor->steering_pos;
-		}
-		if (sensor->steering_pos > sensor->max) {
-			sensor->max = sensor->steering_pos;
-		}
-		sensor->axis_scale = (float) (0xFFFF / 2) / (sensor->distance / 2);
-
 		HAL_Delay(10);
 		ffb_updateAxis(sensor->virtual_axis);
 		ffb_getForces(forces);
-		if(wheel.hActuator->Apply_Force(wheel.hActuator, (int16_t) forces[1]) == WHEEL_ERROR){
+		int16_t axis = wheel.hSensor->virtual_axis;
+		float force_coef;
+		if (axis < -range) {
+			force_coef = ((int32_t) (axis + range) * max) / -normalizer;
+			forces[1] = (force_coef > max) ? max : (int16_t) force_coef;
+		} else if (axis > range) {
+			force_coef = ((int32_t) (axis - range) * min) / normalizer;
+			forces[1] = (force_coef < min) ? min : (int16_t) force_coef;
+		}
+		if (wheel.hActuator->Apply_Force(wheel.hActuator, (int16_t) forces[1])
+				== WHEEL_ERROR) {
 			wheel.wheel_error_count++;
 		}
+	}
+}
+
+/* Perform an automatic calibration like in the original g29.
+ * Purpose : calculate the full range of the wheel by determining min and max
+ * to find out the middle and the scaling coefficient
+ * Functioning : go left until hit a wall, in the meantime do -> "min = current_pos"
+ * then repeat in the opposite direction
+ */
+static Wheel_Status wheel_axis_calibration() {
+	Sensor_HandleTypeDef *sensor = wheel.hSensor;
+	int16_t acceleration = 0;
+
+	// in the left direction
+	int32_t previous_min = sensor->steering_pos;
+	wheel.hActuator->Apply_Force(wheel.hActuator, -CALIBRATION_FORCE); // apply force
+	HAL_Delay(50); // A : appropriate delay for motors to start working
+	acceleration = sensor->steering_pos - previous_min;
+	while (abs(acceleration) > 150) { // acceleration threshold
+		// B : finding out if current position is the farthest
+		if (sensor->steering_pos < sensor->min) {
+			sensor->min = sensor->steering_pos;
+		}
+		// C : calculating acceleration
+		previous_min = sensor->steering_pos;
+		HAL_Delay(10); // a delay is required
+		acceleration = sensor->steering_pos - previous_min;
+	}
+
+	// in the right direction
+	int32_t previous_max = sensor->steering_pos;
+	wheel.hActuator->Apply_Force(wheel.hActuator, CALIBRATION_FORCE);
+	HAL_Delay(50); // A
+	acceleration = sensor->steering_pos - previous_max;
+	while (abs(acceleration) > 150) { // acceleration threshold
+		// B
+		if (sensor->steering_pos > sensor->max) {
+			sensor->max = sensor->steering_pos;
+		}
+		// C
+		previous_max = sensor->steering_pos;
+		HAL_Delay(10);
+		acceleration = sensor->steering_pos - previous_max;
+	}
+	wheel.hActuator->Apply_Force(wheel.hActuator, 0);
+
+	sensor->axis_scale = (float) (0x7FFF) / (sensor->distance / 2);
+	// In testing, the range is ~64069
+	if (sensor->distance < 63500) {
+		// notify the caller that something went wrong
+		return WHEEL_ERROR;
+	} else {
+		return WHEEL_OK;
 	}
 }
 

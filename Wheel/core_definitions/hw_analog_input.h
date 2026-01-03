@@ -29,8 +29,8 @@
  *      Author: raffi
  */
 
-#ifndef COMMON_TEMPLATES_HW_ANALOG_INPUT_H_
-#define COMMON_TEMPLATES_HW_ANALOG_INPUT_H_
+#ifndef CORE_DEFINITIONS_HW_ANALOG_INPUT_H_
+#define CORE_DEFINITIONS_HW_ANALOG_INPUT_H_
 
 #ifdef __cplusplus
 extern "C" {
@@ -81,4 +81,4 @@ typedef struct _Pedals_HandleTypeDef {
 }
 #endif
 
-#endif /* COMMON_TEMPLATES_HW_ANALOG_INPUT_H_ */
+#endif /* CORE_DEFINITIONS_HW_ANALOG_INPUT_H_ */

@@ -23,47 +23,49 @@
  */
 
 /*
- * hw_digital_input.h
+ * sw_sensor.h
  *
- *  Created on: Aug 1, 2025
+ *  Created on: Aug 4, 2025
  *      Author: raffi
  */
 
-#ifndef COMMON_TEMPLATES_HW_DIGITAL_INPUT_H_
-#define COMMON_TEMPLATES_HW_DIGITAL_INPUT_H_
+#ifndef CORE_DEFINITIONS_SW_SENSOR_H_
+#define CORE_DEFINITIONS_SW_SENSOR_H_
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 #include "common_types.h"
-
-#define BUTTONS_NUM 24U
-#define MAX_BUTTONS 32U
+#include "hw_magnetometer.h"
 
 typedef struct {
-	uint16_t clk_pin;
-	uint16_t lock_pin;
-	uint16_t in_pin;
-	GPIO_TypeDef *buttons_port;
-} DigitalInput_ConfigHandleTypeDef;
+	Magnetometer_HandleTypeDef *hw_magnetometer;
+}Sensor_ConfigHandleTypeDef;
 
-typedef struct _DigitalInput_HandleTypeDef {
-	Wheel_Status (*INIT)(struct _DigitalInput_HandleTypeDef *buttons,
-			DigitalInput_ConfigHandleTypeDef *config);
-	Wheel_Status (*DeINIT)(struct _DigitalInput_HandleTypeDef *buttons);
-	Wheel_Status (*ReadState)(struct _DigitalInput_HandleTypeDef *buttons);
+typedef struct _Sensor_HandleTypeDef {
+	Wheel_Status (*INIT)(struct _Sensor_HandleTypeDef *sensor, Sensor_ConfigHandleTypeDef *config);
+	Wheel_Status (*DeINIT)(struct _Sensor_HandleTypeDef *sensor);
+	Wheel_Status (*Update)(struct _Sensor_HandleTypeDef *sensor);
+	Wheel_Status (*GetAxis)(struct _Sensor_HandleTypeDef *sensor);
 
-	uint16_t clk_pin;
-	uint16_t lock_pin;
-	uint16_t in_pin;
-	GPIO_TypeDef *buttons_port;
+	int16_t virtual_axis; // the actual value that's sent, using full range
+	uint16_t physical_axis;// essential for calculation logic, uses full range
+	uint16_t previous_sensor_capture;
+	uint16_t current_sensor_capture;
+	int32_t steering_pos;
+	int8_t magnet_full_rotation_cnt;
+	int32_t min;
+	int32_t max;
+	uint8_t start_settling_cnt;
+	uint16_t distance;
+	float axis_scale;
 
-	uint32_t buttons_state; // the raw state of the read buttons
-} DigitalInput_HandleTypeDef;
+	Magnetometer_HandleTypeDef *hw_magnetometer;
+}Sensor_HandleTypeDef;
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* COMMON_TEMPLATES_HW_DIGITAL_INPUT_H_ */
+#endif /* CORE_DEFINITIONS_SW_SENSOR_H_ */
