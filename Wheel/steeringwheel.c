@@ -43,6 +43,13 @@ static Wheel_Status wheel_axis_calibration();
 #define STEERING_RESISTANCE_START 31000
 
 int32_t forces[2];
+int32_t force;
+
+int16_t map(int16_t x, int16_t in_min, int16_t in_max, int16_t out_min, int16_t out_max) {
+
+  return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
+
+}
 
 void wheel_startup() {
 	/* INIT */

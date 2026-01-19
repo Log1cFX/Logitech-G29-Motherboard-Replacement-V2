@@ -1,110 +1,51 @@
 /*
- Joystick.h
+  Force Feedback Joystick Math
+  Joystick model specific code for calculating force feedback.
+  Copyright 2016  Jaka Simonic
+  Copyright 2025  Jaka Simonic
+  Permission to use, copy, modify, distribute, and sell this
+  software and its documentation for any purpose is hereby granted
+  without fee, provided that the above copyright notice appear in
+  all copies and that both that the copyright notice and this
+  permission notice and warranty disclaimer appear in supporting
+  documentation, and that the name of the author not be used in
+  advertising or publicity pertaining to distribution of the
+  software without specific, written prior permission.
+  The author disclaim all warranties with regard to this
+  software, including all implied warranties of merchantability
+  and fitness.  In no event shall the author be liable for any
+  special, indirect or consequential damages or any damages
+  whatsoever resulting from loss of use, data or profits, whether
+  in an action of contract, negligence or other tortious action,
+  arising out of or in connection with the use or performance of
+  this software.
+*/
+#ifndef FFBENGINE_h
+#define FFBENGINE_h
 
- Copyright (c) 2015-2017, Matthew Heironimus
+#include "HIDReportType.h"
+#include "FfbReportHandler.h"
+#include "UserInput.h"
 
- This library is free software; you can redistribute it and/or
- modify it under the terms of the GNU Lesser General Public
- License as published by the Free Software Foundation; either
- version 2.1 of the License, or (at your option) any later version.
-
- This library is distributed in the hope that it will be useful,
- but WITHOUT ANY WARRANTY; without even the implied warranty of
- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- Lesser General Public License for more details.
-
- You should have received a copy of the GNU Lesser General Public
- License along with this library; if not, write to the Free Software
- Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
- */
-
-#ifndef JOYSTICK_h
-#define JOYSTICK_h
-
-#include "common_types.h"
-#include "PIDReportType.h"
-#include "PIDReportHandler.h"
-
-#define FORCE_FEEDBACK_MAXGAIN              100
-#define DEG_TO_RAD              ((float)((float)3.14159265359 / 180.0))
-
-struct Gains {
-	uint8_t totalGain = FORCE_FEEDBACK_MAXGAIN;
-	uint8_t constantGain = FORCE_FEEDBACK_MAXGAIN;
-	uint8_t rampGain = FORCE_FEEDBACK_MAXGAIN;
-	uint8_t squareGain = FORCE_FEEDBACK_MAXGAIN;
-	uint8_t sineGain = FORCE_FEEDBACK_MAXGAIN;
-	uint8_t triangleGain = FORCE_FEEDBACK_MAXGAIN;
-	uint8_t sawtoothdownGain = FORCE_FEEDBACK_MAXGAIN;
-	uint8_t sawtoothupGain = FORCE_FEEDBACK_MAXGAIN;
-	uint8_t springGain = FORCE_FEEDBACK_MAXGAIN;
-	uint8_t damperGain = FORCE_FEEDBACK_MAXGAIN;
-	uint8_t inertiaGain = FORCE_FEEDBACK_MAXGAIN;
-	uint8_t frictionGain = FORCE_FEEDBACK_MAXGAIN;
-	uint8_t customGain = FORCE_FEEDBACK_MAXGAIN;
-};
-
-struct EffectParams {
-	int32_t springMaxPosition = 0;
-	int32_t springPosition = 0;
-
-	int32_t damperMaxVelocity = 0;
-	int32_t damperVelocity = 0;
-
-	int32_t inertiaMaxAcceleration = 0;
-	int32_t inertiaAcceleration = 0;
-
-	int32_t frictionMaxPositionChange = 0;
-	int32_t frictionPositionChange = 0;
-};
-
-class FfbEngine {
+class FfbEngine
+{
 public:
-	FfbEngine(PIDReportHandler *pidReportHandler) { // @suppress("Class members should be properly initialized")
-		this->pidReportHandler = pidReportHandler;
-	}
+  FfbEngine(FfbReportHandler &reporthandler, UserInput &uIn, uint32_t (*)(void), int32_t (*)(float, int8_t, int8_t) = nullptr);
+  ~FfbEngine();
 
-	///force calculate function
-	float NormalizeRange(int32_t x, int32_t maxValue);
-	int32_t ApplyEnvelope(volatile TEffectState &effect, int32_t value);
-	int32_t ApplyGain(int16_t value, uint8_t gain);
-	int32_t ConstantForceCalculator(volatile TEffectState &effect);
-	int32_t RampForceCalculator(volatile TEffectState &effect);
-	int32_t SquareForceCalculator(volatile TEffectState &effect);
-	int32_t SinForceCalculator(volatile TEffectState &effect);
-	int32_t TriangleForceCalculator(volatile TEffectState &effect);
-	int32_t SawtoothDownForceCalculator(volatile TEffectState &effect);
-	int32_t SawtoothUpForceCalculator(volatile TEffectState &effect);
-	int32_t ConditionForceCalculator(volatile TEffectState &effect,
-			float metric, uint8_t axis);
-	void forceCalculator(int32_t *forces);
-	int32_t getEffectForce(volatile TEffectState &effect, Gains _gains,
-			EffectParams _effect_params, uint8_t axis);
-	//force feedback Interfaces
-	void getForce(int32_t *forces);
-	//set gain function
-	int8_t setGains(Gains *_gains) {
-		if (_gains != nullptr) {
-			//it should be added some limition here,but im so tired,it's 2:24 A.M now!
-			m_gains = _gains;
-			return 0;
-		}
-		return -1;
-	};
-	//set effect params funtions
-	int8_t setEffectParams(EffectParams *_effect_params) {
-		if (_effect_params != nullptr) {
-			m_effect_params = _effect_params;
-			return 0;
-		}
-		return -1;
-	};
+  void ForceCalculator(int32_t[NUM_AXES]);
+  float ConstantForceCalculator(const TEffectState &effect);
+  float RampForceCalculator(const TEffectState &effect, float elapsedTime);
+  void ConditionForceCalculator(const TEffectState &effect, const int32_t metric[NUM_AXES], float outForce[NUM_AXES]);
+  float PeriodiceForceCalculator(uint8_t effectType, const TEffectState &effect, float elapsedTime);
+  float GetEnvelope(const USB_FFBReport_SetEnvelope_Output_Data_t &effect, uint32_t elapsedTime, uint16_t duration);
+  bool IsEffectPlaying(const TEffectState &effect, uint32_t time);
+
 private:
-	PIDReportHandler *pidReportHandler;
-	//force feedback gain
-	Gains *m_gains;
-	//force feedback effect params
-	EffectParams *m_effect_params;
+  FfbReportHandler &ffbReportHandler;
+  UserInput &axisPosition;
+  uint32_t (*getTimeMilli)(void);
+  int32_t (*forceHook)(float forceValue, int8_t effect, int8_t axisIndex);
 };
 
-#endif // JOYSTICK_h
+#endif

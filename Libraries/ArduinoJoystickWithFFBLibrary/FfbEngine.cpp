@@ -1,377 +1,383 @@
 /*
- Joystick.cpp
+  Force Feedback Joystick Math
+  Joystick model specific code for calculating force feedback.
+  Copyright 2016  Jaka Simonic
+  Copyright 2025  Jaka Simonic
+  Permission to use, copy, modify, distribute, and sell this
+  software and its documentation for any purpose is hereby granted
+  without fee, provided that the above copyright notice appear in
+  all copies and that both that the copyright notice and this
+  permission notice and warranty disclaimer appear in supporting
+  documentation, and that the name of the author not be used in
+  advertising or publicity pertaining to distribution of the
+  software without specific, written prior permission.
+  The author disclaim all warranties with regard to this
+  software, including all implied warranties of merchantability
+  and fitness.  In no event shall the author be liable for any
+  special, indirect or consequential damages or any damages
+  whatsoever resulting from loss of use, data or profits, whether
+  in an action of contract, negligence or other tortious action,
+  arising out of or in connection with the use or performance of
+  this software.
+*/
 
- Copyright (c) 2015-2017, Matthew Heironimus
+#include <math.h>
+#include "FfbEngine.h"
+#include "HIDReportType.h"
 
- This library is free software; you can redistribute it and/or
- modify it under the terms of the GNU Lesser General Public
- License as published by the Free Software Foundation; either
- version 2.1 of the License, or (at your option) any later version.
-
- This library is distributed in the hope that it will be useful,
- but WITHOUT ANY WARRANTY; without even the implied warranty of
- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- Lesser General Public License for more details.
-
- You should have received a copy of the GNU Lesser General Public
- License along with this library; if not, write to the Free Software
- Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
- */
-
-#include <FfbEngine.h>
-#include "PIDReportHandler.h"
-#include "string.h"
-#include "math.h"
-
-#define JOYSTICK_REPORT_ID_INDEX 7
-#define JOYSTICK_AXIS_MINIMUM -32767
-#define JOYSTICK_AXIS_MAXIMUM 32767
-#define JOYSTICK_SIMULATOR_MINIMUM -32767
-#define JOYSTICK_SIMULATOR_MAXIMUM 32767
-
-#define JOYSTICK_INCLUDE_X_AXIS  0x01
-#define JOYSTICK_INCLUDE_Y_AXIS  0x02
-#define JOYSTICK_INCLUDE_Z_AXIS  0x04
-#define JOYSTICK_INCLUDE_RX_AXIS 0x08
-#define JOYSTICK_INCLUDE_RY_AXIS 0x10
-#define JOYSTICK_INCLUDE_RZ_AXIS 0x20
-
-#define JOYSTICK_INCLUDE_RUDDER      0x01
-#define JOYSTICK_INCLUDE_THROTTLE    0x02
-#define JOYSTICK_INCLUDE_ACCELERATOR 0x04
-#define JOYSTICK_INCLUDE_BRAKE       0x08
-#define JOYSTICK_INCLUDE_STEERING    0x10
-
-unsigned int timecnt = 0;
-
-long map(long x, long in_min, long in_max, long out_min, long out_max) {
-	return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
+FfbEngine::FfbEngine(
+    FfbReportHandler &reporthandler,
+    UserInput &uIn,
+    uint32_t (*pTime)(void),
+    int32_t (*fHook)(float, int8_t, int8_t)) : ffbReportHandler{reporthandler},
+                                               axisPosition{uIn},
+                                               getTimeMilli{pTime},
+                                               forceHook{fHook}
+{
 }
 
-void FfbEngine::getForce(int32_t *forces) {
-	forceCalculator(forces);
+FfbEngine::~FfbEngine()
+{
 }
 
-int32_t FfbEngine::getEffectForce(volatile TEffectState &effect, Gains _gains,
-		EffectParams _effect_params, uint8_t axis) {
-	uint8_t direction;
-	uint8_t condition;
-	bool useForceDirectionForConditionEffect = (effect.enableAxis
-			== DIRECTION_ENABLE && effect.conditionBlocksCount == 1);
-
-	if (effect.enableAxis == DIRECTION_ENABLE) {
-		direction = effect.directionX;
-		if (effect.conditionBlocksCount > 1) {
-			condition = axis;
-		} else {
-			condition = 0; // only one Condition Parameter Block is defined
-		}
-	} else {
-		direction = (axis == 0) ? effect.directionX : effect.directionY;
-		condition = axis;
-	}
-
-	float angle = (direction * 360.0 / 255.0) * DEG_TO_RAD;
-	float angle_ratio = (axis == 0 )? sinf(angle) : -1 * cosf(angle);
-	int32_t force = 0;
-	switch (effect.effectType) {
-	case USB_EFFECT_CONSTANT: //1
-		force = ConstantForceCalculator(effect) * _gains.constantGain
-				* angle_ratio;
-		break;
-	case USB_EFFECT_RAMP: //2
-		force = RampForceCalculator(effect) * _gains.rampGain * angle_ratio;
-		break;
-	case USB_EFFECT_SQUARE: //3
-		force = SquareForceCalculator(effect) * _gains.squareGain * angle_ratio;
-		break;
-	case USB_EFFECT_SINE: //4
-		force = SinForceCalculator(effect) * _gains.sineGain * angle_ratio;
-		break;
-	case USB_EFFECT_TRIANGLE: //5
-		force = TriangleForceCalculator(effect) * _gains.triangleGain
-				* angle_ratio;
-		break;
-	case USB_EFFECT_SAWTOOTHDOWN: //6
-		force = SawtoothDownForceCalculator(effect) * _gains.sawtoothdownGain
-				* angle_ratio;
-		break;
-	case USB_EFFECT_SAWTOOTHUP: //7
-		force = SawtoothUpForceCalculator(effect) * _gains.sawtoothupGain
-				* angle_ratio;
-		break;
-	case USB_EFFECT_SPRING: //8
-		force = ConditionForceCalculator(effect,
-				NormalizeRange(_effect_params.springPosition,
-						_effect_params.springMaxPosition), condition)
-				* _gains.springGain;
-		if (useForceDirectionForConditionEffect) {
-			force *= angle_ratio;
-		}
-		break;
-	case USB_EFFECT_DAMPER: //9
-		force = ConditionForceCalculator(effect,
-				NormalizeRange(_effect_params.damperVelocity,
-						_effect_params.damperMaxVelocity), condition)
-				* _gains.damperGain;
-		if (useForceDirectionForConditionEffect) {
-			force *= angle_ratio;
-		}
-		break;
-	case USB_EFFECT_INERTIA: //10
-		if (_effect_params.inertiaAcceleration < 0
-				&& _effect_params.frictionPositionChange < 0) {
-			force = ConditionForceCalculator(effect,
-					abs(
-							NormalizeRange(_effect_params.inertiaAcceleration,
-									_effect_params.inertiaMaxAcceleration)),
-					condition) * _gains.inertiaGain;
-		} else if (_effect_params.inertiaAcceleration < 0
-				&& _effect_params.frictionPositionChange > 0) {
-			force =
-					-1
-							* ConditionForceCalculator(effect,
-									abs(
-											NormalizeRange(
-													_effect_params.inertiaAcceleration,
-													_effect_params.inertiaMaxAcceleration)),
-									condition) * _gains.inertiaGain;
-		}
-		if (useForceDirectionForConditionEffect) {
-			force *= angle_ratio;
-		}
-		break;
-	case USB_EFFECT_FRICTION: //11
-		force = ConditionForceCalculator(effect,
-				NormalizeRange(_effect_params.frictionPositionChange,
-						_effect_params.frictionMaxPositionChange), condition)
-				* _gains.frictionGain;
-		if (useForceDirectionForConditionEffect) {
-			force *= angle_ratio;
-		}
-		break;
-	case USB_EFFECT_CUSTOM: //12
-		break;
-	}
-	effect.elapsedTime = (uint64_t) HAL_GetTick() - effect.startTime;
-	return force;
+float FfbEngine::ConstantForceCalculator(const TEffectState &effect)
+{
+  return effect.parameters[TYPE_SPECIFIC_BLOCK_OFFSET_1].constant.magnitude;
 }
 
-void FfbEngine::forceCalculator(int32_t *forces) {
-	forces[0] = 0;
-	forces[1] = 0;
-	for (int id = 0; id < MAX_EFFECTS; id++) {
-		volatile TEffectState &effect = pidReportHandler->g_EffectStates[id];
-		if ((effect.state == MEFFECTSTATE_PLAYING)
-				&& ((effect.elapsedTime <= effect.duration)
-						|| (effect.duration == USB_DURATION_INFINITE))
-				&& !pidReportHandler->devicePaused) {
-			forces[0] += (int32_t) (getEffectForce(effect, m_gains[0],
-					m_effect_params[0], 0));
-			forces[1] += (int32_t) (getEffectForce(effect, m_gains[1],
-					m_effect_params[1], 1));
-		}
-	}
-	forces[0] = (int32_t) ((float) 1.0 * forces[0] * m_gains[0].totalGain
-			/ 10000); // each effect gain * total effect gain = 10000
-	forces[1] = (int32_t) ((float) 1.0 * forces[1] * m_gains[1].totalGain
-			/ 10000); // each effect gain * total effect gain = 10000
-	forces[0] = map(forces[0], -10000, 10000, -250, 250);
-	forces[1] = map(forces[1], -10000, 10000, -250, 250);
+float FfbEngine::RampForceCalculator(const TEffectState &effect, float elapsedTime)
+{
+  const USB_FFBReport_SetRampForce_Output_Data_t &ramp = effect.parameters[TYPE_SPECIFIC_BLOCK_OFFSET_1].ramp;
+
+  float tempForce = ramp.startMagnitude + elapsedTime * (ramp.endMagnitude - ramp.startMagnitude) / effect.block.duration;
+  return tempForce;
 }
 
-int32_t FfbEngine::ConstantForceCalculator(volatile TEffectState &effect) {
-	return ApplyEnvelope(effect, (int32_t) effect.magnitude);
+float FfbEngine::PeriodiceForceCalculator(uint8_t effectType, const TEffectState &effect, float elapsedTime)
+{
+  const USB_FFBReport_SetPeriodic_Output_Data_t &periodic = effect.parameters[TYPE_SPECIFIC_BLOCK_OFFSET_1].periodic;
+
+  float offset = periodic.offset;
+  float magnitude = periodic.magnitude;
+  float phase = periodic.phase;
+  uint32_t period = periodic.period;
+
+  float phaseNormalized = phase / USB_MAX_PHASE;
+  uint32_t elapsedPlusPhaseTime = phaseNormalized * period + elapsedTime;
+  uint32_t remainder = elapsedPlusPhaseTime % period;
+
+  float tempForce = 0;
+  switch (effectType)
+  {
+  case USB_EFFECT_SQUARE:
+  {
+    if (remainder >= (period / 2))
+      tempForce = -magnitude;
+    else
+      tempForce = magnitude;
+    tempForce += offset;
+  }
+  break;
+  case USB_EFFECT_SINE:
+  {
+    float angle = 2 * M_PI * (elapsedTime / period + phaseNormalized);
+    tempForce = sin(angle) * magnitude;
+    tempForce += offset;
+  }
+  break;
+  case USB_EFFECT_TRIANGLE:
+  {
+    float slope = 4 * magnitude / period;
+    const uint32_t phaseOffset = period / 4;
+    uint32_t offsetRemainder = (remainder + phaseOffset) % period;
+    if (offsetRemainder >= (period / 2))
+      tempForce = slope * (period - offsetRemainder);
+    else
+      tempForce = slope * offsetRemainder;
+    tempForce -= magnitude;
+    tempForce += offset;
+  }
+  break;
+  case USB_EFFECT_SAWTOOTHUP:
+  case USB_EFFECT_SAWTOOTHDOWN:
+  {
+    float slope = magnitude / period;
+    if (effectType == USB_EFFECT_SAWTOOTHDOWN)
+      tempForce = slope * (period - remainder);
+    else
+      tempForce = slope * remainder;
+    tempForce += offset;
+  }
+  break;
+  default:
+    return 0;
+  }
+
+  return tempForce;
 }
 
-int32_t FfbEngine::RampForceCalculator(volatile TEffectState &effect) {
-	int32_t tempforce = (int32_t) (effect.startMagnitude
-			+ effect.elapsedTime * 1.0
-					* (effect.endMagnitude - effect.startMagnitude)
-					/ effect.duration);
-	return ApplyEnvelope(effect, tempforce);
+int32_t ApplyCondition(int32_t metric, uint8_t gain, const USB_FFBReport_SetCondition_Output_Data_t &condition)
+{
+  uint16_t deadBand = condition.deadBand;
+  int16_t cpOffset = condition.cpOffset;
+  uint16_t negativeCoefficient = condition.negativeCoefficient;
+  int16_t negativeSaturation = -condition.negativeSaturation;
+  uint16_t positiveSaturation = condition.positiveSaturation;
+  uint16_t positiveCoefficient = condition.positiveCoefficient;
+
+  float tempForce = 1.0 / USB_AXIS_MAX_ABSOLUTE;
+
+  if (metric < (cpOffset - deadBand))
+  {
+    tempForce *= (metric - (cpOffset - deadBand)) * negativeCoefficient;
+    if (tempForce < negativeSaturation)
+      tempForce = negativeSaturation;
+  }
+  else if (metric > (cpOffset + deadBand))
+  {
+    tempForce *= (metric - (cpOffset + deadBand)) * positiveCoefficient;
+    if (tempForce > positiveSaturation)
+      tempForce = positiveSaturation;
+  }
+
+  return -tempForce;
 }
 
-int32_t FfbEngine::SquareForceCalculator(volatile TEffectState &effect) {
-	int16_t offset = effect.offset * 2;
-	int16_t magnitude = effect.magnitude;
-	uint16_t phase = effect.phase;
-	uint16_t elapsedTime = effect.elapsedTime;
-	uint16_t period = effect.period;
+void FfbEngine::ConditionForceCalculator(const TEffectState &effect, const int32_t metric[NUM_AXES], float outForce[NUM_AXES])
+{
+  uint8_t gain = (float)effect.block.gain;
+  uint8_t enableAxis = effect.block.enableAxis;
 
-	int32_t maxMagnitude = offset + magnitude;
-	int32_t minMagnitude = offset - magnitude;
-	uint32_t phasetime = (phase * period) / 255;
-	uint32_t timeTemp = elapsedTime + phasetime;
-	uint32_t reminder = timeTemp % period;
-	int32_t tempforce;
-	if (reminder > (period / 2))
-		tempforce = minMagnitude;
-	else
-		tempforce = maxMagnitude;
-	return ApplyEnvelope(effect, tempforce);
+  if (enableAxis & DIRECTION_ENABLE)
+  {
+    const USB_FFBReport_SetCondition_Output_Data_t &condition = effect.parameters[TYPE_SPECIFIC_BLOCK_OFFSET_1].condition;
+
+    float metricComponent = 0;
+    for (uint8_t i = 0; i < NUM_AXES; ++i) // size of metric's vector component in the direction of condition effect
+    {
+      metricComponent += metric[i] * effect.directionUnitVec[i];
+    }
+
+    float tempForce = ApplyCondition(metricComponent, gain, condition);
+
+    for (uint8_t i = 0; i < NUM_AXES; ++i) // split the force to components in axis directions
+    {
+      outForce[i] = tempForce * effect.directionUnitVec[i];
+    }
+    return;
+  }
+
+  for (uint8_t i = 0; i < NUM_AXES; ++i)
+  {
+    outForce[i] = 0;
+    if (!((enableAxis >> i) & 0x01))
+      continue;
+
+    USB_FFBReport_SetCondition_Output_Data_t condition = effect.parameters[i].condition;
+    outForce[i] = ApplyCondition(metric[i], gain, condition);
+  }
 }
 
-int32_t FfbEngine::SinForceCalculator(volatile TEffectState &effect) {
-	int16_t offset = effect.offset * 2;
-	int16_t magnitude = effect.magnitude;
-	uint16_t phase = effect.phase;
-	uint16_t timeTemp = effect.elapsedTime;
-	uint16_t period = effect.period;
-	float angle = 0.0;
-	if (period != 0)
-		angle = ((timeTemp * 1.0 / period) * 2 * M_PI + (phase / 36000.0));
-	float sine = sin(angle);
-	int32_t tempforce = (int32_t) (sine * magnitude);
-	tempforce += offset;
-	return ApplyEnvelope(effect, tempforce);
+void FfbEngine::ForceCalculator(int32_t ffbForce[NUM_AXES])
+{
+  if (ffbReportHandler.devicePaused)
+  {
+    for (uint8_t i = 0; i < NUM_AXES; ++i)
+    {
+      ffbForce[i] = 0;
+    }
+    return;
+  }
+
+  const TEffectState *effectStates = ffbReportHandler.GetEffectStates();
+
+  float forceSum[NUM_AXES] = {0};
+  uint32_t time = getTimeMilli();
+
+  for (uint8_t idx = 0; idx < MAX_EFFECTS; ++idx)
+  {
+    const TEffectState &effect = effectStates[idx];
+
+    if (IsEffectPlaying(effect, time))
+    {
+      uint8_t effectType = effect.block.effectType;
+      uint16_t duration = effect.block.duration;
+      uint32_t elapsedTime = time - effect.startTime;
+      uint8_t gain = effect.block.gain;
+
+      float force = 0;
+      float forceCondition[NUM_AXES] = {0};
+
+      switch (effectType)
+      {
+      case USB_EFFECT_CONSTANT:
+        force = ConstantForceCalculator(effect);
+        break;
+      case USB_EFFECT_RAMP:
+        force = RampForceCalculator(effect, elapsedTime);
+        break;
+      case USB_EFFECT_SQUARE:
+      case USB_EFFECT_SINE:
+      case USB_EFFECT_TRIANGLE:
+      case USB_EFFECT_SAWTOOTHDOWN:
+      case USB_EFFECT_SAWTOOTHUP:
+        force = PeriodiceForceCalculator(effectType, effect, elapsedTime);
+        break;
+      case USB_EFFECT_SPRING:
+        ConditionForceCalculator(effect, axisPosition.GetMetric(UserInput::position), forceCondition);
+        break;
+      case USB_EFFECT_FRICTION:
+      case USB_EFFECT_DAMPER:
+        ConditionForceCalculator(effect, axisPosition.GetMetric(UserInput::speed), forceCondition);
+        break;
+      case USB_EFFECT_INERTIA:
+        ConditionForceCalculator(effect, axisPosition.GetMetric(UserInput::acceleration), forceCondition);
+        break;
+      case USB_EFFECT_CUSTOM:
+      default:
+        continue;
+      }
+
+      switch (effectType)
+      {
+      case USB_EFFECT_CONSTANT:
+      case USB_EFFECT_RAMP:
+      case USB_EFFECT_SQUARE:
+      case USB_EFFECT_SINE:
+      case USB_EFFECT_TRIANGLE:
+      case USB_EFFECT_SAWTOOTHDOWN:
+      case USB_EFFECT_SAWTOOTHUP:
+        if (effect.envelopeParameter)
+        {
+          const USB_FFBReport_SetEnvelope_Output_Data_t &envelope = effect.parameters[TYPE_SPECIFIC_BLOCK_OFFSET_2].envelope;
+          force *= GetEnvelope(envelope, elapsedTime, duration);
+        }
+        force *= gain;
+        force /= USB_MAX_GAIN;
+        for (uint8_t i = 0; i < NUM_AXES; ++i)
+        {
+          if (effect.block.enableAxis >> i & 0x01)
+          {
+            force *= effect.directionUnitVec[i];
+
+            if (forceHook != nullptr)
+              force = forceHook(force, effectType, i);
+
+            forceSum[i] += force;
+          }
+        }
+        break;
+      case USB_EFFECT_SPRING:
+      case USB_EFFECT_FRICTION:
+      case USB_EFFECT_DAMPER:
+      case USB_EFFECT_INERTIA:
+        for (uint8_t i = 0; i < NUM_AXES; ++i)
+        {
+          forceCondition[i] *= gain;
+          forceCondition[i] /= USB_MAX_GAIN;
+
+          if (forceHook != nullptr)
+            force = forceHook(force, effectType, i);
+
+          forceSum[i] += forceCondition[i];
+        }
+        break;
+      case USB_EFFECT_CUSTOM:
+      default:
+        continue;
+      }
+    }
+  }
+
+  for (uint8_t i = 0; i < NUM_AXES; ++i)
+  {
+    forceSum[i] *= ffbReportHandler.deviceGain;
+    forceSum[i] /= USB_MAX_GAIN;
+
+    ffbForce[i] = forceSum[i];
+  }
 }
 
-int32_t FfbEngine::TriangleForceCalculator(volatile TEffectState &effect) {
-	int16_t offset = effect.offset * 2;
-	int16_t magnitude = effect.magnitude;
-	uint16_t elapsedTime = effect.elapsedTime;
-	uint16_t phase = effect.phase;
-	uint16_t period = effect.period;
-	uint16_t periodF = effect.period;
+float FfbEngine::GetEnvelope(const USB_FFBReport_SetEnvelope_Output_Data_t &envelope, uint32_t elapsedTime, uint16_t duration)
+{
+  int32_t attackLevel = envelope.attackLevel;
+  int32_t fadeLevel = envelope.fadeLevel;
+  float envelopeValue = USB_MAX_MAGNITUDE;
+  int32_t attackTime = envelope.attackTime;
+  int32_t fadeTime = envelope.fadeTime;
 
-	int16_t maxMagnitude = offset + magnitude;
-	int16_t minMagnitude = offset - magnitude;
-	int32_t phasetime = (phase * period) / 255;
-	uint32_t timeTemp = elapsedTime + phasetime;
-	int32_t reminder = timeTemp % period;
-	int32_t slope = ((maxMagnitude - minMagnitude) * 2) / periodF;
-	int32_t tempforce = 0;
-	if (reminder > (periodF / 2))
-		tempforce = slope * (periodF - reminder);
-	else
-		tempforce = slope * reminder;
-	tempforce += minMagnitude;
-	return ApplyEnvelope(effect, tempforce);
+  if (elapsedTime < attackTime)
+  {
+    float height = (USB_MAX_MAGNITUDE - attackLevel);
+    float slope = height / attackTime;
+    envelopeValue = slope * elapsedTime + attackLevel;
+    return envelopeValue / USB_MAX_MAGNITUDE;
+  }
+
+  if (duration == USB_DURATION_INFINITE)
+  {
+    return 1.0;
+  }
+
+  if (elapsedTime >= (duration - fadeTime))
+  {
+    float height = (USB_MAX_MAGNITUDE - fadeLevel);
+    float slope = height / fadeTime;
+    envelopeValue = slope * (duration - elapsedTime) + fadeLevel;
+    return envelopeValue / USB_MAX_MAGNITUDE;
+  }
+
+  return 1.0;
 }
 
-int32_t FfbEngine::SawtoothDownForceCalculator(volatile TEffectState &effect) {
-	int16_t offset = effect.offset * 2;
-	int16_t magnitude = effect.magnitude;
-	uint16_t elapsedTime = effect.elapsedTime;
-	uint16_t phase = effect.phase;
-	uint16_t period = effect.period;
-	uint16_t periodF = effect.period;
+bool IsTriggerEffectPlaying(TEffectState &effect, uint8_t buttonState, uint32_t time)
+{
+  int64_t elapsedTime = time - effect.startTime;
+  uint8_t buttonIdx = effect.block.triggerButton - 1;
+  bool buttonPressed = ((buttonState >> buttonIdx) & 0x01);
+  if (!buttonPressed)
+  {
+    effect.triggerButtonLatch = false;
+    return false;
+  }
+  else
+  {
+    if (!effect.triggerButtonLatch)
+    {
+      effect.startTime = time;
+      effect.triggerButtonLatch = true;
+      return true;
+    }
+    else
+    {
+      if (elapsedTime < effect.block.duration)
+        return true;
 
-	int16_t maxMagnitude = offset + magnitude;
-	int16_t minMagnitude = offset - magnitude;
-	int32_t phasetime = (phase * period) / 255;
-	uint32_t timeTemp = elapsedTime + phasetime;
-	int32_t reminder = timeTemp % period;
-	int32_t slope = (maxMagnitude - minMagnitude) / periodF;
-	int32_t tempforce = 0;
-	tempforce = slope * (period - reminder);
-	tempforce += minMagnitude;
-	return ApplyEnvelope(effect, tempforce);
+      if (elapsedTime < (effect.block.duration + effect.block.triggerRepeatInterval))
+        return false;
+
+      effect.startTime = time;
+      return true;
+    }
+  }
 }
 
-int32_t FfbEngine::SawtoothUpForceCalculator(volatile TEffectState &effect) {
-	int16_t offset = effect.offset * 2;
-	int16_t magnitude = effect.magnitude;
-	uint16_t elapsedTime = effect.elapsedTime;
-	uint16_t phase = effect.phase;
-	uint16_t period = effect.period;
-	uint16_t periodF = effect.period;
+bool FfbEngine::IsEffectPlaying(const TEffectState &effect, uint32_t time)
+{
+  if (!(effect.state & MEFFECTSTATE_PLAYING))
+    return false;
 
-	int16_t maxMagnitude = offset + magnitude;
-	int16_t minMagnitude = offset - magnitude;
-	int32_t phasetime = (phase * period) / 255;
-	uint32_t timeTemp = elapsedTime + phasetime;
-	int32_t reminder = timeTemp % period;
-	int32_t slope = (maxMagnitude - minMagnitude) / periodF;
-	int32_t tempforce = 0;
-	tempforce = slope * reminder;
-	tempforce += minMagnitude;
-	return ApplyEnvelope(effect, tempforce);
+//  if (effect.block.triggerButton != USB_NO_TRIGGER_BUTTON)
+//  {
+//    return IsTriggerEffectPlaying(const_cast<TEffectState &>(effect), axisPosition.GetButtons(), time);
+//  }
+
+  int64_t elapsedTime = time - effect.startTime;
+  if (elapsedTime < 0)
+    return false;
+
+  if ((effect.block.duration != USB_DURATION_INFINITE) && (elapsedTime >= effect.block.duration))
+    return false;
+
+  return true;
 }
-
-int32_t FfbEngine::ConditionForceCalculator(volatile TEffectState &effect,
-		float metric, uint8_t axis) {
-	float deadBand;
-	float cpOffset;
-	float positiveCoefficient;
-	float negativeCoefficient;
-	float positiveSaturation;
-	float negativeSaturation;
-
-	deadBand = effect.conditions[axis].deadBand;
-	cpOffset = effect.conditions[axis].cpOffset;
-	negativeCoefficient = effect.conditions[axis].negativeCoefficient;
-	negativeSaturation = effect.conditions[axis].negativeSaturation;
-	positiveSaturation = effect.conditions[axis].positiveSaturation;
-	positiveCoefficient = effect.conditions[axis].positiveCoefficient;
-
-	float tempForce = 0;
-	if (metric < (cpOffset - deadBand)) {
-		tempForce = (metric - (float) 1.00 * (cpOffset - deadBand) / 10000)
-				* negativeCoefficient;
-		tempForce = (
-				tempForce < -negativeSaturation ?
-						-negativeSaturation : tempForce);
-	} else if (metric > (cpOffset + deadBand)) {
-		tempForce = (metric - (float) 1.00 * (cpOffset + deadBand) / 10000)
-				* positiveCoefficient;
-		tempForce =
-				(tempForce > positiveSaturation ? positiveSaturation : tempForce);
-	} else
-		return 0;
-	tempForce = -tempForce * effect.gain / 255;
-	switch (effect.effectType) {
-	case USB_EFFECT_DAMPER:
-		//tempForce = damperFilter.filterIn(tempForce);
-		break;
-	case USB_EFFECT_INERTIA:
-		//tempForce = interiaFilter.filterIn(tempForce);
-		break;
-	case USB_EFFECT_FRICTION:
-		//tempForce = frictionFilter.filterIn(tempForce);
-		break;
-	default:
-		break;
-	}
-	return (int32_t) tempForce;
-}
-
-inline float FfbEngine::NormalizeRange(int32_t x, int32_t maxValue) {
-	return (float) x * 1.00 / maxValue;
-}
-
-inline int32_t FfbEngine::ApplyGain(int16_t value, uint8_t gain) {
-	int32_t value_32 = value;
-	return ((value_32 * gain) / 255);
-}
-
-inline int32_t FfbEngine::ApplyEnvelope(volatile TEffectState &effect,
-		int32_t value) {
-	int32_t magnitude = ApplyGain(effect.magnitude, effect.gain);
-	int32_t attackLevel = ApplyGain(effect.attackLevel, effect.gain);
-	int32_t fadeLevel = ApplyGain(effect.fadeLevel, effect.gain);
-	int32_t newValue = magnitude;
-	int32_t attackTime = effect.attackTime;
-	int32_t fadeTime = effect.fadeTime;
-	int32_t elapsedTime = effect.elapsedTime;
-	int32_t duration = effect.duration;
-
-	if (elapsedTime < attackTime) {
-		newValue = (magnitude - attackLevel) * elapsedTime / attackTime;
-		newValue += attackLevel;
-	}
-
-	if (elapsedTime > (duration - fadeTime)) {
-		newValue = (magnitude - fadeLevel) * (duration - elapsedTime);
-		if (fadeTime != 0) {
-			newValue /= fadeTime;
-		}
-		newValue += fadeLevel;
-	}
-	if (magnitude != 0) {
-		newValue = newValue * value / magnitude;
-	}
-	return newValue;
-}
-
