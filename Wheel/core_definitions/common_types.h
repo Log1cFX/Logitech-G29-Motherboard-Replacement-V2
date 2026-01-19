@@ -43,6 +43,7 @@ extern "C" {
 
 #include "main.h"
 #include "util.h"
+#include "string.h"
 
 typedef enum {
 	WHEEL_OK, // good

@@ -1,34 +1,49 @@
 /*
- * MLX90363.c
+ * hw_magnetometer.c
  *
  *  Created on: Sep 22, 2024
  *      Author: raffi
+ *
+ *  Datasheet : MLX90363 Magnetometer IC
+ *  with High Speed Serial Interface
+ *  REVISION 006 – DEC 2016
+ *
+ *  Using Trigger mode 1
+ *  Ref : starting from page 21 section 13.5
+ *
+ *  BTW : if you're receiving NTT messages, maybe a timing issue.
  */
 
 #include "hw_magnetometer.h"
 
-#define GET1_OPCODE 				0x13
-#define NOP_OPCODE					0xD0
-#define NULL_DATA					0x00
-#define NOP_KEY						0xAA
-#define GET_TIME_OUT 				0xFF
+#define GET1_OPCODE 				0x13 // Ref : Table 21 – Opcode Table
+#define NOP_OPCODE					0xD0 // Ref : Table 23 – NOP (Challenge)
+#define NULL_DATA					0x00 // NULL
+#define NOP_KEY						0xAA // Doesn't matter what it is
+#define GET_TIME_OUT 				0xFF // Max timeout
+
+/*
+ * In the datasheet there are two opcodes for d16:
+ * first in the opcode table (0x10) and second in table 23 (1101 0000)
+ * That's weird.
+ */
 
 static Wheel_Status MLX90363_INIT(Magnetometer_HandleTypeDef *sensor,
 		Magnetometer_ConfigHandleTypeDef *config);
 static Wheel_Status MLX90363_DeINIT(Magnetometer_HandleTypeDef *sensor);
 static Wheel_Status MLX90363_Start_TIM_POLL(Magnetometer_HandleTypeDef *sensor);
-static Wheel_Status MLX90363_Stop(Magnetometer_HandleTypeDef *sensor);
+static Wheel_Status MLX90363_Stop_TIM_POLL(Magnetometer_HandleTypeDef *sensor);
 static Wheel_Status MLX90363_TransmitRecieve_DMA(
 		Magnetometer_HandleTypeDef *sensor);
 static Wheel_Status MLX90363_TxRxDone_CB(Magnetometer_HandleTypeDef *sensor);
 
 Magnetometer_HandleTypeDef hmlx90363 = { MLX90363_INIT, MLX90363_DeINIT,
-		MLX90363_Start_TIM_POLL, MLX90363_Stop, MLX90363_TransmitRecieve_DMA,
-		MLX90363_TxRxDone_CB };
+		MLX90363_Start_TIM_POLL, MLX90363_Stop_TIM_POLL,
+		MLX90363_TransmitRecieve_DMA, MLX90363_TxRxDone_CB };
 
 static uint8_t calculate_crc(uint8_t *message);
-static void set_Tx_GET1(Magnetometer_HandleTypeDef *sensor, uint8_t reset);
-static void set_Tx_NOP(Magnetometer_HandleTypeDef *sensor);
+static void set_GET1(uint8_t *buffer, uint8_t reset);
+static void set_NOP(uint8_t *buffer);
 static void transmit_blocking(Magnetometer_HandleTypeDef *sensor);
 static void reset_roll_counter(Magnetometer_HandleTypeDef *sensor);
 static Wheel_Status getData(Magnetometer_HandleTypeDef *sensor);
@@ -42,63 +57,62 @@ static Wheel_Status MLX90363_INIT(Magnetometer_HandleTypeDef *sensor,
 	|| config->htim == NULL) {
 		return WHEEL_ERROR;
 	}
-	sensor->SS_pin = config->SS_pin;
-	sensor->SS_port = config->SS_port;
-	sensor->hspi = config->hspi;
-	sensor->htim = config->htim;
+	memcpy(&sensor->Config, config, sizeof(Magnetometer_ConfigHandleTypeDef));
 	return WHEEL_OK;
 }
 
 static Wheel_Status MLX90363_DeINIT(Magnetometer_HandleTypeDef *sensor) {
-	if (MLX90363_Stop(sensor) == WHEEL_ERROR) {
+	if (MLX90363_Stop_TIM_POLL(sensor) == WHEEL_ERROR) {
 		return WHEEL_ERROR;
 	}
-	sensor->SS_pin = 0;
-	sensor->SS_port = NULL;
-	sensor->hspi = NULL;
-	sensor->htim = NULL;
+	memset(&sensor->Config, 0, sizeof(Magnetometer_ConfigHandleTypeDef));
 	return WHEEL_OK;
 }
 
 static Wheel_Status MLX90363_Start_TIM_POLL(Magnetometer_HandleTypeDef *sensor) {
-	if (sensor->htim == 0) {
+	Magnetometer_ConfigHandleTypeDef *config = &sensor->Config;
+	if (config->htim == 0) {
 		return WHEEL_ERROR;
 	}
-	if (sensor->hspi == 0) {
+	if (config->hspi == 0) {
 		return WHEEL_ERROR;
 	}
 	reset_roll_counter(sensor);
 	sensor->roll_cnt = 0;
 	HAL_StatusTypeDef ret = HAL_OK;
-	ret = HAL_TIM_Base_Start_IT(sensor->htim);
+	ret = HAL_TIM_Base_Start_IT(config->htim);
 	return (ret == HAL_OK) ? WHEEL_OK : WHEEL_ERROR;
 }
 
-static Wheel_Status MLX90363_Stop(Magnetometer_HandleTypeDef *sensor) {
+static Wheel_Status MLX90363_Stop_TIM_POLL(Magnetometer_HandleTypeDef *sensor) {
 	HAL_StatusTypeDef ret = HAL_OK;
-	ret = HAL_TIM_Base_Stop_IT(sensor->htim);
+	ret = HAL_TIM_Base_Stop_IT(sensor->Config.htim);
 	return (ret == HAL_OK) ? WHEEL_OK : WHEEL_ERROR;
 }
 
 static Wheel_Status MLX90363_TransmitRecieve_DMA(
 		Magnetometer_HandleTypeDef *sensor) {
-	set_Tx_GET1(sensor, 0);
+	Magnetometer_ConfigHandleTypeDef *config = &sensor->Config;
+	set_GET1(sensor->SPI_Tx_buffer, 0);
 	sensor->transfer_is_done = 0;
-	HAL_GPIO_WritePin(sensor->SS_port, sensor->SS_pin, 0);
+	HAL_GPIO_WritePin(config->SS_port, config->SS_pin, 0);
 	HAL_StatusTypeDef ret = HAL_OK;
-	ret = HAL_SPI_TransmitReceive_DMA(sensor->hspi, sensor->SPI_Tx_buffer,
+	ret = HAL_SPI_TransmitReceive_DMA(config->hspi, sensor->SPI_Tx_buffer,
 			sensor->SPI_Rx_buffer, 8);
-	return (ret==HAL_OK)? WHEEL_OK: WHEEL_ERROR;
+	return (ret == HAL_OK) ? WHEEL_OK : WHEEL_ERROR;
 }
 
+// marks transfer as done and extracts data
 static Wheel_Status MLX90363_TxRxDone_CB(Magnetometer_HandleTypeDef *sensor) {
-	HAL_GPIO_WritePin(sensor->SS_port, sensor->SS_pin, 1);
+	Magnetometer_ConfigHandleTypeDef *config = &sensor->Config;
+	HAL_GPIO_WritePin(config->SS_port, config->SS_pin, 1);
 	sensor->transfer_is_done = 1;
 	Wheel_Status ret = WHEEL_OK;
 	ret = getData(sensor);
 	return ret;
 }
 
+// Ref : datasheet page 19
 const static char cba_256_TAB[] = { 0x00, 0x2F, 0x5E, 0x71, 0xBC, 0x93, 0xE2,
 		0xCD, 0x57, 0x78, 0x09, 0x26, 0xEB, 0xC4, 0xB5, 0x9A, 0xAE, 0x81, 0xF0,
 		0xDF, 0x12, 0x3D, 0x4C, 0x63, 0xF9, 0xD6, 0xA7, 0x88, 0x45, 0x6A, 0x1B,
@@ -122,8 +136,8 @@ const static char cba_256_TAB[] = { 0x00, 0x2F, 0x5E, 0x71, 0xBC, 0x93, 0xE2,
 		0x50, 0x9D, 0xB2, 0xC3, 0xEC, 0xD8, 0xF7, 0x86, 0xA9, 0x64, 0x4B, 0x3A,
 		0x15, 0x8F, 0xA0, 0xD1, 0xFE, 0x33, 0x1C, 0x6D, 0x42 };
 
+// calculates the CRC using the 7 bytes of the buffer
 static uint8_t calculate_crc(uint8_t *message) {
-	// calculates the CRC using the 7 bytes of the buffer
 	uint8_t crc = message[7];
 	crc = 0xFF;
 	crc = cba_256_TAB[message[0] ^ crc];
@@ -137,40 +151,51 @@ static uint8_t calculate_crc(uint8_t *message) {
 	return crc;
 }
 
-static void set_Tx_GET1(Magnetometer_HandleTypeDef *sensor, uint8_t reset) {
-	sensor->SPI_Tx_buffer[0] = NULL_DATA;
-	sensor->SPI_Tx_buffer[1] = reset;
-	sensor->SPI_Tx_buffer[2] = GET_TIME_OUT;
-	sensor->SPI_Tx_buffer[3] = GET_TIME_OUT;
-	sensor->SPI_Tx_buffer[4] = NULL_DATA;
-	sensor->SPI_Tx_buffer[5] = NULL_DATA;
-	sensor->SPI_Tx_buffer[6] = GET1_OPCODE;
-	sensor->SPI_Tx_buffer[7] = calculate_crc(sensor->SPI_Tx_buffer);
+
+// Ref : datasheet page 22
+static void set_GET1(uint8_t *buffer, uint8_t reset) {
+	buffer[0] = NULL_DATA;
+	buffer[1] = reset; // reset roll. Ref : on the same page
+	buffer[2] = GET_TIME_OUT;
+	buffer[3] = GET_TIME_OUT;
+	buffer[4] = NULL_DATA;
+	buffer[5] = NULL_DATA;
+	buffer[6] = GET1_OPCODE;
+	buffer[7] = calculate_crc(buffer);
 }
 
-static void set_Tx_NOP(Magnetometer_HandleTypeDef *sensor) {
-	sensor->SPI_Tx_buffer[0] = NULL_DATA;
-	sensor->SPI_Tx_buffer[1] = NULL_DATA;
-	sensor->SPI_Tx_buffer[2] = NOP_KEY;
-	sensor->SPI_Tx_buffer[3] = NOP_KEY;
-	sensor->SPI_Tx_buffer[4] = NULL_DATA;
-	sensor->SPI_Tx_buffer[5] = NULL_DATA;
-	sensor->SPI_Tx_buffer[6] = NOP_OPCODE;
-	sensor->SPI_Tx_buffer[7] = calculate_crc(sensor->SPI_Tx_buffer);
+// Ref : datasheet page 30
+static void set_NOP(uint8_t *buffer) {
+	buffer[0] = NULL_DATA;
+	buffer[1] = NULL_DATA;
+	buffer[2] = NOP_KEY;
+	buffer[3] = NOP_KEY;
+	buffer[4] = NULL_DATA;
+	buffer[5] = NULL_DATA;
+	buffer[6] = NOP_OPCODE;
+	buffer[7] = calculate_crc(buffer);
 }
 
 static void transmit_blocking(Magnetometer_HandleTypeDef *sensor) {
-	HAL_GPIO_WritePin(sensor->SS_port, sensor->SS_pin, 0);
-	HAL_SPI_Transmit(sensor->hspi, sensor->SPI_Tx_buffer, 8,
+	Magnetometer_ConfigHandleTypeDef *config = &sensor->Config;
+	HAL_GPIO_WritePin(config->SS_port, config->SS_pin, 0);
+	HAL_SPI_Transmit(config->hspi, sensor->SPI_Tx_buffer, 8,
 	HAL_MAX_DELAY);
-	HAL_GPIO_WritePin(sensor->SS_port, sensor->SS_pin, 1);
+	HAL_GPIO_WritePin(config->SS_port, config->SS_pin, 1);
 }
 
+// resets the roll counter and stops communication
 static void reset_roll_counter(Magnetometer_HandleTypeDef *sensor) {
-	set_Tx_GET1(sensor, 1);
+	// fill buffer with a GET1 request with a roll_cnt reset
+	set_GET1(sensor->SPI_Tx_buffer, 1);
+	// should reset the roll_cnt
 	transmit_blocking(sensor);
+	// a delay is required
 	HAL_Delay(1);
-	set_Tx_NOP(sensor);
+	// fill the buffer with a NOP request to stop the communication
+	set_NOP(sensor->SPI_Tx_buffer);
+	// should stop the communication without increasing the roll_cnt
+	// Ref : Figure 4 – Trigger Mode 1
 	transmit_blocking(sensor);
 }
 
@@ -218,7 +243,9 @@ static Wheel_Status getData(Magnetometer_HandleTypeDef *sensor) {
 
 	/* 		EXTRACTING THE DATA 		*/
 	// Extract and convert the angle to degrees
-	sensor->alpha = (((RxBuffer[1] & 0x3F) << 8) + RxBuffer[0]) << 2;
+	// Ref : datasheet page 20 + note at page 21
+	// alpha is 14 bit, it is shifted 2 times to get a 16 bit value
+	sensor->reading = (((RxBuffer[1] & 0x3F) << 8) + RxBuffer[0]) << 2;
 	// Extract the error bits
 	sensor->diagnostic_bits = RxBuffer[1] >> 6;
 	return WHEEL_OK;

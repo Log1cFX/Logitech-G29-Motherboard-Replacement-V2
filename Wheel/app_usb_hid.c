@@ -88,6 +88,10 @@ void app_usb_hid_send_report() {
 	wheel.hUsbHid->report_state = USB_REPORT_NOT_READY;
 }
 
+/*
+ * returns the encoded direction of the d_pad with the 4 most important bits
+ * of the parameter byte
+*/
 static uint8_t hat_switch_from_msb(uint8_t byte) {
 	/* Extract individual direction bits (boolean 0 / 1) */
 	uint8_t down = (byte & 0x10u) ? 1u : 0u; // bit 4
@@ -114,7 +118,7 @@ static uint8_t hat_switch_from_msb(uint8_t byte) {
 	return hat_table[dpadY + 1][dpadX + 1];
 }
 
-/* 		CALLBACKS 		*/
+/* 			CALLBACKS 			*/
 // Replaces the dynamically called SOF function of the USB interface.
 // Is called when a Start Of Frame packet is recieved (1KHz).
 // Used to check how many milliseconds the deferred processing wasn't active, for error checking.
@@ -135,6 +139,7 @@ static uint8_t app_usb_SOF_CB(USBD_HandleTypeDef *pdev) {
 }
 
 // This function is called from the library for additional PID commands.
+// note : this is one of the things that required modifying the library
 uint8_t USB_HID_PID_CTL_PARSER(USBD_HandleTypeDef *pdev,
 		USBD_SetupReqTypedef *req) {
 	USBD_CUSTOM_HID_HandleTypeDef *hhid =
@@ -195,28 +200,31 @@ uint8_t USB_HID_PID_CTL_PARSER(USBD_HandleTypeDef *pdev,
 	return ret;
 }
 
-/*		CALLBACKS		*/
-
 /*
  * Replaces the dynamically called DataIn function of the USB HID interface.
- * Is called when the HID EP finishes successful a Tx transfer.
+ * Is called when the HID EP finishes a successful Tx transfer.
  * Creates a software interrupt on the EXTI line for deferred usb processing.
  */
 static uint8_t app_usb_DataInStage_CB(USBD_HandleTypeDef *pdev, uint8_t epnum) {
+	// Enable the next report to be sent. If isn't done, the function USBD_CUSTOM_HID_SendReport
+	// will return CUSTOM_HID_BUSY and not send the report
 	((USBD_CUSTOM_HID_HandleTypeDef*) pdev->pClassData)->state =
-			CUSTOM_HID_IDLE; // Enable the next report to be sent
-	__HAL_GPIO_EXTI_GENERATE_SWIT(wheel.hSwit.usb_process_data_pin); // Create a software interrupt for deferred processing
+			CUSTOM_HID_IDLE;
+	// Create a software interrupt for deferred processing
+	__HAL_GPIO_EXTI_GENERATE_SWIT(wheel.hSwit.usb_process_data_pin);
 	return USBD_OK;
 }
 
 /*
  * Replaces the dynamically called DataOut function of the USB HID interface.
- * Is called when the HID EP finishes successful a Rx transfer.
- * Calls the function that processes FFB data then prepares to recieve the next packet.
+ * Is called when the HID EP finishes a successful Rx transfer.
+ * Calls the function that processes FFB data then prepares to receive the next packet.
  */
 static uint8_t app_usb_DataOutStage_CB(USBD_HandleTypeDef *pdev, uint8_t epnum) {
 	FfbOnUsbData(wheel.hUsbHid->Ep1Out_buffer,
 	USBD_CUSTOMHID_OUTREPORT_BUF_SIZE);
+	// The next function should always be called after recieving anything
+	// If isn't called, a report might be missed
 	USBD_LL_PrepareReceive(pdev, CUSTOM_HID_EPOUT_ADDR,
 			wheel.hUsbHid->Ep1Out_buffer,
 			USBD_CUSTOMHID_OUTREPORT_BUF_SIZE);
@@ -225,13 +233,14 @@ static uint8_t app_usb_DataOutStage_CB(USBD_HandleTypeDef *pdev, uint8_t epnum) 
 
 /*
  * Replaces the dynamically called EP0_RxReady function of the USB HID interface.
- * Is called when the control endpoint finishes successful a Rx transfer.
+ * Is called when the control endpoint finishes successfully a Rx transfer.
  * If called after a "HID_FfbOnCreateNewEffect_REPORT_ID" packet,
  * calls the appropriate function to create a new effect.
  */
 static uint8_t app_usb_EP0_recieve_CB(USBD_HandleTypeDef *pdev) {
 	USBD_CUSTOM_HID_HandleTypeDef *hhid =
 			(USBD_CUSTOM_HID_HandleTypeDef*) pdev->pClassData;
+	// check if a report has been recieved on the ctrl EP
 	if (hhid->IsReportAvailable == 1U && wheel.hUsbHid->on_new_effect_request) {
 		FfbOnCreateNewEffect(
 				(USB_FFBReport_CreateNewEffect_Feature_Data_t*) wheel.hUsbHid->Ep0Out_buffer);

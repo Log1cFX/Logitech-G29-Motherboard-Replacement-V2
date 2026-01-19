@@ -56,15 +56,16 @@ typedef struct _Shifter_HandleTypeDef {
 	Wheel_Status (*DeINIT)(struct _Shifter_HandleTypeDef *shifter);
 	Wheel_Status (*GetState)(struct _Shifter_HandleTypeDef *shifter); // call this before reading gear
 
-	uint16_t modifier_pin;
-	GPIO_TypeDef *modifier_port;
-
+	// Shouldn't be filled manually but instead by calling INIT
+	Shifter_ConfigHandleTypeDef Config;
+	// value indicating current gear from 0 to 7 where 0 is no gear
+	uint8_t gear;
+	// values used for calibration, can be filled manually after calling INIT
 	Point min;
 	Point max;
-	Point current_pos;
-	uint8_t gear;
 
-	Analog_HandleTypeDef *hw_analog;
+	/* THIS IS IMPLEMENTATION SPECIFIC AND ONLY USED INSIDE THE SOURCE FILE */
+	Point current_pos;
 }Shifter_HandleTypeDef;
 
 #ifdef __cplusplus

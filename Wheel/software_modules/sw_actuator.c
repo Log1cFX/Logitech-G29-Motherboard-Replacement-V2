@@ -24,13 +24,13 @@ static Wheel_Status Actuator_INIT(Actuator_HandleTypeDef *hActuator,
 	if (config->hMotorDriver == NULL) {
 		return WHEEL_ERROR;
 	}
-	hActuator->hMotorDriver = config->hMotorDriver;
+	memcpy(&hActuator->Config, config, sizeof(Actuator_ConfigHandleTypeDef));
 	return WHEEL_OK;
 }
 
 static Wheel_Status Actuator_DeINIT(Actuator_HandleTypeDef *hActuator) {
-
-	if (hActuator->hMotorDriver->DeINIT(hActuator->hMotorDriver)
+	Actuator_ConfigHandleTypeDef *config = &hActuator->Config;
+	if (config->hMotorDriver->DeINIT(config->hMotorDriver)
 			== WHEEL_ERROR) {
 		return WHEEL_ERROR;
 	}
@@ -40,7 +40,7 @@ static Wheel_Status Actuator_DeINIT(Actuator_HandleTypeDef *hActuator) {
 
 static Wheel_Status Actuator_Apply_Force(Actuator_HandleTypeDef *hActuator,
 		int16_t force) {
-	MotorDriver_HandleTypeDef *motor = hActuator->hMotorDriver;
+	MotorDriver_HandleTypeDef *motor = hActuator->Config.hMotorDriver;
 	Wheel_Status ret = WHEEL_OK; // just to confirm that nothing has gone wrong
 	/*
 	 * force is set to 0 because if it is more than 255 it means that something went critically wrong
@@ -54,11 +54,11 @@ static Wheel_Status Actuator_Apply_Force(Actuator_HandleTypeDef *hActuator,
 		ret = WHEEL_ERROR;
 	}
 	if (force < 0) {
-		ret != motor->Drive_Left(motor, -force);
+		ret |= motor->Drive_Left(motor, -force);
 	} else if (force > 0) {
-		ret != motor->Drive_Right(motor, force);
+		ret |= motor->Drive_Right(motor, force);
 	} else {
-		ret != motor->Coast(motor);
+		ret |= motor->Coast(motor);
 	}
 	return ret;
 }

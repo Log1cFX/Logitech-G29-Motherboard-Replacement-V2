@@ -13,8 +13,8 @@ static Wheel_Status Buttons_INIT(Buttons_HandleTypeDef *buttons,
 		Buttons_ConfigHandleTypeDef *config);
 static Wheel_Status Buttons_DeINIT(Buttons_HandleTypeDef *buttons);
 static Wheel_Status Buttons_Start_TIM_POLL(Buttons_HandleTypeDef *buttons);
-static Wheel_Status Buttons_Stop(Buttons_HandleTypeDef *buttons);
-static Wheel_Status Buttons_Update(Buttons_HandleTypeDef *buttons);
+static Wheel_Status Buttons_Stop_TIM_POLL(Buttons_HandleTypeDef *buttons);
+static Wheel_Status Buttons_TIM_POLL_CB(Buttons_HandleTypeDef *buttons);
 static Wheel_Status Buttons_GetState(Buttons_HandleTypeDef *buttons);
 
 static void get_debounced_state(Buttons_HandleTypeDef *buttons);
@@ -23,7 +23,8 @@ static void update_knob_button_state(Buttons_HandleTypeDef *buttons);
 static void get_current_knob_state(Buttons_HandleTypeDef *buttons);
 
 Buttons_HandleTypeDef hButtons = { Buttons_INIT, Buttons_DeINIT,
-		Buttons_Start_TIM_POLL, Buttons_Stop, Buttons_Update, Buttons_GetState };
+		Buttons_Start_TIM_POLL, Buttons_Stop_TIM_POLL, Buttons_TIM_POLL_CB,
+		Buttons_GetState };
 
 static Wheel_Status Buttons_INIT(Buttons_HandleTypeDef *buttons,
 		Buttons_ConfigHandleTypeDef *config) {
@@ -33,35 +34,35 @@ static Wheel_Status Buttons_INIT(Buttons_HandleTypeDef *buttons,
 	if (config->htim == 0 || config->hw_buttons == 0) {
 		return WHEEL_ERROR;
 	}
-	buttons->htim = config->htim;
-	buttons->hw_buttons = config->hw_buttons;
+	memcpy(&buttons->Config, config, sizeof(Buttons_ConfigHandleTypeDef));
 	return WHEEL_OK;
 }
 static Wheel_Status Buttons_DeINIT(Buttons_HandleTypeDef *buttons) {
-	if (buttons->hw_buttons->DeINIT(buttons->hw_buttons) == WHEEL_ERROR) {
+	Buttons_ConfigHandleTypeDef *config = &buttons->Config;
+	if (config->hw_buttons->DeINIT(config->hw_buttons) == WHEEL_ERROR) {
 		return WHEEL_ERROR;
 	}
-	buttons->htim = 0;
-	buttons->hw_buttons = 0;
+	memset(&buttons->Config, 0, sizeof(Buttons_ConfigHandleTypeDef));
 	return WHEEL_OK;
 }
 
 static Wheel_Status Buttons_Start_TIM_POLL(Buttons_HandleTypeDef *buttons) {
 	HAL_StatusTypeDef ret = HAL_OK;
-	ret = HAL_TIM_Base_Start_IT(buttons->htim);
+	ret = HAL_TIM_Base_Start_IT(buttons->Config.htim);
 	return (ret == HAL_OK) ? WHEEL_OK : WHEEL_ERROR;
 }
 
-static Wheel_Status Buttons_Stop(Buttons_HandleTypeDef *buttons) {
+static Wheel_Status Buttons_Stop_TIM_POLL(Buttons_HandleTypeDef *buttons) {
 	HAL_StatusTypeDef ret = HAL_OK;
-	ret = HAL_TIM_Base_Stop_IT(buttons->htim);
+	ret = HAL_TIM_Base_Stop_IT(buttons->Config.htim);
 	return (ret == HAL_OK) ? WHEEL_OK : WHEEL_ERROR;
 }
 
-static Wheel_Status Buttons_Update(Buttons_HandleTypeDef *buttons) {
+static Wheel_Status Buttons_TIM_POLL_CB(Buttons_HandleTypeDef *buttons) {
+	DigitalInput_HandleTypeDef *hw_buttons = buttons->Config.hw_buttons;
+	hw_buttons->ReadState(hw_buttons);
 	buttons->sample_head = (buttons->sample_head + 1) % BUTTONS_BUFFER_SIZE;
-	buttons->sample_buffer[buttons->sample_head] =
-			buttons->hw_buttons->buttons_state;
+	buttons->sample_buffer[buttons->sample_head] = hw_buttons->buttons_state;
 	if (GET_BIT(buttons->knob_flags, KNOB_LOCK_FLAG)) {
 		update_knob_button_state(buttons);
 	} else {

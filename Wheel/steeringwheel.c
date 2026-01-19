@@ -40,7 +40,7 @@ static Wheel_Status wheel_axis_calibration();
 
 #define CALIBRATION_FORCE 150
 #define CALIBRATION_MAX_TRIES 3
-#define STEERING_RESISTANCE_START 30000
+#define STEERING_RESISTANCE_START 31000
 
 int32_t forces[2];
 
@@ -55,10 +55,9 @@ void wheel_startup() {
 	app_usb_hid_init(&hUsbHidPid);
 
 	/* START MODULES */
-	Sensor_HandleTypeDef *sensor = wheel.hSensor;
-	Analog_HandleTypeDef *analog = wheel.hPedals->hw_analog;
+	Magnetometer_HandleTypeDef *magnetometer = wheel.hMagnetometer;
+	Analog_HandleTypeDef *analog = wheel.hAnalog;
 	Buttons_HandleTypeDef *buttons = wheel.hButtons;
-	Magnetometer_HandleTypeDef *magnetometer = wheel.hSensor->hw_magnetometer;
 	if (analog->Start_CONTINUOUS_SCAN_DMA(analog) == WHEEL_ERROR) {
 		register_initialization_error();
 	}
@@ -88,6 +87,7 @@ void wheel_startup() {
 	}
 
 	/* temporary code for force feedback testing */
+	Sensor_HandleTypeDef *sensor = wheel.hSensor;
 	forces[0] = 0;
 	forces[1] = 0;
 	const int16_t max = MOTOR_MAX_FORCE;
@@ -171,11 +171,15 @@ static Wheel_Status wheel_axis_calibration() {
 /* 		INITIALIZATION FUNCTIONS		 */
 static void init_wheel_handle() {
 	wheel.wheel_error_count = 0;
+	wheel.hDigitalInput = &hG29Buttons;
 	wheel.hButtons = &hButtons;
+	wheel.hMagnetometer = &hmlx90363;
 	wheel.hSensor = &hSensor;
+	wheel.hAnalog = &hAnalog;
 	wheel.hPedals = &hPedals;
 	wheel.hShifter = &hShifter;
 	wheel.hUsbHid = &hUsbHidPid;
+	wheel.hMotorDriver = &hMotorDriver;
 	wheel.hActuator = &hActuator;
 }
 
@@ -316,9 +320,8 @@ void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef *hadc) {
 
 // Called at the end of a transfer to process the raw data received by the sensor
 void HAL_SPI_TxRxCpltCallback(SPI_HandleTypeDef *hspi) {
-	if (wheel.hSensor->hw_magnetometer->hspi->Instance == hspi->Instance) {
-		wheel.hSensor->hw_magnetometer->TxRxDone_CB(
-				wheel.hSensor->hw_magnetometer);
+	if (wheel.hMagnetometer->Config.hspi->Instance == hspi->Instance) {
+		wheel.hMagnetometer->TxRxDone_CB(wheel.hMagnetometer);
 		wheel.hSensor->Update(wheel.hSensor);
 	}
 }
@@ -326,12 +329,14 @@ void HAL_SPI_TxRxCpltCallback(SPI_HandleTypeDef *hspi) {
 // 1. Used to start, periodically, the transmission with the magnetometer (steering) (IMPORTANT)
 // 2. Used to periodically read the buttons' state (for debouncing) (IMPORTANT)
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
-	if (wheel.hSensor->hw_magnetometer->htim->Instance == htim->Instance) {
-		wheel.hSensor->hw_magnetometer->TransmitRecieve_DMA(
-				wheel.hSensor->hw_magnetometer);
+	// 1
+	Magnetometer_HandleTypeDef *hw_magnetometer = wheel.hMagnetometer;
+	if (hw_magnetometer->Config.htim->Instance == htim->Instance) {
+		hw_magnetometer->TransmitRecieve_DMA(hw_magnetometer);
 	}
-	if (wheel.hButtons->htim->Instance == htim->Instance) {
-		wheel.hButtons->hw_buttons->ReadState(wheel.hButtons->hw_buttons);
-		wheel.hButtons->Update(wheel.hButtons);
+	// 2
+	Buttons_HandleTypeDef *hButtons = wheel.hButtons;
+	if (hButtons->Config.htim->Instance == htim->Instance) {
+		hButtons->TIM_POLL_CB(hButtons);
 	}
 }

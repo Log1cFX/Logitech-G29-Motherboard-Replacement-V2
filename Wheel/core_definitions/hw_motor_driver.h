@@ -55,15 +55,9 @@ typedef struct _MotorDriver_HandleTypeDef {
 	Wheel_Status (*Drive_Right)(struct _MotorDriver_HandleTypeDef *hMotorDriver,
 			uint8_t force); // Clockwise; 		 	full range -> [0;255]
 	Wheel_Status (*Coast)(struct _MotorDriver_HandleTypeDef *hMotorDriver);
-	uint16_t R_EN_pin;
-	uint16_t L_EN_pin;
-	GPIO_TypeDef *R_EN_port;
-	GPIO_TypeDef *L_EN_port;
-	TIM_HandleTypeDef *pwm_timer;
-	uint32_t right_channel;
-	uint32_t left_channel;
-	volatile uint32_t *right_compareRegister;
-	volatile uint32_t *left_compareRegister;
+
+	// Shouldn't be filled manually but instead by calling INIT
+	MotorDriver_ConfigHandleTypeDef Config;
 
 	uint8_t motors_enabled;
 

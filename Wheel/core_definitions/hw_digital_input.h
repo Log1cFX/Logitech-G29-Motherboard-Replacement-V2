@@ -54,12 +54,10 @@ typedef struct _DigitalInput_HandleTypeDef {
 	Wheel_Status (*DeINIT)(struct _DigitalInput_HandleTypeDef *buttons);
 	Wheel_Status (*ReadState)(struct _DigitalInput_HandleTypeDef *buttons);
 
-	uint16_t clk_pin;
-	uint16_t lock_pin;
-	uint16_t in_pin;
-	GPIO_TypeDef *buttons_port;
-
-	uint32_t buttons_state; // the raw state of the read buttons
+	// Shouldn't be filled manually but instead by calling INIT
+	DigitalInput_ConfigHandleTypeDef Config;
+	// the raw state of the read buttons
+	uint32_t buttons_state;
 } DigitalInput_HandleTypeDef;
 
 #ifdef __cplusplus

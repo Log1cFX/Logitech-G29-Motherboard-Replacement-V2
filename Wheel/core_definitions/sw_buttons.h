@@ -43,7 +43,7 @@ extern "C" {
 #define SAMPLE_TIME_US 1000U
 #define MAX_SAMPLES 65U
 #define HALF_SAMPLES MAX_SAMPLES/2
-#define BUTTONS_BUFFER_SIZE 200U
+#define BUTTONS_BUFFER_SIZE MAX_SAMPLES
 
 //yeah, I should write a book about this horror
 /* FOR THE KNOB */
@@ -65,22 +65,28 @@ typedef struct _Buttons_HandleTypeDef {
 	Wheel_Status (*INIT)(struct _Buttons_HandleTypeDef *buttons,
 			Buttons_ConfigHandleTypeDef *config);
 	Wheel_Status (*DeINIT)(struct _Buttons_HandleTypeDef *buttons);
+	// Start the timer that is used to periodically read the state of buttons
 	Wheel_Status (*Start_TIM_POLL)(struct _Buttons_HandleTypeDef *buttons);
-	Wheel_Status (*Stop)(struct _Buttons_HandleTypeDef *buttons);
-	Wheel_Status (*Update)(struct _Buttons_HandleTypeDef *buttons); // Must be called by the timer
+	// Stop it
+	Wheel_Status (*Stop_TIM_POLL)(struct _Buttons_HandleTypeDef *buttons);
+	// Must be called by the timer
+	Wheel_Status (*TIM_POLL_CB)(struct _Buttons_HandleTypeDef *buttons);
 	// Call GetState before reading the state from buttons_state
 	Wheel_Status (*GetState)(struct _Buttons_HandleTypeDef *buttons);
 
+	// Shouldn't be filled manually but instead by calling INIT
+	Buttons_ConfigHandleTypeDef Config;
+
+	// variable that is used to get the state of buttons
 	uint32_t buttons_state;
+
+	/* THIS IS IMPLEMENTATION SPECIFIC AND ONLY USED INSIDE THE SOURCE FILE */
 	uint32_t sample_buffer[BUTTONS_BUFFER_SIZE];
 	uint32_t knob_rotation_sequence_buffer[ROTATION_SEQUENCE_SIZE];
 	uint32_t knob_lock_init_time_ms;
 	uint8_t knob_head;
 	uint8_t knob_flags;
 	uint16_t sample_head;
-
-	TIM_HandleTypeDef *htim;
-	DigitalInput_HandleTypeDef *hw_buttons;
 }Buttons_HandleTypeDef;
 
 #ifdef __cplusplus

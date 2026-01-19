@@ -51,13 +51,16 @@ typedef struct _Analog_HandleTypeDef {
 	Wheel_Status (*INIT)(struct _Analog_HandleTypeDef *analog,
 			Analog_ConfigHandleTypeDef *config);
 	Wheel_Status (*DeINIT)(struct _Analog_HandleTypeDef *analog);
+	// look up "CONTINUOUS DMA SCAN STM32"
 	Wheel_Status (*Start_CONTINUOUS_SCAN_DMA)(
-			struct _Analog_HandleTypeDef *analog); // look up "CONTINUOUS DMA SCAN STM32"
+			struct _Analog_HandleTypeDef *analog);
 	Wheel_Status (*Stop)(struct _Analog_HandleTypeDef *analog);
 
-	uint32_t axis[ANALOG_INPUT_NUM]; // array where output will be stored
+	// Shouldn't be filled manually but instead by calling INIT
+	Analog_ConfigHandleTypeDef Config;
+	// array where output will be stored
+	uint32_t axis[ANALOG_INPUT_NUM];
 
-	ADC_HandleTypeDef *hadc;
 } Analog_HandleTypeDef;
 
 typedef struct _Pedals_ConfigHandleTypeDef {
@@ -70,11 +73,12 @@ typedef struct _Pedals_HandleTypeDef {
 	Wheel_Status (*DeINIT)(struct _Pedals_HandleTypeDef *analog);
 	Wheel_Status (*GetState)(struct _Pedals_HandleTypeDef *analog);
 
+	// Shouldn't be filled manually but instead by calling INIT
+	Pedals_ConfigHandleTypeDef Config;
+	// variables that are used to get the value of pedals after GetState
 	uint8_t clutch;
 	uint8_t brake;
 	uint8_t throtle;
-
-	Analog_HandleTypeDef *hw_analog;
 } Pedals_HandleTypeDef;
 
 #ifdef __cplusplus

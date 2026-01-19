@@ -21,30 +21,30 @@ static inline void get_steering_pos(Sensor_HandleTypeDef *sensor);
 
 static Wheel_Status Sensor_INIT(Sensor_HandleTypeDef *sensor,
 		Sensor_ConfigHandleTypeDef *config) {
-	if(config == NULL){
+	if (config == NULL) {
 		return WHEEL_ERROR;
 	}
 	if (config->hw_magnetometer == NULL) {
 		return WHEEL_ERROR;
 	}
-	sensor->hw_magnetometer = config->hw_magnetometer;
+	memcpy(&sensor->Config, config, sizeof(Sensor_ConfigHandleTypeDef));
 	sensor->start_settling_cnt = 2;
 	sensor->axis_scale = 1.0f;
 	return WHEEL_OK;
 }
 
 static Wheel_Status Sensor_DeINIT(Sensor_HandleTypeDef *sensor) {
-	if (sensor->hw_magnetometer->DeINIT(sensor->hw_magnetometer)
-			== WHEEL_ERROR) {
+	Magnetometer_HandleTypeDef *hw_magnetometer = sensor->Config.hw_magnetometer;
+	if (hw_magnetometer->DeINIT(hw_magnetometer) == WHEEL_ERROR) {
 		return WHEEL_ERROR;
 	}
-	sensor->hw_magnetometer = NULL;
+	memset(&sensor->Config, 0, sizeof(Sensor_ConfigHandleTypeDef));
 	return WHEEL_OK;
 }
 
 static Wheel_Status Sensor_Update(Sensor_HandleTypeDef *sensor) {
 	sensor->previous_sensor_capture = sensor->current_sensor_capture;
-	sensor->current_sensor_capture = (int16_t) sensor->hw_magnetometer->alpha;
+	sensor->current_sensor_capture = sensor->Config.hw_magnetometer->reading;
 	if (sensor->start_settling_cnt == 0) {
 		calculate_magnet_rotations(sensor);
 	} else {
@@ -86,7 +86,6 @@ static const float roll_to_axis_coef = 1560.3571f;
 
 // Calculate full revolutions by comparing current vs previous 16-bit capture,
 // using half-range threshold (32767) for unwrap logic.
-
 static inline void calculate_magnet_rotations(Sensor_HandleTypeDef *sensor) {
 	uint16_t cur = sensor->current_sensor_capture;
 	uint16_t prev = sensor->previous_sensor_capture;

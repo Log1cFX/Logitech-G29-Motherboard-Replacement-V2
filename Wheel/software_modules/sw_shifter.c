@@ -20,9 +20,7 @@ static Wheel_Status Shifter_INIT(Shifter_HandleTypeDef *shifter,
 	if (config->hw_analog == 0) {
 		return WHEEL_ERROR;
 	}
-	shifter->hw_analog = config->hw_analog;
-	shifter->modifier_port = config->modifier_port;
-	shifter->modifier_pin = config->modifier_pin;
+	memcpy(&shifter->Config, config, sizeof(Shifter_ConfigHandleTypeDef));
 	shifter->min.x = 10000;
 	shifter->min.y = 60000;
 	shifter->max.x = 52000;
@@ -31,17 +29,18 @@ static Wheel_Status Shifter_INIT(Shifter_HandleTypeDef *shifter,
 }
 
 static Wheel_Status Shifter_DeINIT(Shifter_HandleTypeDef *shifter) {
-	if (shifter->hw_analog->DeINIT(shifter->hw_analog) == WHEEL_ERROR) {
+	Analog_HandleTypeDef *hw_analog = shifter->Config.hw_analog;
+	if (hw_analog->DeINIT(hw_analog) == WHEEL_ERROR) {
 		Error_Handler();
 	}
-	shifter->hw_analog = 0;
+	memset(&shifter->Config, 0, sizeof(Shifter_ConfigHandleTypeDef));
 	return WHEEL_OK;
 }
 
 // this works just fine, it does
 static Wheel_Status Shifter_getSpeed(Shifter_HandleTypeDef *shifter) {
-	shifter->current_pos.x = shifter->hw_analog->axis[SHIFTER_IDX];
-	shifter->current_pos.y = shifter->hw_analog->axis[SHIFTER_IDX + 1];
+	shifter->current_pos.x = shifter->Config.hw_analog->axis[SHIFTER_IDX];
+	shifter->current_pos.y = shifter->Config.hw_analog->axis[SHIFTER_IDX + 1];
 
 	Point *min = &shifter->min;
 	Point *max = &shifter->max;
@@ -88,7 +87,7 @@ static Wheel_Status Shifter_getSpeed(Shifter_HandleTypeDef *shifter) {
 	/**/{ 1, 3, 5, 0, 0 } /**/
 	};
 
-	if (HAL_GPIO_ReadPin(shifter->modifier_port, shifter->modifier_pin)) {
+	if (HAL_GPIO_ReadPin(shifter->Config.modifier_port, shifter->Config.modifier_pin)) {
 		grid_location.x += 2;
 	}
 

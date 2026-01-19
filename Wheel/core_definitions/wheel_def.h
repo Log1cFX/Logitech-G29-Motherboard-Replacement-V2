@@ -1,4 +1,4 @@
-/*
+ /*
  MIT License
 
  Copyright (c) 2025 Log1cFX
@@ -57,23 +57,33 @@ extern "C" {
 #include "sw_shifter.h"
 #include "hw_motor_driver.h"
 #include "sw_actuator.h"
+
 #include "app_usb_hid.h"
 
 struct _USB_HID_HandleTypeDef;
 
 typedef struct {
+	// software interrupt : send the report
 	uint16_t usb_send_report_swit_pin;
+	// software interrupt : fill report (process data)
 	uint16_t usb_process_data_pin;
+	// UNUSED
 	uint16_t swit_pin_2;
 }Wheel_SWIT_HandleTypeDef;
 
 typedef struct {
 	uint32_t wheel_error_count;
+	DigitalInput_HandleTypeDef *hDigitalInput;
 	Buttons_HandleTypeDef *hButtons;
+	Magnetometer_HandleTypeDef *hMagnetometer;
 	Sensor_HandleTypeDef *hSensor;
+	Analog_HandleTypeDef *hAnalog;
 	Pedals_HandleTypeDef *hPedals;
 	Shifter_HandleTypeDef *hShifter;
+	MotorDriver_HandleTypeDef *hMotorDriver;
 	Actuator_HandleTypeDef *hActuator;
+
+	/* IMPLEMENTATION SPECIFIC */
 	Wheel_SWIT_HandleTypeDef hSwit;
 	struct _USB_HID_HandleTypeDef *hUsbHid;
 }Wheel_HandleTypeDef;

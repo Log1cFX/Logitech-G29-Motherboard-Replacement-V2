@@ -2,7 +2,7 @@
 ../Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_pwr.c:155:6:HAL_PWR_DeInit	0	static
 ../Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_pwr.c:168:6:HAL_PWR_EnableBkUpAccess	0	static
 ../Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_pwr.c:181:6:HAL_PWR_DisableBkUpAccess	0	static
-../Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_pwr.c:315:6:HAL_PWR_ConfigPVD	0	static
+../Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_pwr.c:315:6:HAL_PWR_ConfigPVD	4	static
 ../Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_pwr.c:358:6:HAL_PWR_EnablePVD	0	static
 ../Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_pwr.c:368:6:HAL_PWR_DisablePVD	0	static
 ../Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_pwr.c:381:6:HAL_PWR_EnableWakeUpPin	0	static,ignoring_inline_asm

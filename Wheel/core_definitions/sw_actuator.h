@@ -49,7 +49,8 @@ typedef struct _Actuator_HandleTypeDef {
 	Wheel_Status (*Apply_Force)(struct _Actuator_HandleTypeDef *hActuator,
 			int16_t force); // full range -> [-255;+255]
 
-	MotorDriver_HandleTypeDef *hMotorDriver;
+	// Shouldn't be filled manually but instead by calling INIT
+	Actuator_ConfigHandleTypeDef Config;
 } Actuator_HandleTypeDef;
 
 #endif /* CORE_DEFINITIONS_SW_ACTUATOR_H_ */

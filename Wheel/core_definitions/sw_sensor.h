@@ -49,19 +49,22 @@ typedef struct _Sensor_HandleTypeDef {
 	Wheel_Status (*Update)(struct _Sensor_HandleTypeDef *sensor);
 	Wheel_Status (*GetAxis)(struct _Sensor_HandleTypeDef *sensor);
 
-	int16_t virtual_axis; // the actual value that's sent, using full range
-	uint16_t physical_axis;// essential for calculation logic, uses full range
+	// Shouldn't be filled manually but instead by calling INIT
+	Sensor_ConfigHandleTypeDef Config;
+
+	int16_t virtual_axis; // the actual value that's sent, uses full range of int16
+	int32_t steering_pos; // temporary value relative to wheel's position at startup
+	int32_t min; // definition of the minimum (counterclockwise) rotation using steering_pos as reference
+	int32_t max; // definition of the maximum (clockwise) rotation using steering_pos as reference
+
+	/* THIS IS IMPLEMENTATION SPECIFIC AND ONLY USED INSIDE THE SOURCE FILE */
+	uint16_t physical_axis;
 	uint16_t previous_sensor_capture;
 	uint16_t current_sensor_capture;
-	int32_t steering_pos;
 	int8_t magnet_full_rotation_cnt;
-	int32_t min;
-	int32_t max;
 	uint8_t start_settling_cnt;
 	uint16_t distance;
 	float axis_scale;
-
-	Magnetometer_HandleTypeDef *hw_magnetometer;
 }Sensor_HandleTypeDef;
 
 #ifdef __cplusplus

@@ -32,56 +32,45 @@ static Wheel_Status MotorDriver_INIT(MotorDriver_HandleTypeDef *hMotorDriver,
 			|| (config->left_compareRegister == NULL)) {
 		return WHEEL_ERROR;
 	}
-	hMotorDriver->L_EN_pin = config->L_EN_pin;
-	hMotorDriver->R_EN_pin = config->R_EN_pin;
-	hMotorDriver->L_EN_port = config->L_EN_port;
-	hMotorDriver->R_EN_port = config->R_EN_port;
-	hMotorDriver->pwm_timer = config->pwm_timer;
-	hMotorDriver->right_channel = config->right_channel;
-	hMotorDriver->left_channel = config->left_channel;
-	hMotorDriver->right_compareRegister = config->right_compareRegister;
-	hMotorDriver->left_compareRegister = config->left_compareRegister;
+	memcpy(&hMotorDriver->Config, config,
+			sizeof(MotorDriver_ConfigHandleTypeDef));
 	uint8_t ret = 0;
-	ret |= HAL_TIM_PWM_Start(hMotorDriver->pwm_timer,
-			hMotorDriver->right_channel);
-	ret |= HAL_TIM_PWM_Start(hMotorDriver->pwm_timer,
-			hMotorDriver->left_channel);
+	ret |= HAL_TIM_PWM_Start(config->pwm_timer, config->right_channel);
+	ret |= HAL_TIM_PWM_Start(config->pwm_timer, config->left_channel);
 
 	return (ret == HAL_OK) ? WHEEL_OK : WHEEL_ERROR;
 }
 
 static inline void enable_motors(MotorDriver_HandleTypeDef *hMotorDriver) {
-	HAL_GPIO_WritePin(hMotorDriver->R_EN_port, hMotorDriver->R_EN_pin, 1);
-	HAL_GPIO_WritePin(hMotorDriver->L_EN_port, hMotorDriver->L_EN_pin, 1);
+	MotorDriver_ConfigHandleTypeDef *config = &hMotorDriver->Config;
+	HAL_GPIO_WritePin(config->R_EN_port, config->R_EN_pin, 1);
+	HAL_GPIO_WritePin(config->L_EN_port, config->L_EN_pin, 1);
 	hMotorDriver->motors_enabled = 1;
 }
 
 static inline void disable_motors(MotorDriver_HandleTypeDef *hMotorDriver) {
-	HAL_GPIO_WritePin(hMotorDriver->R_EN_port, hMotorDriver->R_EN_pin, 0);
-	HAL_GPIO_WritePin(hMotorDriver->L_EN_port, hMotorDriver->L_EN_pin, 0);
+	MotorDriver_ConfigHandleTypeDef *config = &hMotorDriver->Config;
+	HAL_GPIO_WritePin(config->R_EN_port, config->R_EN_pin, 0);
+	HAL_GPIO_WritePin(config->L_EN_port, config->L_EN_pin, 0);
 	hMotorDriver->motors_enabled = 0;
 }
 
 static Wheel_Status MotorDriver_DeINIT(MotorDriver_HandleTypeDef *hMotorDriver) {
+	MotorDriver_ConfigHandleTypeDef *config = &hMotorDriver->Config;
 	uint8_t ret = 0;
-	ret |= HAL_TIM_PWM_Stop(hMotorDriver->pwm_timer,
-			hMotorDriver->right_channel);
-	ret |= HAL_TIM_PWM_Stop(hMotorDriver->pwm_timer,
-			hMotorDriver->left_channel);
-	hMotorDriver->L_EN_pin = 0;
-	hMotorDriver->R_EN_pin = 0;
-	hMotorDriver->L_EN_port = NULL;
-	hMotorDriver->R_EN_port = NULL;
-	hMotorDriver->pwm_timer = NULL;
-	hMotorDriver->right_channel = 0xFFFF;
-	hMotorDriver->left_channel = 0xFFFF;
+	ret |= HAL_TIM_PWM_Stop(config->pwm_timer, config->right_channel);
+	ret |= HAL_TIM_PWM_Stop(config->pwm_timer, config->left_channel);
+	memset(&hMotorDriver->Config, 0, sizeof(MotorDriver_ConfigHandleTypeDef));
+	config->right_channel = 0xFFFF;
+	config->left_channel = 0xFFFF;
 	return (ret == HAL_OK) ? WHEEL_OK : WHEEL_ERROR;
 }
 
 static Wheel_Status MotorDriver_Drive_Right(
 		MotorDriver_HandleTypeDef *hMotorDriver, uint8_t force) {
-	*(hMotorDriver->left_compareRegister) = 0;
-	*(hMotorDriver->right_compareRegister) = force;
+	MotorDriver_ConfigHandleTypeDef *config = &hMotorDriver->Config;
+	*(config->left_compareRegister) = 0;
+	*(config->right_compareRegister) = force;
 	if (!hMotorDriver->motors_enabled) {
 		enable_motors(hMotorDriver);
 	}
@@ -90,8 +79,9 @@ static Wheel_Status MotorDriver_Drive_Right(
 
 static Wheel_Status MotorDriver_Drive_Left(
 		MotorDriver_HandleTypeDef *hMotorDriver, uint8_t force) {
-	*(hMotorDriver->right_compareRegister) = 0;
-	*(hMotorDriver->left_compareRegister) = force;
+	MotorDriver_ConfigHandleTypeDef *config = &hMotorDriver->Config;
+	*(config->right_compareRegister) = 0;
+	*(config->left_compareRegister) = force;
 	if (!hMotorDriver->motors_enabled) {
 		enable_motors(hMotorDriver);
 	}
