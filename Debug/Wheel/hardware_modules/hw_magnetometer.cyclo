@@ -1,6 +1,0 @@
-../Wheel/hardware_modules/hw_magnetometer.c:87:21:MLX90363_Stop_TIM_POLL	1
-../Wheel/hardware_modules/hw_magnetometer.c:51:21:MLX90363_INIT	6
-../Wheel/hardware_modules/hw_magnetometer.c:64:21:MLX90363_DeINIT	2
-../Wheel/hardware_modules/hw_magnetometer.c:106:21:MLX90363_TxRxDone_CB	8
-../Wheel/hardware_modules/hw_magnetometer.c:93:21:MLX90363_TransmitRecieve_DMA	1
-../Wheel/hardware_modules/hw_magnetometer.c:72:21:MLX90363_Start_TIM_POLL	3

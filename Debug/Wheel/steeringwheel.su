@@ -1,6 +1,0 @@
-../Wheel/steeringwheel.c:47:6:wheel_startup	96	static
-../Wheel/steeringwheel.c:286:14:wheel_get_all_component_states	16	static
-../Wheel/steeringwheel.c:306:6:HAL_GPIO_EXTI_Callback	16	static
-../Wheel/steeringwheel.c:317:6:HAL_ADC_ConvCpltCallback	0	static
-../Wheel/steeringwheel.c:322:6:HAL_SPI_TxRxCpltCallback	8	static
-../Wheel/steeringwheel.c:331:6:HAL_TIM_PeriodElapsedCallback	16	static
