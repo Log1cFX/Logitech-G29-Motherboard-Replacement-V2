@@ -11,7 +11,7 @@
 			</provider>
 		</extension>
 	</configuration>
-	<configuration id="com.st.stm32cube.ide.mcu.gnu.managedbuild.config.exe.release.38465108" name="Release">
+	<configuration id="com.st.stm32cube.ide.mcu.gnu.managedbuild.config.exe.debug.2077829610.2057769464" name="Release">
 		<extension point="org.eclipse.cdt.core.LanguageSettingsProvider">
 			<provider copy-of="extension" id="org.eclipse.cdt.ui.UserLanguageSettingsProvider"/>
 			<provider-reference id="org.eclipse.cdt.core.ReferencedProjectsLanguageSettingsProvider" ref="shared-provider"/>

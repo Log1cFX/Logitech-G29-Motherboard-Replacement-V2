@@ -26,7 +26,7 @@ extern Pedals_HandleTypeDef hPedals;
 extern Shifter_HandleTypeDef hShifter;
 extern MotorDriver_HandleTypeDef hMotorDriver;
 extern Actuator_HandleTypeDef hActuator;
-USB_HID_HandleTypeDef hUsbHidPid;
+//USB_HID_HandleTypeDef hUsbHidPid;
 
 static void init_wheel_handle();
 static void init_buttons();
@@ -52,7 +52,7 @@ void wheel_startup() {
 	init_sensor();
 	init_motor_driver();
 	configure_software_exti();
-	app_usb_hid_init(&hUsbHidPid);
+//	app_usb_hid_init(&hUsbHidPid);
 
 	/* START MODULES */
 	Magnetometer_HandleTypeDef *magnetometer = wheel.hMagnetometer;
@@ -70,9 +70,9 @@ void wheel_startup() {
 	if (ffb_init() == WHEEL_ERROR) {
 		register_initialization_error();
 	}
-	if (app_usb_start() == WHEEL_ERROR) {
-		register_initialization_error();
-	}
+//	if (app_usb_start() == WHEEL_ERROR) {
+//		register_initialization_error();
+//	}
 
 	HAL_Delay(3000); // waiting for a bit won't do any harm
 
@@ -178,7 +178,7 @@ static void init_wheel_handle() {
 	wheel.hAnalog = &hAnalog;
 	wheel.hPedals = &hPedals;
 	wheel.hShifter = &hShifter;
-	wheel.hUsbHid = &hUsbHidPid;
+//	wheel.hUsbHid = &hUsbHidPid;
 	wheel.hMotorDriver = &hMotorDriver;
 	wheel.hActuator = &hActuator;
 }
@@ -305,10 +305,10 @@ Wheel_Status wheel_get_all_component_states() {
 // Custom software interrupt implementation using the EXTI line callbacks
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
 	if (GPIO_Pin == wheel.hSwit.usb_send_report_swit_pin) {
-		app_usb_hid_send_report();
+//		app_usb_hid_send_report();
 	}
 	if (GPIO_Pin == wheel.hSwit.usb_process_data_pin) {
-		app_usb_start_deferred_processing();
+//		app_usb_start_deferred_processing();
 	}
 }
 

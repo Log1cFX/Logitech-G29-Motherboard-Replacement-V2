@@ -58,8 +58,6 @@ extern "C" {
 #include "hw_motor_driver.h"
 #include "sw_actuator.h"
 
-#include "app_usb_hid.h"
-
 struct _USB_HID_HandleTypeDef;
 
 typedef struct {
