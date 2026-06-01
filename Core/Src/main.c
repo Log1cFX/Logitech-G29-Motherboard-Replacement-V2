@@ -21,7 +21,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include "steeringwheel.h"
+#include "wheel_def.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -65,7 +65,7 @@ static void MX_ADC1_Init(void);
 static void MX_TIM3_Init(void);
 static void MX_TIM1_Init(void);
 /* USER CODE BEGIN PFP */
-
+static void HAL_USB_InitPeriph(void);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -109,6 +109,9 @@ int main(void)
   MX_TIM3_Init();
   MX_TIM1_Init();
   /* USER CODE BEGIN 2 */
+	HAL_USB_InitPeriph();
+	tusb_rhport_init_t dev_init = { .role = TUSB_ROLE_DEVICE};
+	tusb_init(BOARD_TUD_RHPORT, &dev_init);
 	wheel_startup();
   /* USER CODE END 2 */
 
@@ -567,7 +570,21 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
+static void HAL_USB_InitPeriph(void) {
+	__HAL_RCC_USB_CLK_ENABLE();
+	__HAL_RCC_GPIOA_CLK_ENABLE();
 
+	GPIO_InitTypeDef GPIO_InitStruct = { 0 };
+	GPIO_InitStruct.Pin = USB_DM_Pin | USB_DP_Pin;
+	GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
+	GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
+	HAL_GPIO_Init(USB_DM_GPIO_Port, &GPIO_InitStruct);
+
+	HAL_NVIC_SetPriority(USB_HP_CAN1_TX_IRQn, 0, 0);
+	HAL_NVIC_SetPriority(USB_LP_CAN1_RX0_IRQn, 1, 0);
+	HAL_NVIC_EnableIRQ(USB_HP_CAN1_TX_IRQn);
+	HAL_NVIC_EnableIRQ(USB_LP_CAN1_RX0_IRQn);
+}
 /* USER CODE END 4 */
 
 /**

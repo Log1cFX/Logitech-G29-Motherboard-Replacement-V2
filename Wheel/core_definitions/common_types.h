@@ -44,6 +44,13 @@ extern "C" {
 #include "main.h"
 #include "util.h"
 #include "string.h"
+#include "tusb.h"
+
+#define SEND_REPORT_SWIT_PIN SWIT_0_Pin
+#define PROCESS_DATA_SWIT_PIN SWIT_1_Pin
+
+#define EPIN_JOYSTICK 0x81
+#define JOYSTICK_REPORT_ID 1
 
 typedef enum {
 	WHEEL_OK, // good

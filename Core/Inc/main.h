@@ -73,6 +73,10 @@ void Error_Handler(void);
 #define SWIT_1_EXTI_IRQn EXTI1_IRQn
 #define SPI2_SS_Pin GPIO_PIN_12
 #define SPI2_SS_GPIO_Port GPIOB
+#define USB_DM_Pin GPIO_PIN_11
+#define USB_DM_GPIO_Port GPIOA
+#define USB_DP_Pin GPIO_PIN_12
+#define USB_DP_GPIO_Port GPIOA
 #define PWM_R_EN_Pin GPIO_PIN_15
 #define PWM_R_EN_GPIO_Port GPIOA
 #define PWM_L_EN_Pin GPIO_PIN_3

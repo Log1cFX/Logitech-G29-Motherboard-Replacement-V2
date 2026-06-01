@@ -23,8 +23,7 @@
  *
  */
 
-#include "tusb.h"
-#include "usb_descriptors.h"
+#include "common_types.h"
 
 /* A combination of interfaces must have a unique product id, since PC will save device driver after the first plug.
  * Same VID/PID with different interface e.g MSC (first), then CDC (later) will possibly cause system error on PC.
@@ -67,7 +66,7 @@ uint8_t const *tud_descriptor_device_cb(void) {
 // HID Report Descriptor
 //--------------------------------------------------------------------+
 
-uint8_t const desc_hid_joystick_report[] = {TUD_HID_REPORT_DESC_GAMEPAD(HID_REPORT_ID(1))};
+uint8_t const desc_hid_joystick_report[] = {TUD_HID_REPORT_DESC_GAMEPAD(HID_REPORT_ID(JOYSTICK_REPORT_ID))};
 
 // Invoked when received GET HID REPORT DESCRIPTOR
 // Application return pointer to descriptor
@@ -81,8 +80,6 @@ uint8_t const *tud_hid_descriptor_report_cb(uint8_t instance) {
 //--------------------------------------------------------------------+
 
 #define CONFIG_TOTAL_LEN (TUD_CONFIG_DESC_LEN + TUD_HID_DESC_LEN)
-
-#define EPIN_JOYSTICK 0x81
 
 uint8_t const desc_configuration[] = {
   // Config number, interface count, string index, total length, attribute, power in mA

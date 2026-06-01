@@ -57,17 +57,7 @@ extern "C" {
 #include "sw_shifter.h"
 #include "hw_motor_driver.h"
 #include "sw_actuator.h"
-
-struct _USB_HID_HandleTypeDef;
-
-typedef struct {
-	// software interrupt : send the report
-	uint16_t usb_send_report_swit_pin;
-	// software interrupt : fill report (process data)
-	uint16_t usb_process_data_pin;
-	// UNUSED
-	uint16_t swit_pin_2;
-}Wheel_SWIT_HandleTypeDef;
+#include "usb_processing.h"
 
 typedef struct {
 	uint32_t wheel_error_count;
@@ -80,13 +70,10 @@ typedef struct {
 	Shifter_HandleTypeDef *hShifter;
 	MotorDriver_HandleTypeDef *hMotorDriver;
 	Actuator_HandleTypeDef *hActuator;
-
-	/* IMPLEMENTATION SPECIFIC */
-	Wheel_SWIT_HandleTypeDef hSwit;
-	struct _USB_HID_HandleTypeDef *hUsbHid;
 }Wheel_HandleTypeDef;
 
 Wheel_Status wheel_get_all_component_states();
+void wheel_startup();
 
 #ifdef __cplusplus
 }

@@ -34,6 +34,8 @@
 // Board Specific Configuration
 //--------------------------------------------------------------------+
 
+#define REPORT_SIZE 11
+
 // RHPort number used for device can be defined by board.mk, default to port 0
 #ifndef BOARD_TUD_RHPORT
 #define BOARD_TUD_RHPORT      0
@@ -88,7 +90,7 @@
 #endif
 
 //------------- CLASS -------------//
-#define CFG_TUD_HID               2 // 1 for boot keyboard, 1 for boot mouse
+#define CFG_TUD_HID               1
 #define CFG_TUD_CDC               0
 #define CFG_TUD_MSC               0
 #define CFG_TUD_MIDI              0

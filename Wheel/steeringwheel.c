@@ -5,9 +5,8 @@
  *      Author: raffi
  */
 
-#include "steeringwheel.h"
-#include "ffb_library.h"
-#include <math.h>
+#include "wheel_def.h"
+#include <stdlib.h>
 
 Wheel_HandleTypeDef wheel;
 
@@ -26,7 +25,6 @@ extern Pedals_HandleTypeDef hPedals;
 extern Shifter_HandleTypeDef hShifter;
 extern MotorDriver_HandleTypeDef hMotorDriver;
 extern Actuator_HandleTypeDef hActuator;
-//USB_HID_HandleTypeDef hUsbHidPid;
 
 static void init_wheel_handle();
 static void init_buttons();
@@ -52,7 +50,6 @@ void wheel_startup() {
 	init_sensor();
 	init_motor_driver();
 	configure_software_exti();
-//	app_usb_hid_init(&hUsbHidPid);
 
 	/* START MODULES */
 	Magnetometer_HandleTypeDef *magnetometer = wheel.hMagnetometer;
@@ -67,9 +64,9 @@ void wheel_startup() {
 	if (magnetometer->Start_TIM_POLL(magnetometer) == WHEEL_ERROR) {
 		register_initialization_error();
 	}
-	if (ffb_init() == WHEEL_ERROR) {
-		register_initialization_error();
-	}
+//	if (ffb_init() == WHEEL_ERROR) {
+//		register_initialization_error();
+//	}
 //	if (app_usb_start() == WHEEL_ERROR) {
 //		register_initialization_error();
 //	}
@@ -87,7 +84,7 @@ void wheel_startup() {
 	}
 
 	/* temporary code for force feedback testing */
-	Sensor_HandleTypeDef *sensor = wheel.hSensor;
+//	Sensor_HandleTypeDef *sensor = wheel.hSensor;
 	forces[0] = 0;
 	forces[1] = 0;
 	const int16_t max = MOTOR_MAX_FORCE;
@@ -97,8 +94,8 @@ void wheel_startup() {
 			* (70.f / 100.f);
 	while (1) {
 		HAL_Delay(10);
-		ffb_updateAxis(sensor->virtual_axis);
-		ffb_getForces(forces);
+//		ffb_updateAxis(sensor->virtual_axis);
+//		ffb_getForces(forces);
 		int16_t axis = wheel.hSensor->virtual_axis;
 		float force_coef;
 		if (axis < -range) {
@@ -263,8 +260,6 @@ static void init_motor_driver() {
 }
 
 static void configure_software_exti() {
-	wheel.hSwit.usb_send_report_swit_pin = SWIT_0_Pin;
-	wheel.hSwit.usb_process_data_pin = SWIT_1_Pin;
 	for (uint8_t i = 0; i < 3; i++) {
 		CLEAR_BIT(EXTI->RTSR, (0x1UL << i));  // Clear rising edge
 		CLEAR_BIT(EXTI->FTSR, (0x1UL << i));  // Clear falling edge
@@ -304,11 +299,11 @@ Wheel_Status wheel_get_all_component_states() {
 /*		HARDWARE CALLBACK FUNCTIONS		 	*/
 // Custom software interrupt implementation using the EXTI line callbacks
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
-	if (GPIO_Pin == wheel.hSwit.usb_send_report_swit_pin) {
-//		app_usb_hid_send_report();
+	if (GPIO_Pin == SEND_REPORT_SWIT_PIN) {
+		usb_hid_send_report();
 	}
-	if (GPIO_Pin == wheel.hSwit.usb_process_data_pin) {
-//		app_usb_start_deferred_processing();
+	if (GPIO_Pin == PROCESS_DATA_SWIT_PIN) {
+		usb_start_deferred_processing();
 	}
 }
 
