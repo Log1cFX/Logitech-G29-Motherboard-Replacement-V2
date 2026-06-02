@@ -38,6 +38,9 @@ extern "C" {
 
 void debug_start_external_time_test();
 void debug_stop_external_time_test();
+float remapf(float old_min, float old_max, float old_value, float new_min,
+		float new_max);
+float clamp(float x, float min, float max);
 
 #ifdef __cplusplus
 }

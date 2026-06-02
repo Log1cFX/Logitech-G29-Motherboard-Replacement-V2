@@ -57,7 +57,6 @@ extern "C" {
 #include "sw_shifter.h"
 #include "hw_motor_driver.h"
 #include "sw_actuator.h"
-#include "usb_processing.h"
 
 typedef struct {
 	uint32_t wheel_error_count;

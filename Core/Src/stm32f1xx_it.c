@@ -20,6 +20,7 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "stm32f1xx_it.h"
+#include "usbd.h"
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 /* USER CODE END Includes */
@@ -301,5 +302,13 @@ void TIM4_IRQHandler(void)
 }
 
 /* USER CODE BEGIN 1 */
+void USB_HP_CAN1_TX_IRQHandler(void)
+{
+    tud_int_handler(0);
+}
 
+void USB_LP_CAN1_RX0_IRQHandler(void)
+{
+    tud_int_handler(0);
+}
 /* USER CODE END 1 */

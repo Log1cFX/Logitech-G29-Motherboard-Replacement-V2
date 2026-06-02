@@ -5,6 +5,7 @@
  *      Author: raffi
  */
 
+#include "usb_processing.h"
 #include "wheel_def.h"
 
 USB_State_HandleTypeDef usb_state;
@@ -81,4 +82,8 @@ void usb_hid_send_report() {
 	tud_hid_report(JOYSTICK_REPORT_ID, tx, REPORT_SIZE-1);
 
 	usb_state.report_state = USB_REPORT_NOT_READY;
+}
+
+uint32_t get_faketime_micros(){
+	return HAL_GetTick() * 1000;
 }

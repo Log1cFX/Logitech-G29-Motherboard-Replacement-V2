@@ -6,9 +6,15 @@
  */
 
 #include "wheel_def.h"
+#include "ffb/ffb_c.h"
+#include "ffb/ffb_metrics_c.h"
+#include "ffb/ffb_config.h"
+#include "usb_processing.h"
+
 #include <stdlib.h>
 
 Wheel_HandleTypeDef wheel;
+ffb_lib_t *hFFB;
 
 extern ADC_HandleTypeDef hadc1;
 extern SPI_HandleTypeDef hspi2;
@@ -26,11 +32,14 @@ extern Shifter_HandleTypeDef hShifter;
 extern MotorDriver_HandleTypeDef hMotorDriver;
 extern Actuator_HandleTypeDef hActuator;
 
+extern USB_State_HandleTypeDef usb_state;
+
 static void init_wheel_handle();
 static void init_buttons();
 static void init_sensor();
 static void init_analog();
 static void init_motor_driver();
+static void init_ffb_library();
 static void configure_software_exti();
 static void register_initialization_error();
 
@@ -40,7 +49,7 @@ static Wheel_Status wheel_axis_calibration();
 #define CALIBRATION_MAX_TRIES 3
 #define STEERING_RESISTANCE_START 31000
 
-int32_t forces[2];
+float force;
 
 void wheel_startup() {
 	/* INIT */
@@ -50,6 +59,7 @@ void wheel_startup() {
 	init_sensor();
 	init_motor_driver();
 	configure_software_exti();
+	init_ffb_library();
 
 	/* START MODULES */
 	Magnetometer_HandleTypeDef *magnetometer = wheel.hMagnetometer;
@@ -64,50 +74,71 @@ void wheel_startup() {
 	if (magnetometer->Start_TIM_POLL(magnetometer) == WHEEL_ERROR) {
 		register_initialization_error();
 	}
-//	if (ffb_init() == WHEEL_ERROR) {
-//		register_initialization_error();
-//	}
-//	if (app_usb_start() == WHEEL_ERROR) {
-//		register_initialization_error();
-//	}
 
-	HAL_Delay(3000); // waiting for a bit won't do any harm
+	HAL_Delay(1000); // waiting for a bit won't do any harm
 
 	// try calibration until succeeds or the max attempts number is reached
-	uint8_t calibration_tries = 0;
-	while (wheel_axis_calibration() == WHEEL_ERROR) {
-		HAL_Delay(3000);
-		calibration_tries++;
-		if (calibration_tries > CALIBRATION_MAX_TRIES) {
-			Error_Handler();
-		}
-	}
+//	uint8_t calibration_tries = 0;
+//	while (wheel_axis_calibration() == WHEEL_ERROR) {
+//		HAL_Delay(3000);
+//		calibration_tries++;
+//		if (calibration_tries > CALIBRATION_MAX_TRIES) {
+//			Error_Handler();
+//		}
+//	}
 
 	/* temporary code for force feedback testing */
 //	Sensor_HandleTypeDef *sensor = wheel.hSensor;
-	forces[0] = 0;
-	forces[1] = 0;
 	const int16_t max = MOTOR_MAX_FORCE;
 	const int16_t min = MOTOR_MIN_FORCE;
 	const int16_t range = STEERING_RESISTANCE_START;
 	const int16_t normalizer = (0x7FFF - STEERING_RESISTANCE_START)
 			* (70.f / 100.f);
+
+	uint32_t last_executed_time = HAL_GetTick();
+	uint32_t current_time = HAL_GetTick();
+
+
+	ffb_metrics_t *metrics = ffb_metrics_create(900.0f, 1000.0f);
+
+	uint8_t report[REPORT_SIZE] = {0};
+
+	uint8_t i = 0;
+
 	while (1) {
-		HAL_Delay(10);
-//		ffb_updateAxis(sensor->virtual_axis);
-//		ffb_getForces(forces);
-		int16_t axis = wheel.hSensor->virtual_axis;
-		float force_coef;
-		if (axis < -range) {
-			force_coef = ((int32_t) (axis + range) * max) / -normalizer;
-			forces[1] = (force_coef > max) ? max : (int16_t) force_coef;
-		} else if (axis > range) {
-			force_coef = ((int32_t) (axis - range) * min) / normalizer;
-			forces[1] = (force_coef < min) ? min : (int16_t) force_coef;
-		}
-		if (wheel.hActuator->Apply_Force(wheel.hActuator, (int16_t) forces[1])
-				== WHEEL_ERROR) {
-			wheel.wheel_error_count++;
+		tud_task();
+		current_time = HAL_GetTick();
+		if (current_time - last_executed_time >= 1) {
+			last_executed_time = current_time;
+
+			memset(report, i, REPORT_SIZE);
+			i++;
+			if(usb_state.usb_connected){
+				tud_hid_report(JOYSTICK_REPORT_ID, report, REPORT_SIZE);
+			}
+
+			int16_t axis = wheel.hSensor->virtual_axis;
+			float force_coef;
+			if (axis < -range) {
+				force_coef = ((int32_t) (axis + range) * max) / -normalizer;
+				force = (force_coef > max) ? max : (int16_t) force_coef;
+			} else if (axis > range) {
+				force_coef = ((int32_t) (axis - range) * min) / normalizer;
+				force = (force_coef < min) ? min : (int16_t) force_coef;
+			}
+
+			float degres = (axis + (int32_t) INT16_MAX) / (float) UINT16_MAX
+					* 900.0f;
+			ffb_axis_state_t st = ffb_metrics_update(metrics, degres);
+			ffb_set_axis_state_s(hFFB, axis, &st);
+			ffb_calculate(hFFB);
+			int32_t host_torque = ffb_get_axis_torque(hFFB, 0);
+			force = remapf(INT16_MIN, INT16_MAX, host_torque, min, max);
+			force = clamp(force, min, max);
+			if (wheel.hActuator->Apply_Force(wheel.hActuator, (int16_t)force)
+					== WHEEL_ERROR) {
+				wheel.wheel_error_count++;
+			}
 		}
 	}
 }
@@ -257,6 +288,10 @@ static void init_motor_driver() {
 	if (hActuator.INIT(&hActuator, &config2) == WHEEL_ERROR) {
 		register_initialization_error();
 	}
+}
+
+static void init_ffb_library() {
+	hFFB = ffb_create(1, HAL_GetTick, get_faketime_micros);
 }
 
 static void configure_software_exti() {

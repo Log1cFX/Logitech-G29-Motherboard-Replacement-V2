@@ -13,8 +13,6 @@ extern "C" {
 #endif
 
 #include "common_types.h"
-#include "tusb_config.h"
-#include "hid_device.h"
 
 #define DEFERRED_PROCESSING_UNSENT_REPORT_THRESHOLD 25
 
@@ -27,15 +25,16 @@ typedef enum {
 } Report_Processing_State;
 
 typedef struct _USB_State {
+	uint8_t usb_connected;
 	Report_State report_state;
 	Report_Processing_State processing_state;
-	uint8_t on_new_effect_request;
 	uint32_t unsent_reports;
 	uint32_t error_count;
 } USB_State_HandleTypeDef;
 
 void usb_start_deferred_processing();
 void usb_hid_send_report();
+uint32_t get_faketime_micros();
 
 #ifdef __cplusplus
 }
