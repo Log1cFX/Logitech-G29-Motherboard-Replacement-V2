@@ -1,0 +1,6 @@
+../Wheel/software_modules/sw_buttons.c:74:21:Buttons_GetState	160	static
+../Wheel/software_modules/sw_buttons.c:61:21:Buttons_TIM_POLL_CB	40	static
+../Wheel/software_modules/sw_buttons.c:55:21:Buttons_Stop_TIM_POLL	8	static
+../Wheel/software_modules/sw_buttons.c:49:21:Buttons_Start_TIM_POLL	8	static
+../Wheel/software_modules/sw_buttons.c:29:21:Buttons_INIT	0	static
+../Wheel/software_modules/sw_buttons.c:40:21:Buttons_DeINIT	8	static

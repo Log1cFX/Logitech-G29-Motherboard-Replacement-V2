@@ -1,0 +1,3 @@
+../Wheel/software_modules/sw_actuator.c:19:21:Actuator_INIT	0	static
+../Wheel/software_modules/sw_actuator.c:31:21:Actuator_DeINIT	8	static
+../Wheel/software_modules/sw_actuator.c:41:21:Actuator_Apply_Force	8	static

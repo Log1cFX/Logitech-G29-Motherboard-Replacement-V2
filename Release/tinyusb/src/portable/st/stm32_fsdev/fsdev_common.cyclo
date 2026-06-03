@@ -1,0 +1,4 @@
+../tinyusb/src/portable/st/stm32_fsdev/fsdev_common.c:39:6:fsdev_core_reset	5
+../tinyusb/src/portable/st/stm32_fsdev/fsdev_common.c:58:6:fsdev_deinit	3
+../tinyusb/src/portable/st/stm32_fsdev/fsdev_common.c:77:10:pma_align_buffer_size	2
+../tinyusb/src/portable/st/stm32_fsdev/fsdev_common.c:95:6:btable_set_rx_bufsize	3

@@ -90,11 +90,7 @@ enum { ITF_NUM_HID = 0, ITF_NUM_TOTAL };
 #define EPNUM_HID_OUT   0x01    /* host -> device (effect data)         */
 #define EPNUM_HID_IN    0x81    /* device -> host (PID state reports)   */
 
-/* The HID report descriptor length MUST equal what the library returns:
- *   ffb_descriptor_1axis() -> 1196 bytes
- *   ffb_descriptor_2axis() -> 1215 bytes
- * Keep this in sync with the descriptor you return above. */
-#define FFB_HID_REPORT_DESC_LEN   1196
+#define FFB_HID_REPORT_DESC_LEN   1196 + 26
 
 #define CONFIG_TOTAL_LEN   (TUD_CONFIG_DESC_LEN + TUD_HID_INOUT_DESC_LEN)
 

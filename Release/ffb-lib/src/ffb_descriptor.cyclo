@@ -1,0 +1,2 @@
+../ffb-lib/src/ffb_descriptor.cpp:169:16:const uint8_t* ffb::descriptor1Axis(uint16_t*)	2
+../ffb-lib/src/ffb_descriptor.cpp:174:16:const uint8_t* ffb::descriptor2Axis(uint16_t*)	2

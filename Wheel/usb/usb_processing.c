@@ -8,22 +8,9 @@
 #include "usb_processing.h"
 #include "wheel_def.h"
 
-USB_State_HandleTypeDef usb_state;
 extern Wheel_HandleTypeDef wheel;
 
-void usb_start_deferred_processing() {
-	usb_state.processing_state = USB_IS_PROCESSING;
-	if (wheel_get_all_component_states() == WHEEL_ERROR) {
-#ifdef DEBUG
-		Error_Handler();
-#endif
-#ifdef RELEASE
-		wheel.wheel_error_count++;
-#endif
-	}
-	usb_state.report_state = USB_REPORT_IS_READY;
-	__HAL_GPIO_EXTI_GENERATE_SWIT(SEND_REPORT_SWIT_PIN);
-}
+static int8_t unsent_report_cnt;
 
 /*
  * returns the encoded direction of the d_pad with the 4 most important bits
@@ -55,14 +42,18 @@ static uint8_t hat_switch_from_msb(uint8_t byte) {
 	return hat_table[dpadY + 1][dpadX + 1];
 }
 
-
-void usb_hid_send_report() {
-	if (usb_state.report_state == USB_REPORT_NOT_READY) {
-		return;
+void usb_process_report_data() {
+	wheel_get_all_component_states();
+	if (++unsent_report_cnt > 5) {
+		__HAL_GPIO_EXTI_GENERATE_SWIT(SEND_REPORT_SWIT_PIN);
 	}
-	uint8_t tx[REPORT_SIZE];
+}
+
+void usb_send_report() {
+	unsent_report_cnt = -1;
+
+	uint8_t tx[REPORT_SIZE] = { 0 };
 	// fill the first byte with d_pad buttons and the first 4 buttons
-	tx[0] = 0;
 	tx[0] |= 0x0F
 			& hat_switch_from_msb((uint8_t) wheel.hButtons->buttons_state);
 	tx[0] |= 0xF0 & (wheel.hButtons->buttons_state << 4);
@@ -75,15 +66,16 @@ void usb_hid_send_report() {
 	tx[4] = wheel.hSensor->virtual_axis;
 	tx[5] = wheel.hSensor->virtual_axis >> 8;
 	// set the pedals
-	tx[6] = wheel.hPedals->clutch;
-	tx[7] = wheel.hPedals->brake;
-	tx[8] = wheel.hPedals->throtle;
+	tx[6] = wheel.hPedals->clutch << 7;
+	tx[7] = wheel.hPedals->clutch >> 1;
+	tx[8] = wheel.hPedals->brake << 7;
+	tx[9] = wheel.hPedals->brake >> 1;
+	tx[10] = wheel.hPedals->throtle << 7;
+	tx[11] = wheel.hPedals->throtle >> 1;
 
-	tud_hid_report(JOYSTICK_REPORT_ID, tx, REPORT_SIZE-1);
-
-	usb_state.report_state = USB_REPORT_NOT_READY;
+	tud_hid_report(JOYSTICK_REPORT_ID, tx, REPORT_SIZE);
 }
 
-uint32_t get_faketime_micros(){
+uint32_t get_faketime_micros() {
 	return HAL_GetTick() * 1000;
 }

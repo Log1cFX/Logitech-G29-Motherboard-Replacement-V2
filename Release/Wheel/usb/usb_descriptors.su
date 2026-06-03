@@ -1,0 +1,4 @@
+../Wheel/usb/usb_descriptors.c:64:16:tud_descriptor_device_cb	0	static
+../Wheel/usb/usb_descriptors.c:75:16:tud_hid_descriptor_report_cb	16	static
+../Wheel/usb/usb_descriptors.c:115:16:tud_descriptor_configuration_cb	0	static
+../Wheel/usb/usb_descriptors.c:129:17:tud_descriptor_string_cb	16	static

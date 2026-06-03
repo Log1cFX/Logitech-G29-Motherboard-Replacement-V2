@@ -1,0 +1,9 @@
+../ffb-lib/src/ffb_biquad.cpp:29:1:ffb::Biquad::Biquad()	1
+../ffb-lib/src/ffb_biquad.cpp:43:7:float ffb::Biquad::getFc() const	1
+../ffb-lib/src/ffb_biquad.cpp:50:7:float ffb::Biquad::getQ() const	1
+../ffb-lib/src/ffb_biquad.cpp:52:7:float ffb::Biquad::process(float)	1
+../ffb-lib/src/ffb_biquad.cpp:68:6:void ffb::Biquad::calcBiquad()	11
+../ffb-lib/src/ffb_biquad.cpp:37:6:void ffb::Biquad::setFc(float)	3
+../ffb-lib/src/ffb_biquad.cpp:45:6:void ffb::Biquad::setQ(float)	1
+../ffb-lib/src/ffb_biquad.cpp:59:6:void ffb::Biquad::setBiquad(ffb::BiquadType, float, float, float)	3
+../ffb-lib/src/ffb_biquad.cpp:33:1:ffb::Biquad::Biquad(ffb::BiquadType, float, float, float)	1

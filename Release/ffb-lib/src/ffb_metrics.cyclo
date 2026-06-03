@@ -1,0 +1,5 @@
+../ffb-lib/src/ffb_metrics.cpp:29:6:void ffb::MetricsBuilder::setSamplerate(float)	2
+../ffb-lib/src/ffb_metrics.cpp:21:1:ffb::MetricsBuilder::MetricsBuilder(float, float, ffb::MetricsFilterPreset)	3
+../ffb-lib/src/ffb_metrics.cpp:40:6:void ffb::MetricsBuilder::reset(float)	1
+../ffb-lib/src/ffb_metrics.cpp:48:9:int32_t ffb::MetricsBuilder::scalePos(float) const	3
+../ffb-lib/src/ffb_metrics.cpp:55:11:ffb::AxisState ffb::MetricsBuilder::update(float)	1

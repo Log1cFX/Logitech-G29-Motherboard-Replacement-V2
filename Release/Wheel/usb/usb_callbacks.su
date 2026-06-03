@@ -1,0 +1,9 @@
+../Wheel/usb/usb_callbacks.c:22:6:tud_mount_cb	0	static
+../Wheel/usb/usb_callbacks.c:28:6:tud_resume_cb	0	static
+../Wheel/usb/usb_callbacks.c:34:6:tud_umount_cb	0	static
+../Wheel/usb/usb_callbacks.c:41:6:tud_suspend_cb	0	static
+../Wheel/usb/usb_callbacks.c:48:6:tud_sof_cb	0	static
+../Wheel/usb/usb_callbacks.c:69:6:tud_hid_report_complete_cb	0	static
+../Wheel/usb/usb_callbacks.c:82:6:tud_hid_set_protocol_cb	0	static
+../Wheel/usb/usb_callbacks.c:90:10:tud_hid_get_report_cb	0	static
+../Wheel/usb/usb_callbacks.c:101:6:tud_hid_set_report_cb	4	static

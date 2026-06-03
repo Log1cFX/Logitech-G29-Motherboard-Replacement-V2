@@ -1,0 +1,7 @@
+../ffb-lib/src/ffb_metrics_c.cpp:25:16:ffb_metrics_t* {anonymous}::make(float, float, ffb::MetricsFilterPreset)	2
+../ffb-lib/src/ffb_metrics_c.cpp:38:16:ffb_metrics_t* ffb_metrics_create(float, float)	1
+../ffb-lib/src/ffb_metrics_c.cpp:42:16:ffb_metrics_t* ffb_metrics_create_ex(float, float, uint16_t, uint8_t, uint16_t, uint8_t)	1
+../ffb-lib/src/ffb_metrics_c.cpp:51:18:ffb_axis_state_t ffb_metrics_update(ffb_metrics_t*, float)	2
+../ffb-lib/src/ffb_metrics_c.cpp:61:6:void ffb_metrics_update_and_set(ffb_metrics_t*, ffb_lib_t*, uint8_t, float)	3
+../ffb-lib/src/ffb_metrics_c.cpp:68:6:void ffb_metrics_set_samplerate(ffb_metrics_t*, float)	2
+../ffb-lib/src/ffb_metrics_c.cpp:73:6:void ffb_metrics_reset(ffb_metrics_t*, float)	2

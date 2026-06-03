@@ -98,14 +98,35 @@ const uint8_t* descriptor2Axis(uint16_t* out_len);
         HIDDESC_CTRL_REP_INPUT,   \
     0xC0                          /* END_COLLECTION                */
 
-/* --- Gamepad input report (buttons + 8 16-bit axes) ---------------- */
+
+// MODIFIED FROM THE LIBRARY
+/* --- Gamepad input report ( 5 bytes + 8 16-bit axes) ---------------- */
+/* PER BYTE REPORT LAYOUT					*/
+/* byte 0    : report id = 1 (filled by lib)*/
+/* byte 1    : dpad(4b), buttons(4b) 		*/
+/* byte 2-3  : buttons(16b)					*/
+/* byte 4    : padding(1b), buttons(7b)		*/
+/* byte 5-21 : axis							*/
 #define HIDDESC_GAMEPAD_16B \
     0xA1, 0x00,                              /* COLLECTION (Physical)    */ \
-    0x85, 0x01,                              /* REPORT_ID (1)            */ \
+	0x85, 0x01,                              /* REPORT_ID (1)            */ \
+	0x05, 0x01,                              /* USAGE_PAGE Generic Desk. */ \
+	0x09, 0x39,								 /* Usage (Hat Switch) 		 */ \
+	0x15, 0x00,								 /* Logical Minimum (0)		 */ \
+	0x25, 0x07,								 /* Logical Maximum (7)		 */ \
+	0x75, 0x04,								 /* Report Size (4 bits)	 */ \
+	0x95, 0x01,								 /* Report Count (1) 		 */ \
+	0x81, 0x42,								 /* Input (Data,Var,Abs,Null)*/ \
     0x05, 0x09,                              /* USAGE_PAGE (Button)      */ \
-    0x19, 0x01, 0x29, 0x40,                  /* USAGE_MIN/MAX 1..64      */ \
+    0x19, 0x01, 0x29, 0x14,                  /* USAGE_MIN/MAX 1..20      */ \
     0x15, 0x00, 0x25, 0x01,                  /* LOGICAL_MIN/MAX 0..1     */ \
-    0x95, 0x40, 0x75, 0x01, FFB_HID_INPUT(2),/* 64 buttons, 1 bit each   */ \
+    0x95, 0x14, 0x75, 0x01, FFB_HID_INPUT(2),/* 20 buttons, 1 bit each   */ \
+ 	0x95, 0x01,								 /* REPORT_COUNT (1) 		 */ \
+ 	0x81, 0x03,								 /* 1bit padding			 */ \
+ 	0x19, 0x15,								 /* USAGE_MINIMUM (Button 21)*/ \
+ 	0x29, 0x1B,								 /* USAGE_MAXIMUM (Button 27)*/ \
+ 	0x95, 0x07,								 /* REPORT_COUNT (7) 		 */ \
+ 	0x81, 0x02,								 /* 7 buttons for shifter 	 */ \
     0x05, 0x01,                              /* USAGE_PAGE Generic Desk. */ \
     0x09, FFB_HID_USAGE_DESKTOP_X,           \
     0x09, FFB_HID_USAGE_DESKTOP_Y,           \

@@ -1,0 +1,31 @@
+C:/Users/raffi/STM32CubeIDE/workspace_1.16.0/g29-MB-Replacement/ffb-lib/include/ffb/ffb.h:50:5:ffb::Library::Library(uint8_t, ffb::TimeSource)	1
+../ffb-lib/src/ffb_c.cpp:27:12:ffb_lib_t* ffb_create(uint8_t, ffb_time_fn_t, ffb_time_fn_t)	2
+../ffb-lib/src/ffb_c.cpp:41:6:void ffb_set_send_report_callback(ffb_lib_t*, ffb_send_report_fn_t)	2
+../ffb-lib/src/ffb_c.cpp:46:6:void ffb_hid_out(ffb_lib_t*, uint8_t, const uint8_t*, uint16_t)	2
+../ffb-lib/src/ffb_c.cpp:52:10:uint16_t ffb_hid_get(ffb_lib_t*, uint8_t, uint8_t*, uint16_t)	2
+../ffb-lib/src/ffb_c.cpp:58:6:void ffb_set_axis_state(ffb_lib_t*, uint8_t, int32_t, float, float)	2
+../ffb-lib/src/ffb_c.cpp:68:6:void ffb_calculate(ffb_lib_t*)	2
+../ffb-lib/src/ffb_c.cpp:73:9:int32_t ffb_get_axis_torque(ffb_lib_t*, uint8_t)	2
+../ffb-lib/src/ffb_c.cpp:78:6:void ffb_set_active(ffb_lib_t*, bool)	2
+../ffb-lib/src/ffb_c.cpp:83:6:bool ffb_is_active(ffb_lib_t*)	2
+../ffb-lib/src/ffb_c.cpp:88:6:void ffb_reset_all_effects(ffb_lib_t*)	2
+../ffb-lib/src/ffb_c.cpp:93:6:void ffb_set_global_gain(ffb_lib_t*, uint8_t)	2
+../ffb-lib/src/ffb_c.cpp:98:6:void ffb_set_samplerate(ffb_lib_t*, float)	2
+../ffb-lib/src/ffb_c.cpp:103:6:void ffb_set_direction_enable_mask(ffb_lib_t*, uint8_t)	2
+../ffb-lib/src/ffb_c.cpp:108:6:void ffb_set_axis_state_s(ffb_lib_t*, uint8_t, const ffb_axis_state_t*)	3
+../ffb-lib/src/ffb_c.cpp:118:9:uint8_t ffb_get_global_gain(ffb_lib_t*)	2
+../ffb-lib/src/ffb_c.cpp:123:7:float ffb_get_samplerate(ffb_lib_t*)	2
+../ffb-lib/src/ffb_c.cpp:128:9:uint8_t ffb_get_axis_count(ffb_lib_t*)	2
+../ffb-lib/src/ffb_c.cpp:133:6:void ffb_set_friction_rampup_pct(ffb_lib_t*, uint8_t)	2
+../ffb-lib/src/ffb_c.cpp:138:9:uint8_t ffb_get_friction_rampup_pct(ffb_lib_t*)	2
+../ffb-lib/src/ffb_c.cpp:143:6:void ffb_set_filter_profile_id(ffb_lib_t*, uint8_t)	2
+../ffb-lib/src/ffb_c.cpp:148:9:uint8_t ffb_get_filter_profile_id(ffb_lib_t*)	2
+../ffb-lib/src/ffb_c.cpp:153:6:void ffb_set_effect_gains(ffb_lib_t*, const ffb_effect_gain_t*)	3
+../ffb-lib/src/ffb_c.cpp:162:6:void ffb_get_effect_gains(ffb_lib_t*, ffb_effect_gain_t*)	3
+../ffb-lib/src/ffb_c.cpp:171:6:void ffb_set_effect_scalers(ffb_lib_t*, const ffb_effect_scaler_t*)	3
+../ffb-lib/src/ffb_c.cpp:180:6:void ffb_get_effect_scalers(ffb_lib_t*, ffb_effect_scaler_t*)	3
+../ffb-lib/src/ffb_c.cpp:189:6:void ffb_set_filter_preset(ffb_lib_t*, uint8_t, const ffb_effect_filter_preset_t*)	3
+../ffb-lib/src/ffb_c.cpp:199:6:void ffb_get_filter_preset(ffb_lib_t*, uint8_t, ffb_effect_filter_preset_t*)	3
+../ffb-lib/src/ffb_c.cpp:209:6:void ffb_update_filters_for_type(ffb_lib_t*, uint8_t)	2
+../ffb-lib/src/ffb_c.cpp:214:16:const uint8_t* ffb_descriptor_1axis(uint16_t*)	1
+../ffb-lib/src/ffb_c.cpp:218:16:const uint8_t* ffb_descriptor_2axis(uint16_t*)	1
