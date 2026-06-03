@@ -1,4 +1,0 @@
-../Wheel/software_modules/sw_sensor.c:22:21:Sensor_INIT	3
-../Wheel/software_modules/sw_sensor.c:45:21:Sensor_Update	4
-../Wheel/software_modules/sw_sensor.c:56:21:Sensor_GetAxis	5
-../Wheel/software_modules/sw_sensor.c:36:21:Sensor_DeINIT	2

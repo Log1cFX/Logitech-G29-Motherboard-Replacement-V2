@@ -1,7 +1,0 @@
-../Wheel/steeringwheel.c:55:6:wheel_startup	29
-../Wheel/steeringwheel.c:175:7:keep_wheel_in_bounds	5
-../Wheel/steeringwheel.c:310:14:wheel_get_all_component_states	5
-../Wheel/steeringwheel.c:330:6:HAL_GPIO_EXTI_Callback	3
-../Wheel/steeringwheel.c:341:6:HAL_ADC_ConvCpltCallback	1
-../Wheel/steeringwheel.c:346:6:HAL_SPI_TxRxCpltCallback	2
-../Wheel/steeringwheel.c:355:6:HAL_TIM_PeriodElapsedCallback	3

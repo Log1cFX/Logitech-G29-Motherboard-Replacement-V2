@@ -1,6 +1,0 @@
-../ffb-lib/src/ffb_axis_local.cpp:50:6:void ffb::AxisLocalEffects::setIdleSpringStrength(uint8_t)	2
-../ffb-lib/src/ffb_axis_local.cpp:57:6:void ffb::AxisLocalEffects::setSamplerate(float)	2
-../ffb-lib/src/ffb_axis_local.cpp:45:1:ffb::AxisLocalEffects::AxisLocalEffects(const ffb::AxisLocalConfig&)	1
-../ffb-lib/src/ffb_axis_local.cpp:71:9:int32_t ffb::AxisLocalEffects::updateIdleSpring(int32_t) const	3
-../ffb-lib/src/ffb_axis_local.cpp:76:9:int32_t ffb::AxisLocalEffects::updateEndstop(int32_t, float) const	5
-../ffb-lib/src/ffb_axis_local.cpp:85:9:int32_t ffb::AxisLocalEffects::compute(const ffb::AxisState&, float, bool)	15
