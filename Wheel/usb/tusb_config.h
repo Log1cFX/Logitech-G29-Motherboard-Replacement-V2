@@ -34,7 +34,7 @@
 // Board Specific Configuration
 //--------------------------------------------------------------------+
 
-#define REPORT_SIZE 21 - 1
+#define REPORT_SIZE 10 - 1
 
 // RHPort number used for device can be defined by board.mk, default to port 0
 #ifndef BOARD_TUD_RHPORT

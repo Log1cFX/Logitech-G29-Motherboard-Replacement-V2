@@ -12,18 +12,37 @@
 extern Wheel_HandleTypeDef wheel;
 extern ffb_lib_t* hFFB;
 
+
+//--------------------------------------------------------------------+
+// Device callbacks
+//--------------------------------------------------------------------+
+
+void tud_umount_cb(void) {
+	set_hid_driver_state(0);
+}
+
+// Invoked when usb bus is suspended
+// remote_wakeup_en : if host allow us to perform remote wakeup
+// Within 7ms, device must draw an average of current less than 2.5 mA from bus
+void tud_suspend_cb(bool remote_wakeup_en) {
+	UNUSED(remote_wakeup_en);
+	set_hid_driver_state(0);
+}
+
 //--------------------------------------------------------------------+
 // USB HID
 //--------------------------------------------------------------------+
+
 // Invoked when sent REPORT successfully to host
 // Application can use this to send the next report
 // Note: For composite reports, report[0] is report ID
 void tud_hid_report_complete_cb(uint8_t instance, uint8_t const *report,
 		uint16_t len) {
-	(void) instance;
-	(void) report;
-	(void) len;
+	UNUSED(instance);
+	UNUSED(report);
+	UNUSED(len);
 
+	set_hid_driver_state(1);
 	// Create a software interrupt to send report
 	__HAL_GPIO_EXTI_GENERATE_SWIT(SEND_REPORT_SWIT_PIN);
 }

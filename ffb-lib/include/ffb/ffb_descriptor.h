@@ -1,4 +1,33 @@
 /*
+ * SPDX-License-Identifier: MIT
+ *
+ * MIT License
+ *
+ * Copyright (c) 2020 Yannick Richter (OpenFFBoard project and contributors)
+ * Copyright (c) 2026 Santryan Raffi
+ *
+ * Derived from OpenFFBoard (https://github.com/Ultrawipf/OpenFFBoard).
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
+/*
  * ffb_descriptor.h
  *
  * USB HID Report Descriptor for the FFB device.
@@ -98,16 +127,59 @@ const uint8_t* descriptor2Axis(uint16_t* out_len);
         HIDDESC_CTRL_REP_INPUT,   \
     0xC0                          /* END_COLLECTION                */
 
-
-// MODIFIED FROM THE LIBRARY
-/* --- Gamepad input report ( 5 bytes + 8 16-bit axes) ---------------- */
-/* PER BYTE REPORT LAYOUT					*/
-/* byte 0    : report id = 1 (filled by lib)*/
-/* byte 1    : dpad(4b), buttons(4b) 		*/
-/* byte 2-3  : buttons(16b)					*/
-/* byte 4    : padding(1b), buttons(7b)		*/
-/* byte 5-21 : axis							*/
+/* ============================================================
+ * HIDDESC_GAMEPAD_16B  -  Report ID 1
+ * Payload: 24 bytes (+1 Report ID byte = 25 total)
+ * ------------------------------------------------------------
+ * Byte    Size   Field
+ *  0..7   64 b   Buttons 1..64   (1 bit each)
+ *  8..9   16 b   X      signed  -32767..32767
+ * 10..11  16 b   Y      signed  -32767..32767
+ * 12..13  16 b   Z      signed  -32767..32767
+ * 14..15  16 b   Rx     signed  -32767..32767
+ * 16..17  16 b   Ry     signed  -32767..32767
+ * 18..19  16 b   Rz     signed  -32767..32767
+ * 20..21  16 b   Dial   signed  -32767..32767
+ * 22..23  16 b   Slider signed  -32767..32767
+ * ============================================================ */
 #define HIDDESC_GAMEPAD_16B \
+    0xA1, 0x00,                              /* COLLECTION (Physical)    */ \
+    0x85, 0x01,                              /* REPORT_ID (1)            */ \
+    0x05, 0x09,                              /* USAGE_PAGE (Button)      */ \
+    0x19, 0x01, 0x29, 0x40,                  /* USAGE_MIN/MAX 1..64      */ \
+    0x15, 0x00, 0x25, 0x01,                  /* LOGICAL_MIN/MAX 0..1     */ \
+    0x95, 0x40, 0x75, 0x01, FFB_HID_INPUT(2),/* 64 buttons, 1 bit each   */ \
+    0x05, 0x01,                              /* USAGE_PAGE Generic Desk. */ \
+    0x09, FFB_HID_USAGE_DESKTOP_X,           \
+    0x09, FFB_HID_USAGE_DESKTOP_Y,           \
+    0x09, FFB_HID_USAGE_DESKTOP_Z,           \
+    0x09, FFB_HID_USAGE_DESKTOP_RX,          \
+    0x09, FFB_HID_USAGE_DESKTOP_RY,          \
+    0x09, FFB_HID_USAGE_DESKTOP_RZ,          \
+    0x09, FFB_HID_USAGE_DESKTOP_DIAL,        \
+    0x09, FFB_HID_USAGE_DESKTOP_SLIDER,      \
+    0x16, 0x01, 0x80,                        /* LOGICAL_MIN -32767       */ \
+    0x26, 0xFF, 0x7F,                        /* LOGICAL_MAX  32767       */ \
+    0x75, 0x10, 0x95, 0x08, FFB_HID_INPUT(2),/* 8 axes, 16-bit each      */ \
+    0xC0
+
+/* ============================================================
+ * HIDDESC_G29_TEMPLATE  -  Report ID 1
+ * Payload: 9 bytes (+1 Report ID byte = 10 total)
+ * ------------------------------------------------------------
+ * Byte   Bits    Field
+ *  0     0..3    Hat switch   (0..7, null-state)
+ *  0     4..7    Buttons 1..4
+ *  1     0..7    Buttons 5..12
+ *  2     0..7    Buttons 13..20
+ *  3     0       Padding (1 bit, const)
+ *  3     1..7    Buttons 21..27  (shifter)
+ *  4..5  16 b    X    signed   -32767..32767  (steering)
+ *  6      8 b    Z    unsigned 0..255         (clutch)
+ *  7      8 b    Rx   unsigned 0..255         (brake)
+ *  8      8 b    Ry   unsigned 0..255         (throttle)
+ * ============================================================ */
+#define HIDDESC_G29_TEMPLATE \
     0xA1, 0x00,                              /* COLLECTION (Physical)    */ \
 	0x85, 0x01,                              /* REPORT_ID (1)            */ \
 	0x05, 0x01,                              /* USAGE_PAGE Generic Desk. */ \
@@ -129,17 +201,17 @@ const uint8_t* descriptor2Axis(uint16_t* out_len);
  	0x81, 0x02,								 /* 7 buttons for shifter 	 */ \
     0x05, 0x01,                              /* USAGE_PAGE Generic Desk. */ \
     0x09, FFB_HID_USAGE_DESKTOP_X,           \
-    0x09, FFB_HID_USAGE_DESKTOP_Y,           \
-    0x09, FFB_HID_USAGE_DESKTOP_Z,           \
-    0x09, FFB_HID_USAGE_DESKTOP_RX,          \
-    0x09, FFB_HID_USAGE_DESKTOP_RY,          \
-    0x09, FFB_HID_USAGE_DESKTOP_RZ,          \
-    0x09, FFB_HID_USAGE_DESKTOP_DIAL,        \
-    0x09, FFB_HID_USAGE_DESKTOP_SLIDER,      \
-    0x16, 0x01, 0x80,                        /* LOGICAL_MIN -32767       */ \
-    0x26, 0xFF, 0x7F,                        /* LOGICAL_MAX  32767       */ \
-    0x75, 0x10, 0x95, 0x08, FFB_HID_INPUT(2),/* 8 axes, 16-bit each      */ \
+	0x16, 0x01, 0x80,                        /* LOGICAL_MIN -32767       */ \
+	0x26, 0xFF, 0x7F,                        /* LOGICAL_MAX  32767       */ \
+	0x75, 0x10, 0x95, 0x01, FFB_HID_INPUT(2),/* 1 axe, 16-bit each      */ \
+	0x09, FFB_HID_USAGE_DESKTOP_Z,           \
+	0x09, FFB_HID_USAGE_DESKTOP_RX,          \
+	0x09, FFB_HID_USAGE_DESKTOP_RY,          \
+	0x15, 0x00,                              /* LOGICAL_MIN (0)          */ \
+	0x26, 0xFF, 0x00,                        /* LOGICAL_MAX (255)        */ \
+	0x75, 0x08, 0x95, 0x03, FFB_HID_INPUT(2),/* 3 axes, 8-bit each       */ \
     0xC0
+
 
 /* --- PID State input report (ID 2) --------------------------------- */
 #define HIDDESC_FFB_STATEREP \

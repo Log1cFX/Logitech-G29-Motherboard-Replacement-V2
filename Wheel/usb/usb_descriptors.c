@@ -90,7 +90,7 @@ enum { ITF_NUM_HID = 0, ITF_NUM_TOTAL };
 #define EPNUM_HID_OUT   0x01    /* host -> device (effect data)         */
 #define EPNUM_HID_IN    0x81    /* device -> host (PID state reports)   */
 
-#define FFB_HID_REPORT_DESC_LEN   1196 + 26
+#define FFB_HID_REPORT_DESC_LEN   1196 + 29
 
 #define CONFIG_TOTAL_LEN   (TUD_CONFIG_DESC_LEN + TUD_HID_INOUT_DESC_LEN)
 

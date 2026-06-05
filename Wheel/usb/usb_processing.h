@@ -17,6 +17,8 @@ extern "C" {
 void usb_process_report_data();
 void usb_send_report();
 uint32_t get_faketime_micros();
+void set_hid_driver_state(uint8_t en);
+uint8_t hid_driver_ready();
 
 #ifdef __cplusplus
 }

@@ -11,7 +11,7 @@
 extern Wheel_HandleTypeDef wheel;
 
 static int8_t unsent_report_cnt;
-
+static int8_t driver_state;
 /*
  * returns the encoded direction of the d_pad with the 4 most important bits
  * of the parameter byte
@@ -66,16 +66,21 @@ void usb_send_report() {
 	tx[4] = wheel.hSensor->virtual_axis;
 	tx[5] = wheel.hSensor->virtual_axis >> 8;
 	// set the pedals
-	tx[6] = wheel.hPedals->clutch << 7;
-	tx[7] = wheel.hPedals->clutch >> 1;
-	tx[8] = wheel.hPedals->brake << 7;
-	tx[9] = wheel.hPedals->brake >> 1;
-	tx[10] = wheel.hPedals->throtle << 7;
-	tx[11] = wheel.hPedals->throtle >> 1;
+	tx[6] = wheel.hPedals->throtle;
+	tx[7] = wheel.hPedals->brake;
+	tx[8] = wheel.hPedals->clutch;
 
 	tud_hid_report(JOYSTICK_REPORT_ID, tx, REPORT_SIZE);
 }
 
 uint32_t get_faketime_micros() {
 	return HAL_GetTick() * 1000;
+}
+
+void set_hid_driver_state(uint8_t en){
+	driver_state = en;
+}
+
+uint8_t hid_driver_ready(){
+	return driver_state & tud_ready();
 }

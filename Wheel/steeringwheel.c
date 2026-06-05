@@ -37,6 +37,7 @@ static void init_buttons();
 static void init_sensor();
 static void init_analog();
 static void init_motor_driver();
+static void init_usb();
 static void init_ffb_library();
 static void configure_software_exti();
 static void register_initialization_error();
@@ -45,7 +46,9 @@ static Wheel_Status wheel_axis_calibration();
 float keep_wheel_in_bounds(int16_t axis);
 
 #define CALIBRATION_FORCE 150
-#define CALIBRATION_MAX_TRIES 3
+
+#define CALIBRATION_MAX_TRIES 250
+
 #define STEERING_RESISTANCE_START 31000
 
 float force;
@@ -60,8 +63,6 @@ void wheel_startup() {
 	configure_software_exti();
 	init_ffb_library();
 
-	HAL_Delay(1000); // waiting for a bit won't do any harm
-
 	/* START MODULES */
 	Magnetometer_HandleTypeDef *magnetometer = wheel.hMagnetometer;
 	Analog_HandleTypeDef *analog = wheel.hAnalog;
@@ -75,6 +76,10 @@ void wheel_startup() {
 	if (magnetometer->Start_TIM_POLL(magnetometer) == WHEEL_ERROR) {
 		register_initialization_error();
 	}
+
+	// driver needs to be initialized before we go into calibration
+	// we don't want a timeout to occur on usb port
+	init_usb();
 
 	// try calibration until succeeds or the max attempts number is reached
 	uint8_t calibration_tries = 0;
@@ -107,8 +112,8 @@ void wheel_startup() {
 				ffb_calculate(hFFB);
 				int32_t host_torque = ffb_get_axis_torque(hFFB, 0);
 				force = remapf(INT16_MIN, INT16_MAX, host_torque,
-						MOTOR_MIN_FORCE,
-						MOTOR_MAX_FORCE);
+				MOTOR_MIN_FORCE,
+				MOTOR_MAX_FORCE);
 				force = clamp(force, MOTOR_MIN_FORCE, MOTOR_MAX_FORCE);
 			}
 			if (wheel.hActuator->Apply_Force(wheel.hActuator, (int16_t) force)
@@ -280,6 +285,21 @@ static void init_motor_driver() {
 	config2.hMotorDriver = &hMotorDriver;
 	if (hActuator.INIT(&hActuator, &config2) == WHEEL_ERROR) {
 		register_initialization_error();
+	}
+}
+
+static void init_usb() {
+	// wait till device gets enumerate device
+	while (!tud_ready()) {
+		tud_task();
+	}
+	set_hid_driver_state(0);
+	// send a report, when it gets sent and tud_hid_report_complete_cb fires
+	// we'll know the driver has been initialized on the host
+	uint8_t empty_buf[REPORT_SIZE] = { 0 };
+	tud_hid_report(JOYSTICK_REPORT_ID, empty_buf, REPORT_SIZE);
+	while (!hid_driver_ready()) {
+		tud_task();
 	}
 }
 

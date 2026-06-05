@@ -179,7 +179,7 @@ void SysTick_Handler(void) {
 	/* USER CODE END SysTick_IRQn 0 */
 	HAL_IncTick();
 	/* USER CODE BEGIN SysTick_IRQn 1 */
-	if(tud_ready()) {
+	if(hid_driver_ready()) {
 		usb_process_report_data();
 	} else {
 		tud_task();
