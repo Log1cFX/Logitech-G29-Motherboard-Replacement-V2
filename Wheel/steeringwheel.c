@@ -45,10 +45,6 @@ static void register_initialization_error();
 static Wheel_Status wheel_axis_calibration();
 float keep_wheel_in_bounds(int16_t axis);
 
-#define CALIBRATION_FORCE 150
-
-#define CALIBRATION_MAX_TRIES 250
-
 #define STEERING_RESISTANCE_START 31000
 
 float force;
@@ -84,9 +80,9 @@ void wheel_startup() {
 	// try calibration until succeeds or the max attempts number is reached
 	uint8_t calibration_tries = 0;
 	while (wheel_axis_calibration() == WHEEL_ERROR) {
-		HAL_Delay(3000);
+		HAL_Delay(2000);
 		calibration_tries++;
-		if (calibration_tries > CALIBRATION_MAX_TRIES) {
+		if (calibration_tries >= CALIBRATION_MAX_TRIES) {
 			register_initialization_error();
 		}
 	}
@@ -128,7 +124,7 @@ void wheel_startup() {
  * Purpose : calculate the full range of the wheel by determining min and max
  * to find out the middle and the scaling coefficient
  * Functioning : go left until hit a wall, in the meantime do -> "min = current_pos"
- * then repeat in the opposite direction
+ * then repeat in the opposite direction for max
  */
 static Wheel_Status wheel_axis_calibration() {
 	Sensor_HandleTypeDef *sensor = wheel.hSensor;

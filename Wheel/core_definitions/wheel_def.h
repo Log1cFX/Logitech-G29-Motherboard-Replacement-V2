@@ -58,6 +58,16 @@ extern "C" {
 #include "hw_motor_driver.h"
 #include "sw_actuator.h"
 
+#define CALIBRATION_FORCE 150
+
+#ifdef RELEASE
+#define CALIBRATION_MAX_TRIES 250
+#endif
+#ifdef DEBUG
+#define CALIBRATION_MAX_TRIES 3
+#endif
+
+
 typedef struct {
 	uint32_t wheel_error_count;
 	DigitalInput_HandleTypeDef *hDigitalInput;
