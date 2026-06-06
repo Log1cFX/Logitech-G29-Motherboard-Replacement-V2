@@ -45,6 +45,13 @@ extern "C" {
 #include "util.h"
 #include "string.h"
 #include "tusb.h"
+#include <stdio.h>
+
+#ifdef DEBUG
+  #define DBG(...)  printf(__VA_ARGS__)
+#else
+  #define DBG(...)  ((void)0)
+#endif
 
 #define SEND_REPORT_SWIT_PIN SWIT_0_Pin
 #define PROCESS_DATA_SWIT_PIN SWIT_1_Pin

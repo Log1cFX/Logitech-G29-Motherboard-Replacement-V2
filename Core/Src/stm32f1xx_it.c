@@ -318,4 +318,9 @@ void USB_LP_CAN1_RX0_IRQHandler(void) {
 	tud_int_handler(0);
 //	debug_stop_external_time_test();
 }
+
+int __io_putchar(int ch) {
+    ITM_SendChar(ch);
+    return ch;
+}
 /* USER CODE END 1 */

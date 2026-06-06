@@ -79,12 +79,12 @@ void Error_Handler(void);
 #define USB_DM_GPIO_Port GPIOA
 #define USB_DP_Pin GPIO_PIN_12
 #define USB_DP_GPIO_Port GPIOA
-#define PWM_R_EN_Pin GPIO_PIN_15
-#define PWM_R_EN_GPIO_Port GPIOA
-#define PWM_L_EN_Pin GPIO_PIN_3
-#define PWM_L_EN_GPIO_Port GPIOB
 #define test_Pin GPIO_PIN_5
 #define test_GPIO_Port GPIOB
+#define PWM_R_EN_Pin GPIO_PIN_6
+#define PWM_R_EN_GPIO_Port GPIOB
+#define PWM_L_EN_Pin GPIO_PIN_7
+#define PWM_L_EN_GPIO_Port GPIOB
 #define SHIFTER_MODIFIER_Pin GPIO_PIN_9
 #define SHIFTER_MODIFIER_GPIO_Port GPIOB
 

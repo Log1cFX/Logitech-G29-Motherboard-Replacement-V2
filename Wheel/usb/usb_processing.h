@@ -13,12 +13,14 @@ extern "C" {
 #endif
 
 #include "common_types.h"
+#include <stdbool.h>
 
 void usb_process_report_data();
 void usb_send_report();
 uint32_t get_faketime_micros();
 void set_hid_driver_state(uint8_t en);
 uint8_t hid_driver_ready();
+bool ffb_send_report_cb(const uint8_t *report, uint16_t len);
 
 #ifdef __cplusplus
 }

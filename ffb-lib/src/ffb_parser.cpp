@@ -206,7 +206,7 @@ void HidParser::newEffect(const FFB_CreateNewEffect_Feature_Data_t* in_effect) {
     int32_t index = calc.findFreeEffect(in_effect->effectType);
     if (index == -1) {
         blockLoad_report.loadStatus = 2;
-        FFB_LOG("FFB: cannot allocate new effect");
+        FFB_LOG("FFB: cannot allocate new effect\n");
         return;
     }
     Effect new_effect;
@@ -350,10 +350,10 @@ void HidParser::setEffectOperation(const FFB_EffOp_Data_t* report) {
 
     if (report->state == 3) {
         e.state = 0;
-        FFB_LOG("FFB: stop effect");
+        FFB_LOG("FFB: stop effect, at index %d\n", report->effectBlockIndex);
     } else {
         if (report->state == 2) {
-            FFB_LOG("FFB: start solo");
+            FFB_LOG("FFB: start solo, at index %d\n", report->effectBlockIndex);
             for (Effect& other : calc.effects) {
                 other.state = 0;
             }
@@ -361,7 +361,7 @@ void HidParser::setEffectOperation(const FFB_EffOp_Data_t* report) {
         if (e.state != 1) {
             calc.setFilters(&e);
         }
-        FFB_LOG("FFB: start effect");
+        FFB_LOG("FFB: start effect, at index %d\n", report->effectBlockIndex);
         e.startTime = calc.millisNow() + e.startDelay;
         e.state     = 1;
     }

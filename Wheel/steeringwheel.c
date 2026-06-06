@@ -127,11 +127,11 @@ static void wheel_calib_sweep(Sensor_HandleTypeDef *sensor, int16_t force,
 	HAL_Delay(35); // A: let the motor start
 	int16_t acceleration = sensor->steering_pos - previous;
 	while (abs(acceleration) > 150) {
-		// B : finding out if current position is the farthest
+		// B: finding out if current position is the farthest
 		if (dir * sensor->steering_pos > dir * *extremum) {
 			*extremum = sensor->steering_pos;
 		}
-		// C : calculating acceleration
+		// C: calculating acceleration
 		previous = sensor->steering_pos;
 		HAL_Delay(10);
 		acceleration = sensor->steering_pos - previous;
@@ -278,6 +278,7 @@ static void init_usb() {
 
 static void init_ffb_library() {
 	hFFB = ffb_create(1, HAL_GetTick, get_faketime_micros);
+	ffb_set_send_report_callback(hFFB, ffb_send_report_cb);
 }
 
 static void configure_software_exti() {

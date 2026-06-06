@@ -84,3 +84,9 @@ void set_hid_driver_state(uint8_t en){
 uint8_t hid_driver_ready(){
 	return driver_state & tud_ready();
 }
+
+// send the DirectInput PID State input report
+bool ffb_send_report_cb(const uint8_t *report, uint16_t len) {
+	// report already contains id, so use id 0
+	return tud_hid_report(0, report, len);
+}

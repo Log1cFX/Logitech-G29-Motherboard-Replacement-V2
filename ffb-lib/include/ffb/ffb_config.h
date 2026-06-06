@@ -40,6 +40,8 @@
 #ifndef FFB_CONFIG_H_
 #define FFB_CONFIG_H_
 
+#include "common_types.h"
+
 /* Number of physical axes the device exposes. Must be 1, 2, or 3. */
 #ifndef FFB_MAX_AXIS
 #  define FFB_MAX_AXIS 2
@@ -70,8 +72,6 @@
 
 /* Optional debug log hook. Define this to your own logging function
  * before including any ffb header to capture effect lifecycle events. */
-#ifndef FFB_LOG
-#  define FFB_LOG(msg) ((void)0)
-#endif
+#define FFB_LOG(...)  DBG(__VA_ARGS__)
 
 #endif /* FFB_CONFIG_H_ */
