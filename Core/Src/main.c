@@ -99,6 +99,7 @@ int main(void) {
 
 	/* USER CODE BEGIN SysInit */
 #ifdef DEBUG
+	HAL_Delay(1000);
 	initialise_monitor_handles();
 #endif
 	/* USER CODE END SysInit */
