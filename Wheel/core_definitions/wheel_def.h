@@ -59,7 +59,7 @@ extern "C" {
 #include "sw_actuator.h"
 
 #define STEERING_RESISTANCE_START 31000
-#define CALIBRATION_FORCE 125
+#define CALIBRATION_FORCE 135
 
 #ifdef RELEASE
 #define CALIBRATION_MAX_TRIES 250

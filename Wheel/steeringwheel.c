@@ -124,7 +124,7 @@ static void wheel_calib_sweep(Sensor_HandleTypeDef *sensor, int16_t force,
                               int32_t *extremum, int dir) {
 	int32_t previous = sensor->steering_pos;
 	wheel.hActuator->Apply_Force(wheel.hActuator, force);
-	HAL_Delay(35); // A: let the motor start
+	HAL_Delay(40); // A: let the motor start
 	int16_t acceleration = sensor->steering_pos - previous;
 	while (abs(acceleration) > 150) {
 		// B: finding out if current position is the farthest
