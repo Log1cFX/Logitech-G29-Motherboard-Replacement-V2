@@ -58,7 +58,8 @@ extern "C" {
 #include "hw_motor_driver.h"
 #include "sw_actuator.h"
 
-#define STEERING_RESISTANCE_START 31000
+#define MAX_ROTATION_DEG 900
+#define ENDSTOP_DEG_OFFSET 15
 #define CALIBRATION_FORCE 135
 
 #ifdef RELEASE

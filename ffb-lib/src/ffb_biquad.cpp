@@ -45,6 +45,9 @@
 
 namespace {
 
+/* Inlined replacement for OpenFFBoard's clip<float>(): clamp the normalised
+ * cutoff to [0, 0.5]. A biquad's normalised frequency (f / samplerate) must
+ * stay below Nyquist (0.5) or the filter becomes unstable. */
 inline float clip01(float v) {
     if (v < 0.0f)  return 0.0f;
     if (v > 0.5f)  return 0.5f;
@@ -55,14 +58,18 @@ inline float clip01(float v) {
 
 namespace ffb {
 
+/* Default ctor: an unconfigured filter with a cleared delay line. Call
+ * setBiquad()/setFc()/setQ() before relying on it to actually filter. */
 Biquad::Biquad() {
     z1 = z2 = 0.0f;
 }
 
+/* Convenience ctor: configure the filter immediately. */
 Biquad::Biquad(BiquadType t, float fc, float q, float peakGainDB) {
     setBiquad(t, fc, q, peakGainDB);
 }
 
+/* Change the normalised cutoff (f / samplerate) and recompute coefficients. */
 void Biquad::setFc(float fc) {
     fc = clip01(fc);
     this->Fc = fc;
@@ -71,6 +78,7 @@ void Biquad::setFc(float fc) {
 
 float Biquad::getFc() const { return this->Fc; }
 
+/* Change the Q factor and recompute coefficients. */
 void Biquad::setQ(float q) {
     this->Q = q;
     calcBiquad();
@@ -78,6 +86,10 @@ void Biquad::setQ(float q) {
 
 float Biquad::getQ() const { return this->Q; }
 
+/* Run one sample through the filter and return the output. This is the
+ * transposed direct-form-II difference equation: a0..a2 are the feed-forward
+ * (numerator) coefficients, b1/b2 the feedback (denominator) ones, and z1/z2
+ * are the two-sample delay line carried between calls. Call once per tick. */
 float Biquad::process(float in) {
     float out = in * a0 + z1;
     z1 = in * a1 + z2 - b1 * out;
@@ -85,6 +97,9 @@ float Biquad::process(float in) {
     return out;
 }
 
+/* Configure type, cutoff, Q and peak gain in one go, then build coefficients.
+ * peakGainDB only matters for the peak/shelf types; the FFB engine only ever
+ * uses lowpass, where it is ignored. */
 void Biquad::setBiquad(BiquadType t, float fc, float q, float peakGainDB) {
     fc = clip01(fc);
     this->type = t;
@@ -94,6 +109,13 @@ void Biquad::setBiquad(BiquadType t, float fc, float q, float peakGainDB) {
     calcBiquad();
 }
 
+/* Recompute the five coefficients (a0,a1,a2,b1,b2) from the current type,
+ * cutoff, Q and peak gain, and reset the delay line. The closed-form
+ * expressions below are the standard earlevel/RBJ biquad cookbook, one branch
+ * per response type. The FFB engine only uses `lowpass`; the other cases are
+ * kept verbatim from upstream for completeness.
+ *   K = tan(pi * Fc) is the bilinear-transform frequency pre-warp;
+ *   V is the linear peak gain (10^(|dB|/20)), used only by peak/shelf. */
 void Biquad::calcBiquad() {
     z1 = 0.0f;
     z2 = 0.0f;

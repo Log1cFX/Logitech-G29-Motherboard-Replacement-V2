@@ -6,9 +6,11 @@
  */
 
 #include "wheel_def.h"
+#include "usb_processing.h"
 #include "ffb/ffb_c.h"
 #include "ffb/ffb_metrics_c.h"
-#include "usb_processing.h"
+#include "ffb/ffb_axis_local_c.h"
+
 #include <stdlib.h>
 
 Wheel_HandleTypeDef wheel;
@@ -42,8 +44,6 @@ static void register_initialization_error();
 
 static Wheel_Status wheel_axis_calibration();
 float keep_wheel_in_bounds(int16_t axis);
-
-float force;
 
 void wheel_startup() {
 	/* INIT */
@@ -82,34 +82,68 @@ void wheel_startup() {
 			register_initialization_error();
 		}
 	}
+	// re-center
+	wheel.hActuator->Apply_Force(wheel.hActuator, -CALIBRATION_FORCE);
+	HAL_Delay(1375);
+	wheel.hActuator->Apply_Force(wheel.hActuator, 0);
+
+	// set up the metrics helper
+	const float rot_deg = MAX_ROTATION_DEG - (ENDSTOP_DEG_OFFSET * 2);
+	ffb_metrics_t *metrics = ffb_metrics_create(rot_deg, 1000.0f);
+	// set up the local effects
+	ffb_axis_local_config_t local_effects_config = { 0 };
+	ffb_axis_local_config_default(&local_effects_config);
+	local_effects_config.degrees_of_rotation = rot_deg;
+	local_effects_config.endstop_strength = 250;
+	local_effects_config.idle_spring_strength = 255;
+	local_effects_config.damper_intensity = 0;
+	ffb_axis_local_t *local_effects = ffb_axis_local_create(
+			&local_effects_config);
+
+	// force variables
+	static int32_t local_force = 0;
+	static int32_t host_force = 0;
+	static int32_t total_force = 0;
+	static int16_t end_force = 0;
 
 	uint32_t last_executed_time = HAL_GetTick();
 	uint32_t current_time = HAL_GetTick();
-	ffb_metrics_t *metrics = ffb_metrics_create(900.0f, 1000.0f);
-
 	while (1) {
 		tud_task();
 		current_time = HAL_GetTick();
 
+		// execute every 1ms
 		if (current_time - last_executed_time >= 1) {
 			last_executed_time = current_time;
 
-			int16_t axis = wheel.hSensor->virtual_axis;
-			force = keep_wheel_in_bounds(axis);
-			if (force == 0) {
-				float degres = (axis + (int32_t) INT16_MAX) / (float) UINT16_MAX
-						* 900.0f;
-				ffb_axis_state_t st = ffb_metrics_update(metrics, degres);
-				ffb_set_axis_state_s(hFFB, axis, &st);
-				ffb_calculate(hFFB);
-				int32_t host_torque = ffb_get_axis_torque(hFFB, 0);
-				force = remapf(INT16_MIN, INT16_MAX, host_torque,
-				MOTOR_MIN_FORCE,
-				MOTOR_MAX_FORCE);
-				force = clamp(force, MOTOR_MIN_FORCE, MOTOR_MAX_FORCE);
+			// if no game is controlling the ffb, configure damper effect
+			if (!ffb_is_active(hFFB)) {
+				ffb_axis_local_set_intensities(local_effects, 250, 255, 0, 0);
+			} else {
+				ffb_axis_local_set_intensities(local_effects, 250, 0, 0, 0);
 			}
-			if (wheel.hActuator->Apply_Force(wheel.hActuator, (int16_t) force)
-					== WHEEL_ERROR) {
+
+			// compute current degrees and update the axis state
+			float degrees = wheel.hSensor->virtual_axis
+					* (float) (MAX_ROTATION_DEG / 2) / (float) INT16_MAX;
+			ffb_axis_state_t st = ffb_metrics_update(metrics, degrees);
+
+			// compute forces
+			ffb_set_axis_state_s(hFFB, 0, &st);
+			ffb_calculate(hFFB);
+			host_force = ffb_get_axis_torque(hFFB, 0);
+			local_force = ffb_axis_local_compute(local_effects, &st, degrees,
+					ffb_is_active(hFFB));
+			total_force = host_force + local_force;
+
+			// remap and clamp the final force
+			end_force = remapf(INT16_MIN, INT16_MAX, total_force,
+			MOTOR_MIN_FORCE, MOTOR_MAX_FORCE);
+			end_force = clamp(end_force, MOTOR_MIN_FORCE, MOTOR_MAX_FORCE);
+
+			// apply the force on the motor
+			if (wheel.hActuator->Apply_Force(wheel.hActuator,
+					(int16_t) end_force) == WHEEL_ERROR) {
 				wheel.wheel_error_count++;
 			}
 		}
@@ -121,7 +155,7 @@ void wheel_startup() {
  * dir = +1 goes right, tracking a maximum (pos > extremum).
  * dir = -1 goes left,  tracking a minimum (pos < extremum). */
 static void wheel_calib_sweep(Sensor_HandleTypeDef *sensor, int16_t force,
-                              int32_t *extremum, int dir) {
+		int32_t *extremum, int dir) {
 	int32_t previous = sensor->steering_pos;
 	wheel.hActuator->Apply_Force(wheel.hActuator, force);
 	HAL_Delay(40); // A: let the motor start
@@ -142,32 +176,14 @@ static Wheel_Status wheel_axis_calibration() {
 	Sensor_HandleTypeDef *sensor = wheel.hSensor;
 
 	wheel_calib_sweep(sensor, -CALIBRATION_FORCE, &sensor->min, -1); // left
-	wheel_calib_sweep(sensor,  CALIBRATION_FORCE, &sensor->max, +1); // right
+	wheel_calib_sweep(sensor, CALIBRATION_FORCE, &sensor->max, +1); // right
 	wheel.hActuator->Apply_Force(wheel.hActuator, 0);
 
-	sensor->axis_scale = (float)(0x7FFF) / (sensor->distance / 2);
+	sensor->axis_scale = (float) (0x7FFF) / (sensor->distance / 2);
 	// In testing, the range is ~64069
 	return (sensor->distance < 63750) ? WHEEL_ERROR : WHEEL_OK;
 }
 
-float keep_wheel_in_bounds(int16_t axis) {
-	static const int16_t max = MOTOR_MAX_FORCE;
-	static const int16_t min = MOTOR_MIN_FORCE;
-	static const int16_t range = STEERING_RESISTANCE_START;
-	static const int16_t normalizer = (0x7FFF - STEERING_RESISTANCE_START)
-			* (70.f / 100.f);
-
-	float force = 0;
-	static float force_coef;
-	if (axis < -range) {
-		force_coef = ((int32_t) (axis + range) * max) / -normalizer;
-		force = (force_coef > max) ? max : (int16_t) force_coef;
-	} else if (axis > range) {
-		force_coef = ((int32_t) (axis - range) * min) / normalizer;
-		force = (force_coef < min) ? min : (int16_t) force_coef;
-	}
-	return force;
-}
 /* 		INITIALIZATION FUNCTIONS		 */
 static void init_wheel_handle() {
 	wheel.wheel_error_count = 0;

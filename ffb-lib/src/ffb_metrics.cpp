@@ -47,6 +47,9 @@ inline T clip_t(T v, T lo, T hi) {
 
 namespace ffb {
 
+/* Build a metrics helper for a wheel with the given travel (degrees) and
+ * control-loop rate. degrees <= 0 falls back to 360, hz <= 0 to the default
+ * rate. The constructor builds the speed/accel filter coefficients. */
 MetricsBuilder::MetricsBuilder(float degrees, float hz, MetricsFilterPreset p)
     : degrees_of_rotation(degrees > 0.0f ? degrees : 360.0f),
       samplerate(hz > 0.0f ? hz : FFB_DEFAULT_SAMPLERATE_HZ),
@@ -55,6 +58,8 @@ MetricsBuilder::MetricsBuilder(float degrees, float hz, MetricsFilterPreset p)
     setSamplerate(samplerate);
 }
 
+/* (Re)build the speed and accel low-pass coefficients for a new loop rate.
+ * Call whenever your control rate changes. */
 void MetricsBuilder::setSamplerate(float hz) {
     if (hz <= 0.0f) hz = FFB_DEFAULT_SAMPLERATE_HZ;
     samplerate = hz;
@@ -75,12 +80,23 @@ void MetricsBuilder::reset(float pos_degrees) {
 }
 
 int32_t MetricsBuilder::scalePos(float pos_degrees) const {
-    float half_range = degrees_of_rotation * 0.5f;
-    float f = pos_degrees / half_range;            /* -1 .. 1 */
-    f = clip_t<float>(f, -1.0f, 1.0f);
-    return static_cast<int32_t>(f * 32767.0f);
+    /* Faithful port of OpenFFBoard Axis::scaleEncValue(): the scaled position
+     * is deliberately NOT clamped. When the wheel rotates past its travel
+     * limit the value exceeds +/-0x7fff, and the optional software endstop in
+     * ffb_axis_local relies on that overshoot to detect the wall. Spring
+     * conditions clamp via their own saturation, so leaving it unclamped is
+     * safe for them too. */
+    if (degrees_of_rotation == 0.0f) {
+        return 0x7fff;
+    }
+    return static_cast<int32_t>((0xffff / degrees_of_rotation) * pos_degrees);
 }
 
+/* Push a new raw wheel angle (degrees) and return the axis state for this tick:
+ * the scaled position plus filtered speed and acceleration. Speed is the
+ * per-tick position delta times the rate; accel is the speed delta times the
+ * rate; both are low-pass filtered to tame the noise of differentiating an
+ * encoder. */
 AxisState MetricsBuilder::update(float new_pos_degrees) {
     AxisState out;
     out.pos_scaled_16b = scalePos(new_pos_degrees);

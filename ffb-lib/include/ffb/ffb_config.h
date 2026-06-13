@@ -44,7 +44,7 @@
 
 /* Number of physical axes the device exposes. Must be 1, 2, or 3. */
 #ifndef FFB_MAX_AXIS
-#  define FFB_MAX_AXIS 2
+#  define FFB_MAX_AXIS 1
 #endif
 
 #if FFB_MAX_AXIS < 1 || FFB_MAX_AXIS > 3

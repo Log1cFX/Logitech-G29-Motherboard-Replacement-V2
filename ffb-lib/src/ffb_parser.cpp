@@ -61,6 +61,9 @@ inline T clip_t(T v, T lo, T hi) {
 
 namespace ffb {
 
+/* Wire the parser to the Calculator whose effect array it mutates, and
+ * pre-fill the two Feature-reply structs (Block Load and PID Pool) the host
+ * polls right after creating an effect. */
 HidParser::HidParser(Calculator& c, uint8_t axes)
     : calc(c), axis_count(axes)
 {
@@ -78,23 +81,31 @@ HidParser::HidParser(Calculator& c, uint8_t axes)
     pool_report.memoryManagement       = 1;
 }
 
+/* Enable/disable FFB. Keeps the parser's own flag and the calculator in sync. */
 void HidParser::setActive(bool on) {
     ffb_active = on;
     calc.setActive(on);
 }
 
+/* Set the master gain (Device Gain report 0x0D). */
 void HidParser::setGain(uint8_t g) {
     calc.setGlobalGain(g);
 }
 
+/* Free every effect slot and reset the status report. Triggered by the
+ * Device Control "reset" command. */
 void HidParser::resetAll() {
     for (uint8_t i = 0; i < FFB_MAX_EFFECTS; ++i) {
         calc.freeEffect(i);
     }
+    FFB_LOG("FFB: reset all effects\n");
     reportFFBStatus.status = HID_ACTUATOR_POWER | HID_ENABLE_ACTUATORS;
     used_effects = 1;
 }
 
+/* Build the PID State input report (ID 2) from the current FFB state and push
+ * it to the host via the user callback, if one is registered. Called whenever
+ * an effect is created or operated on. */
 void HidParser::sendStatusReport() {
     reportFFBStatus.status = HID_ACTUATOR_POWER;
     if (ffb_active) {
@@ -111,6 +122,11 @@ void HidParser::sendStatusReport() {
 
 /* ----------- USB callback entry points ----------------------------- */
 
+/* Decode one inbound report from the host. Strips FFB_ID_OFFSET, then dispatches
+ * on the report ID to the matching handler. Each handler casts the buffer
+ * directly to the report's packed struct, so there is no manual byte parsing.
+ * Unknown IDs (and the unsupported Custom-Force / Download-Sample reports) are
+ * silently ignored, matching the original firmware. */
 void HidParser::hidOut(uint8_t report_id, const uint8_t* buffer, uint16_t bufsize) {
     if (buffer == nullptr || bufsize == 0) return;
 
@@ -183,6 +199,10 @@ void HidParser::hidOut(uint8_t report_id, const uint8_t* buffer, uint16_t bufsiz
     }
 }
 
+/* Answer a Feature GET the host polls: Block Load (0x12, "did my effect
+ * allocate, and where?") or PID Pool (0x13, "how big is the pool?"). Copies the
+ * prepared reply struct into the caller's buffer and returns its size; returns
+ * 0 for any other report ID. */
 uint16_t HidParser::hidGet(uint8_t report_id, uint8_t* buffer, uint16_t /*reqlen*/) {
     if (buffer == nullptr) return 0;
 
@@ -202,6 +222,9 @@ uint16_t HidParser::hidGet(uint8_t report_id, uint8_t* buffer, uint16_t /*reqlen
 
 /* ----------- Individual report handlers ---------------------------- */
 
+/* Create New Effect (Feature 0x11): allocate a pool slot for the requested
+ * effect type, build its filters, and record the 1-based block index the host
+ * reads back via Block Load. loadStatus 2 means the pool was full. */
 void HidParser::newEffect(const FFB_CreateNewEffect_Feature_Data_t* in_effect) {
     int32_t index = calc.findFreeEffect(in_effect->effectType);
     if (index == -1) {
@@ -223,6 +246,7 @@ void HidParser::newEffect(const FFB_CreateNewEffect_Feature_Data_t* in_effect) {
     sendStatusReport();
 }
 
+/* Device Control (0x0C): enable / disable / stop / reset / pause / continue. */
 void HidParser::controlCmd(uint8_t cmd) {
     /* Bitfield from Device Control report:
        0x01 enable, 0x02 disable, 0x04 stop, 0x08 reset,
@@ -235,6 +259,10 @@ void HidParser::controlCmd(uint8_t cmd) {
     if (cmd & 0x20) setActive(true);
 }
 
+/* Set Effect (0x01): the main per-effect parameter report. Re-inits the effect
+ * if its type changed, stores gain/duration/startDelay, and converts the host's
+ * direction (per-axis angle or polar) into the axisMagnitudes[] projection
+ * vector that calcComponentForce uses. */
 void HidParser::setEffect(const FFB_SetEffect_t* effect) {
     uint8_t index = effect->effectBlockIndex;
     if (index == 0 || index > FFB_MAX_EFFECTS) return;
@@ -314,6 +342,10 @@ void HidParser::setEffect(const FFB_SetEffect_t* effect) {
     sendStatusReport();
 }
 
+/* Set Condition (0x03): fill one per-axis condition block (center offset,
+ * coefficients, saturations, deadband) for a spring/damper/inertia/friction
+ * effect. The target axis comes from parameterBlockOffset, clamped to the
+ * device's axis count. */
 void HidParser::setCondition(const FFB_SetCondition_Data_t* cond) {
     if (cond->effectBlockIndex == 0 || cond->effectBlockIndex > FFB_MAX_EFFECTS) {
         return;
@@ -341,6 +373,9 @@ void HidParser::setCondition(const FFB_SetCondition_Data_t* cond) {
     }
 }
 
+/* Effect Operation (0x0A): start (state 1), start-solo (state 2, which stops
+ * every other effect first) or stop (state 3). On start it (re)builds the
+ * filters and stamps startTime = now + startDelay. */
 void HidParser::setEffectOperation(const FFB_EffOp_Data_t* report) {
     if (report->effectBlockIndex == 0 || report->effectBlockIndex > FFB_MAX_EFFECTS) {
         return;
@@ -367,6 +402,8 @@ void HidParser::setEffectOperation(const FFB_EffOp_Data_t* report) {
     }
 }
 
+/* Set Envelope (0x02): attack/fade levels and times, and flag the effect to use
+ * the envelope (applied by getEnvelopeMagnitude). */
 void HidParser::setEnvelope(const FFB_SetEnvelope_Data_t* report) {
     if (report->effectBlockIndex == 0 || report->effectBlockIndex > FFB_MAX_EFFECTS) {
         return;
@@ -379,6 +416,8 @@ void HidParser::setEnvelope(const FFB_SetEnvelope_Data_t* report) {
     p->useEnvelope = true;
 }
 
+/* Set Ramp (0x06): start and end levels for a ramp effect. magnitude is forced
+ * to full scale so an attached envelope has the expected range. */
 void HidParser::setRamp(const FFB_SetRamp_Data_t* report) {
     if (report->effectBlockIndex == 0 || report->effectBlockIndex > FFB_MAX_EFFECTS) {
         return;
@@ -389,6 +428,8 @@ void HidParser::setRamp(const FFB_SetRamp_Data_t* report) {
     p->endLevel   = report->endLevel;
 }
 
+/* Set Constant Force (0x05): the signed magnitude of a constant-force effect.
+ * This is the report a game streams most often while a constant force plays. */
 void HidParser::setConstantForce(const FFB_SetConstantForce_Data_t* report) {
     if (report->effectBlockIndex == 0 || report->effectBlockIndex > FFB_MAX_EFFECTS) {
         return;
@@ -397,6 +438,8 @@ void HidParser::setConstantForce(const FFB_SetConstantForce_Data_t* report) {
     e.magnitude = report->magnitude;
 }
 
+/* Set Periodic (0x04): magnitude, offset, phase and period for the periodic
+ * waveforms (square/sine/triangle/sawtooth). Period is clamped to at least 1. */
 void HidParser::setPeriodic(const FFB_SetPeriodic_Data_t* report) {
     if (report->effectBlockIndex == 0 || report->effectBlockIndex > FFB_MAX_EFFECTS) {
         return;

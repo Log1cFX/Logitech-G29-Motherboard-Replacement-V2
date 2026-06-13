@@ -74,8 +74,16 @@
 
 namespace ffb {
 
+/* Header-only facade that owns the two halves of the engine - the HID parser
+ * (decodes the host's reports) and the calculator (runs the force math) - and
+ * forwards each public call to the right one. This is the only type most
+ * integrators ever touch. */
 class Library {
 public:
+    /* axis_count must be <= FFB_MAX_AXIS; ts supplies the millis()/micros()
+     * counters the engine needs for effect timing. The parser is wired to a
+     * reference of the calculator so the two share one effect pool. Allocates
+     * nothing on the heap. */
     Library(uint8_t axis_count, TimeSource ts)
         : calculator(axis_count, ts), parser(calculator, axis_count) {}
 
@@ -99,6 +107,9 @@ public:
     }
 
     /* ------- Control / settings ------------------------------------ */
+    /* Enable/disable, reset and gain are routed through the parser, which
+     * mirrors the change into the calculator so the two never disagree; the
+     * read-back getters and the samplerate touch the calculator directly. */
     bool isActive() const            { return parser.isActive(); }
     void setActive(bool on)          { parser.setActive(on); }
     void resetAllEffects()           { parser.resetAll(); }

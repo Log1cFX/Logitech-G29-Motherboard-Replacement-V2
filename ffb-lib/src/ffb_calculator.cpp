@@ -67,6 +67,8 @@ constexpr uint8_t EFFECT_STATE_INACTIVE = 0;
 
 namespace ffb {
 
+/* Construct with the axis count and the user's time source. Allocates nothing:
+ * the effect pool and every per-effect filter are members of this object. */
 Calculator::Calculator(uint8_t axis_count_, TimeSource ts)
     : axis_count(axis_count_), time_source(ts)
 {}
@@ -83,10 +85,14 @@ void Calculator::setSamplerate(float hz) {
     }
 }
 
+/* Friction ramp-up threshold, as a percent (0..100) of full speed. Below this
+ * speed the friction force is eased in with a half-sine (see calcComponentForce). */
 void Calculator::setFrictionRampupPct(uint8_t pct) {
     frictionPctSpeedToRampup = clip_t<uint8_t>(pct, 0, 100);
 }
 
+/* Select the active filter profile (0 = default presets, 1 = custom) and
+ * rebuild coefficients on every live damper/friction/inertia effect. */
 void Calculator::setFilterProfileId(uint8_t id) {
     filterProfileId = clip_t<uint8_t>(id, 0, 1);
     updateFiltersForType(FFB_EFFECT_DAMPER);
@@ -94,17 +100,23 @@ void Calculator::setFilterProfileId(uint8_t id) {
     updateFiltersForType(FFB_EFFECT_INERTIA);
 }
 
+/* Access one of the two filter-coefficient presets for editing (index clamped
+ * to a valid value). Profile 0 is the defaults, profile 1 the custom slot. */
 EffectFilterPreset& Calculator::filterPreset(uint8_t profile) {
     if (profile > 1) profile = 1;
     return filter_presets[profile];
 }
 
+/* Store the latest position/speed/accel for an axis (bounds-checked). The
+ * calculator reads this on the next calculate(). */
 void Calculator::setAxisState(uint8_t axis, const AxisState& s) {
     if (axis < FFB_MAX_AXIS) {
         axis_state[axis] = s;
     }
 }
 
+/* Return the torque computed for an axis by the last calculate() (0 if the
+ * axis index is out of range). */
 int32_t Calculator::getAxisTorque(uint8_t axis) const {
     if (axis < FFB_MAX_AXIS) {
         return axis_torque[axis];
@@ -112,6 +124,8 @@ int32_t Calculator::getAxisTorque(uint8_t axis) const {
     return 0;
 }
 
+/* Find the first free pool slot for a new effect of the given type. Returns the
+ * 0-based index, or -1 if the type is invalid or the pool is full. */
 int32_t Calculator::findFreeEffect(uint8_t type) {
     if (type > FFB_EFFECT_NONE && type < FFB_EFFECT_CUSTOM + 1) {
         for (uint8_t i = 0; i < effects.size(); ++i) {
@@ -123,6 +137,8 @@ int32_t Calculator::findFreeEffect(uint8_t type) {
     return -1;
 }
 
+/* Return a slot to the pool: reset it to a default (free) Effect and mark its
+ * per-axis filters inactive. */
 void Calculator::freeEffect(uint16_t idx) {
     if (idx < effects.size()) {
         effects[idx] = Effect();  /* Reset all fields */
@@ -134,6 +150,10 @@ void Calculator::freeEffect(uint16_t idx) {
 
 /* ----------- Main per-tick loop ------------------------------------- */
 
+/* Compute the torque for every axis this tick: zero the outputs, bail out if
+ * FFB is disabled, then walk the effect pool - expiring finished effects,
+ * computing each one's base force, projecting it onto every axis and summing -
+ * and finally clamp each axis sum to +/-0x7fff. This is the engine's heartbeat. */
 void Calculator::calculate() {
     /* No active state -> zero all torques. */
     for (uint8_t a = 0; a < axis_count; ++a) {
@@ -184,6 +204,10 @@ void Calculator::calculate() {
 
 /* ----------- Non-condition effects (constant/ramp/periodic) --------- */
 
+/* Produce the scalar "force vector" for a constant, ramp or periodic effect
+ * (condition effects are handled in calcComponentForce instead). Applies the
+ * envelope if any, generates the waveform for the effect's type, then scales by
+ * the effect's own gain. Returns 0 for unsupported types. */
 int32_t Calculator::calcNonConditionEffectForce(Effect* effect) {
     int32_t force_vector = 0;
     int32_t magnitude = effect->magnitude;
@@ -203,9 +227,12 @@ int32_t Calculator::calcNonConditionEffectForce(Effect* effect) {
         float elapsed_time = (time_source.micros() / 1000.0f) -
                               static_cast<float>(effect->startTime);
         int32_t duration = effect->duration;
-        force_vector = static_cast<int32_t>(effect->startLevel) +
-            (static_cast<int32_t>(elapsed_time) *
-             (effect->endLevel - effect->startLevel)) / duration;
+        /* Evaluate the interpolation in floating point and truncate only
+         * the final sum, exactly like OpenFFBoard. Casting elapsed_time to
+         * int first would quantise the ramp to whole milliseconds. */
+        force_vector = static_cast<int32_t>(
+            static_cast<float>(effect->startLevel) +
+            (elapsed_time * (effect->endLevel - effect->startLevel)) / duration);
         break;
     }
 
@@ -231,9 +258,8 @@ int32_t Calculator::calcNonConditionEffectForce(Effect* effect) {
         int32_t maxMagnitude = offset + magnitude;
         int32_t minMagnitude = offset - magnitude;
         float phasetime = (phase * period) / 35999.0f;
-        uint32_t timeTemp = static_cast<uint32_t>(elapsed_time) +
-                              static_cast<uint32_t>(phasetime * 1000.0f);
-        float remainder = (timeTemp % (period * 1000)) / 1000.0f;
+        uint32_t timeTemp = static_cast<uint32_t>(elapsed_time + (phasetime * 1000.0f));
+        float remainder = static_cast<float>((timeTemp % (period * 1000)) / 1000);
         float slope = ((maxMagnitude - minMagnitude) * 2) / periodF;
         if (remainder > (periodF / 2)) {
             force = static_cast<int32_t>(slope * (periodF - remainder));
@@ -256,9 +282,8 @@ int32_t Calculator::calcNonConditionEffectForce(Effect* effect) {
         float maxMagnitude = offset + magnitude;
         float minMagnitude = offset - magnitude;
         float phasetime = (phase * period) / 35999.0f;
-        uint32_t timeTemp = static_cast<uint32_t>(elapsed_time) +
-                              static_cast<uint32_t>(phasetime * 1000.0f);
-        float remainder = (timeTemp % (period * 1000)) / 1000.0f;
+        uint32_t timeTemp = static_cast<uint32_t>(elapsed_time + (phasetime * 1000.0f));
+        float remainder = static_cast<float>((timeTemp % (period * 1000)) / 1000);
         float slope = (maxMagnitude - minMagnitude) / periodF;
         force_vector = static_cast<int32_t>(minMagnitude +
                                             slope * (period - remainder));
@@ -276,9 +301,8 @@ int32_t Calculator::calcNonConditionEffectForce(Effect* effect) {
         float maxMagnitude = offset + magnitude;
         float minMagnitude = offset - magnitude;
         float phasetime = (phase * period) / 35999.0f;
-        uint32_t timeTemp = static_cast<uint32_t>(elapsed_time) +
-                              static_cast<uint32_t>(phasetime * 1000.0f);
-        float remainder = (timeTemp % (period * 1000)) / 1000.0f;
+        uint32_t timeTemp = static_cast<uint32_t>(elapsed_time + (phasetime * 1000.0f));
+        float remainder = static_cast<float>((timeTemp % (period * 1000)) / 1000);
         float slope = (maxMagnitude - minMagnitude) / periodF;
         force_vector = static_cast<int32_t>(minMagnitude + slope * remainder);
         break;
@@ -306,6 +330,11 @@ int32_t Calculator::calcNonConditionEffectForce(Effect* effect) {
 
 /* ----------- Per-axis routing and condition effects ----------------- */
 
+/* Turn an effect into the torque it contributes to ONE axis. For constant and
+ * periodic effects this projects the precomputed forceVector onto the axis
+ * (low-pass filtering constant force first). For condition effects it ignores
+ * forceVector, reads the axis state (position/speed/accel) directly, and applies
+ * the condition law. The result is finally scaled by the global gain. */
 int32_t Calculator::calcComponentForce(Effect* effect, int32_t forceVector, uint8_t axis) {
     int32_t result_torque = 0;
     uint8_t con_idx = effect->useSingleCondition ? 0 : axis;
@@ -427,10 +456,18 @@ int32_t Calculator::calcComponentForce(Effect* effect, int32_t forceVector, uint
     return (result_torque * global_gain) / 255;
 }
 
+/* Convert the friction ramp-up percentage into an absolute speed ceiling, on
+ * the same 0..32767 scale the friction metric uses. */
 float Calculator::speedRampupPct() const {
     return (frictionPctSpeedToRampup / 100.0f) * 32767.0f;
 }
 
+/* The classic DirectInput condition law, shared by spring/damper/inertia.
+ * `metric` is the axis quantity the condition acts on (position for spring,
+ * speed for damper, accel for inertia). Outside the deadband the force is
+ * coefficient * gainfactor * scale * (metric - offset), clamped to the per-side
+ * saturation, then projected onto the axis by angle_ratio. Inside the deadband
+ * (or with no displacement) it returns 0. */
 int32_t Calculator::calcConditionEffectForce(Effect* effect, float metric,
                                               uint8_t gain_val, uint8_t idx,
                                               float scale, float angle_ratio)
@@ -458,6 +495,10 @@ int32_t Calculator::calcConditionEffectForce(Effect* effect, float metric,
     return static_cast<int32_t>(force * angle_ratio);
 }
 
+/* Reshape an effect's magnitude over time with its attack/sustain/fade
+ * envelope: ramp up from attackLevel during attackTime, hold, then ramp down to
+ * fadeLevel during the final fadeTime. Infinite-duration effects have no
+ * envelope and return the magnitude unchanged. The sign of magnitude is kept. */
 int32_t Calculator::getEnvelopeMagnitude(Effect* effect) {
     if (effect->duration == FFB_EFFECT_DURATION_INFINITE || effect->duration == 0) {
         return effect->magnitude;
@@ -481,6 +522,11 @@ int32_t Calculator::getEnvelopeMagnitude(Effect* effect) {
 
 /* ----------- Per-effect biquad filter setup ------------------------- */
 
+/* Configure the per-axis biquad low-pass filters for an effect, using the
+ * cutoff/Q from the active preset (divided by the sample rate) for the effect's
+ * type, and mark them active. Constant force always uses preset profile 0.
+ * Effect types with no filter (e.g. spring) fall through the default case and
+ * are left untouched. */
 void Calculator::setFilters(Effect* effect) {
     EffectFilterPreset& fp = filter_presets[filterProfileId];
 
@@ -524,6 +570,9 @@ void Calculator::setFilters(Effect* effect) {
     }
 }
 
+/* Rebuild biquad coefficients on every live effect of a given type. Called
+ * after the sample rate or a filter preset changes so existing effects pick up
+ * the new cutoff. */
 void Calculator::updateFiltersForType(uint8_t effect_type) {
     for (uint8_t i = 0; i < FFB_MAX_EFFECTS; ++i) {
         if (effects[i].type == effect_type) {

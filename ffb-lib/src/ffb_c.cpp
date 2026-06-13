@@ -30,21 +30,35 @@
 /*
  * ffb_c.cpp
  *
- * C wrapper implementation. A single static ffb::Library lives here,
- * constructed in place by ffb_create() (no heap).
+ * Implementation of the plain-C interface declared in ffb/ffb_c.h.
+ *
+ * Design:
+ *   - A SINGLE ffb::Library instance is stored here, constructed in place in a
+ *     static byte buffer (placement-new) so there is no heap allocation and no
+ *     global constructor running before main(). Because there is exactly one
+ *     instance, ffb_create() may be called only once per program; a second call
+ *     just returns the existing handle.
+ *   - The opaque `ffb_lib_t*` handle the C caller holds is really the address of
+ *     that ffb::Library; as_lib() casts it back. Every wrapper below is the same
+ *     shape: null-check the handle, then forward to the matching C++ method.
+ *     Only the functions that do something non-obvious carry extra comments.
  */
 
 #include "ffb/ffb.h"
 #include "ffb/ffb_c.h"
 
-#include <new>
+#include <new>   /* placement new */
 
 namespace {
 
+/* Storage for the one and only ffb::Library, aligned correctly and sized
+ * exactly. It is left uninitialised until ffb_create() runs placement-new on
+ * it, so nothing happens at static-init time. */
 alignas(ffb::Library) unsigned char g_storage[sizeof(ffb::Library)];
-bool g_created = false;
-ffb::Library* g_lib_ptr = nullptr;
+bool          g_created  = false;     /* has ffb_create() run yet? */
+ffb::Library* g_lib_ptr  = nullptr;   /* points into g_storage once created  */
 
+/* Turn the opaque C handle back into the real C++ object. */
 inline ffb::Library* as_lib(ffb_lib_t* h) {
     return reinterpret_cast<ffb::Library*>(h);
 }
@@ -53,6 +67,11 @@ inline ffb::Library* as_lib(ffb_lib_t* h) {
 
 extern "C" {
 
+/* ---- Lifecycle ----------------------------------------------------- */
+
+/* Construct the single engine instance. Idempotent: a second call does not
+ * build another Library, it just hands back the one already created (so the
+ * caller can't accidentally clobber a live instance). */
 ffb_lib_t* ffb_create(uint8_t axis_count,
                       ffb_time_fn_t millis_fn,
                       ffb_time_fn_t micros_fn) {
@@ -62,28 +81,40 @@ ffb_lib_t* ffb_create(uint8_t axis_count,
     ffb::TimeSource ts{};
     ts.millis = millis_fn;
     ts.micros = micros_fn;
+    /* Placement-new: build the Library inside our static buffer. */
     g_lib_ptr = new (g_storage) ffb::Library(axis_count, ts);
     g_created = true;
     return reinterpret_cast<ffb_lib_t*>(g_lib_ptr);
 }
 
+/* Register the callback used to push PID State input reports to the host.
+ * Pass NULL (or never call this) to disable status reporting. */
 void ffb_set_send_report_callback(ffb_lib_t* lib, ffb_send_report_fn_t cb) {
     if (!lib) return;
     as_lib(lib)->setSendReportCallback(cb);
 }
 
+/* ---- USB I/O (call from your USB stack callbacks) ------------------ */
+
+/* Feed one inbound Set Report (Output or Feature) to the engine. */
 void ffb_hid_out(ffb_lib_t* lib, uint8_t report_id,
                  const uint8_t* buf, uint16_t len) {
     if (!lib) return;
     as_lib(lib)->hidOut(report_id, buf, len);
 }
 
+/* Produce a Get Report (Feature) reply. Returns the number of bytes written
+ * into `reply` (0 if this report ID has no reply). */
 uint16_t ffb_hid_get(ffb_lib_t* lib, uint8_t report_id,
                      uint8_t* reply, uint16_t reqlen) {
     if (!lib) return 0;
     return as_lib(lib)->hidGet(report_id, reply, reqlen);
 }
 
+/* ---- Per-tick loop ------------------------------------------------- */
+
+/* Provide the current axis state as loose scalars (the struct-free form).
+ * Packs them into an ffb::AxisState and hands it to the engine. */
 void ffb_set_axis_state(ffb_lib_t* lib, uint8_t axis,
                         int32_t pos_scaled_16b, float speed, float accel) {
     if (!lib) return;
@@ -94,16 +125,21 @@ void ffb_set_axis_state(ffb_lib_t* lib, uint8_t axis,
     as_lib(lib)->setAxisState(axis, s);
 }
 
+/* Run one engine tick (computes torque for every axis). */
 void ffb_calculate(ffb_lib_t* lib) {
     if (!lib) return;
     as_lib(lib)->calculate();
 }
 
+/* Read the torque the engine wants on `axis` (-0x7fff..0x7fff). */
 int32_t ffb_get_axis_torque(ffb_lib_t* lib, uint8_t axis) {
     if (!lib) return 0;
     return as_lib(lib)->getAxisTorque(axis);
 }
 
+/* ---- Control ------------------------------------------------------- */
+
+/* Force FFB on/off (the host normally drives this itself). */
 void ffb_set_active(ffb_lib_t* lib, bool on) {
     if (!lib) return;
     as_lib(lib)->setActive(on);
@@ -114,26 +150,35 @@ bool ffb_is_active(ffb_lib_t* lib) {
     return as_lib(lib)->isActive();
 }
 
+/* Wipe every effect slot back to free. */
 void ffb_reset_all_effects(ffb_lib_t* lib) {
     if (!lib) return;
     as_lib(lib)->resetAllEffects();
 }
+
+/* ---- Settings ------------------------------------------------------ */
 
 void ffb_set_global_gain(ffb_lib_t* lib, uint8_t gain) {
     if (!lib) return;
     as_lib(lib)->setGlobalGain(gain);
 }
 
+/* Tell the engine your real control-loop rate (Hz). Rebuilds filter
+ * coefficients, so call it once at startup if you do not run at 1 kHz. */
 void ffb_set_samplerate(ffb_lib_t* lib, float hz) {
     if (!lib) return;
     as_lib(lib)->setSamplerate(hz);
 }
 
+/* Advanced: change which bit of FFB_SetEffect_t::enableAxis selects polar vs.
+ * per-axis direction mode (only needed with a custom HID descriptor). */
 void ffb_set_direction_enable_mask(ffb_lib_t* lib, uint8_t mask) {
     if (!lib) return;
     as_lib(lib)->setDirectionEnableMask(mask);
 }
 
+/* Provide the axis state from a pre-filled struct (e.g. the one the metrics
+ * helper returns) instead of loose scalars. */
 void ffb_set_axis_state_s(ffb_lib_t* lib, uint8_t axis,
                           const ffb_axis_state_t* state) {
     if (!lib || !state) return;
@@ -154,11 +199,16 @@ float ffb_get_samplerate(ffb_lib_t* lib) {
     return as_lib(lib)->getSamplerate();
 }
 
+/* Axis count lives on the Calculator, so reach it through getCalculator(). */
 uint8_t ffb_get_axis_count(ffb_lib_t* lib) {
     if (!lib) return 0;
     return as_lib(lib)->getCalculator().getAxisCount();
 }
 
+/* ---- Advanced tuning (all reached via the underlying Calculator) --- */
+
+/* Friction ramp-up threshold: percent of full speed below which friction is
+ * eased in with a half-sine instead of snapping on at the zero crossing. */
 void ffb_set_friction_rampup_pct(ffb_lib_t* lib, uint8_t pct) {
     if (!lib) return;
     as_lib(lib)->getCalculator().setFrictionRampupPct(pct);
@@ -169,6 +219,8 @@ uint8_t ffb_get_friction_rampup_pct(ffb_lib_t* lib) {
     return as_lib(lib)->getCalculator().getFrictionRampupPct();
 }
 
+/* Select the biquad filter profile (0 = built-in defaults, 1 = custom).
+ * Rebuilds coefficients on live condition effects. */
 void ffb_set_filter_profile_id(ffb_lib_t* lib, uint8_t id) {
     if (!lib) return;
     as_lib(lib)->getCalculator().setFilterProfileId(id);
@@ -179,6 +231,8 @@ uint8_t ffb_get_filter_profile_id(ffb_lib_t* lib) {
     return as_lib(lib)->getCalculator().getFilterProfileId();
 }
 
+/* Copy the caller's gain table into the engine's (spring/damper/inertia/
+ * friction master gains for the condition effects). */
 void ffb_set_effect_gains(ffb_lib_t* lib, const ffb_effect_gain_t* gains) {
     if (!lib || !gains) return;
     ffb::EffectGain& g = as_lib(lib)->getCalculator().gains();
@@ -188,6 +242,7 @@ void ffb_set_effect_gains(ffb_lib_t* lib, const ffb_effect_gain_t* gains) {
     g.friction = gains->friction;
 }
 
+/* Read the engine's current gain table back into the caller's struct. */
 void ffb_get_effect_gains(ffb_lib_t* lib, ffb_effect_gain_t* out) {
     if (!lib || !out) return;
     ffb::EffectGain& g = as_lib(lib)->getCalculator().gains();
@@ -197,6 +252,7 @@ void ffb_get_effect_gains(ffb_lib_t* lib, ffb_effect_gain_t* out) {
     out->friction = g.friction;
 }
 
+/* Copy the caller's per-effect output scalers into the engine. */
 void ffb_set_effect_scalers(ffb_lib_t* lib, const ffb_effect_scaler_t* scalers) {
     if (!lib || !scalers) return;
     ffb::EffectScaler& s = as_lib(lib)->getCalculator().scalers();
@@ -206,6 +262,7 @@ void ffb_set_effect_scalers(ffb_lib_t* lib, const ffb_effect_scaler_t* scalers) 
     s.friction = scalers->friction;
 }
 
+/* Read the engine's current output scalers. */
 void ffb_get_effect_scalers(ffb_lib_t* lib, ffb_effect_scaler_t* out) {
     if (!lib || !out) return;
     ffb::EffectScaler& s = as_lib(lib)->getCalculator().scalers();
@@ -215,6 +272,10 @@ void ffb_get_effect_scalers(ffb_lib_t* lib, ffb_effect_scaler_t* out) {
     out->friction = s.friction;
 }
 
+/* Overwrite a filter preset (profile 0 = default, 1 = custom). Note the C
+ * struct flattens each {freq,q} pair into two members; unpack them here.
+ * After editing, call ffb_update_filters_for_type / ffb_set_samplerate so
+ * live effects pick up the new coefficients. */
 void ffb_set_filter_preset(ffb_lib_t* lib, uint8_t profile,
                            const ffb_effect_filter_preset_t* preset) {
     if (!lib || !preset) return;
@@ -225,6 +286,7 @@ void ffb_set_filter_preset(ffb_lib_t* lib, uint8_t profile,
     p.inertia.freq  = preset->inertia_freq;  p.inertia.q  = preset->inertia_q;
 }
 
+/* Read a filter preset back into the (flattened) C struct. */
 void ffb_get_filter_preset(ffb_lib_t* lib, uint8_t profile,
                            ffb_effect_filter_preset_t* out) {
     if (!lib || !out) return;
@@ -235,10 +297,13 @@ void ffb_get_filter_preset(ffb_lib_t* lib, uint8_t profile,
     out->inertia_freq  = p.inertia.freq;  out->inertia_q  = p.inertia.q;
 }
 
+/* Rebuild biquad coefficients on every live effect of the given type. */
 void ffb_update_filters_for_type(ffb_lib_t* lib, uint8_t effect_type) {
     if (!lib) return;
     as_lib(lib)->getCalculator().updateFiltersForType(effect_type);
 }
+
+/* ---- HID descriptors (static; usable before ffb_create) ------------ */
 
 const uint8_t* ffb_descriptor_1axis(uint16_t* out_len) {
     return ffb::descriptor1Axis(out_len);

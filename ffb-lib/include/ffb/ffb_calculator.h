@@ -100,6 +100,10 @@ struct EffectFilterPreset {
     biquad_constant_t inertia  = { 15,  20 };
 };
 
+/* The force-math engine. Holds the fixed effect pool, the current per-axis
+ * state, and the tuning tables (gains / scalers / filter presets). calculate()
+ * is the per-tick entry point; the HID parser mutates `effects` directly. Ported
+ * from OpenFFBoard's EffectsCalculator, minus the RTOS / flash / CLI machinery. */
 class Calculator {
 public:
     Calculator(uint8_t axis_count, TimeSource ts);

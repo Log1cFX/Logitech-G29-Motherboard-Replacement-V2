@@ -66,19 +66,22 @@ public:
     Biquad();
     Biquad(BiquadType type, float Fc, float Q, float peakGainDB);
 
-    float process(float in);
-    void  setBiquad(BiquadType type, float Fc, float Q, float peakGain);
+    float process(float in);     /* filter one sample; call once per tick        */
+    void  setBiquad(BiquadType type, float Fc, float Q, float peakGain); /* configure + build coeffs */
     void  setFc(float Fc);       /* Fc is normalised: f / samplerate, must be < 0.5 */
     float getFc() const;
     void  setQ(float Q);
     float getQ() const;
-    void  calcBiquad();
+    void  calcBiquad();          /* rebuild coefficients from type/Fc/Q/peakGain */
 
 protected:
     BiquadType type = BiquadType::lowpass;
-    float a0 = 0, a1 = 0, a2 = 0, b1 = 0, b2 = 0;
-    float Fc = 0, Q = 0, peakGain = 0;
-    float z1 = 0, z2 = 0;
+    float a0 = 0, a1 = 0, a2 = 0;  /* feed-forward (numerator) coefficients     */
+    float b1 = 0, b2 = 0;          /* feedback (denominator) coefficients        */
+    float Fc = 0;                  /* normalised cutoff, f / samplerate (< 0.5)  */
+    float Q  = 0;                  /* quality factor                             */
+    float peakGain = 0;            /* peak/shelf gain in dB (lowpass ignores it) */
+    float z1 = 0, z2 = 0;          /* two-sample delay line (filter state)       */
 };
 
 } /* namespace ffb */

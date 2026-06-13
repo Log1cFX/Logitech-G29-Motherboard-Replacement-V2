@@ -60,6 +60,9 @@ constexpr float ENDSTOP_GAIN = 25.0f;
 
 constexpr int32_t INTERNAL_SCALER_FRICTION_LOCAL = 45;
 
+/* Like a clamp, but reports WHICH bound was exceeded instead of clamping:
+ * -1 below lo, +1 above hi, 0 in range. The end-stop uses it to detect which
+ * wall the wheel hit (and therefore which way to push back). */
 template <typename T>
 inline int8_t cliptest(T v, T lo, T hi) {
     if (v < lo) return -1;
@@ -71,18 +74,25 @@ inline int8_t cliptest(T v, T lo, T hi) {
 
 namespace ffb {
 
+/* Construct from a config: build the damper/friction/inertia filters and cache
+ * the idle-spring scale/clip derived from idle_spring_strength. */
 AxisLocalEffects::AxisLocalEffects(const AxisLocalConfig& c) : cfg(c) {
     setSamplerate(c.samplerate_hz);
     setIdleSpringStrength(cfg.idle_spring_strength);
 }
 
+/* Set the idle-spring strength and recompute its cached scale and clip limit.
+ * Has its own setter (instead of a plain config write) precisely because those
+ * derived values must be recomputed whenever the strength changes. */
 void AxisLocalEffects::setIdleSpringStrength(uint8_t strength) {
     /* Idle spring scale matches Axis::setIdleSpringStrength */
     cfg.idle_spring_strength = strength;
-    idle_spring_clip  = clip_t<int32_t>(static_cast<int32_t>(strength) * 35, 0, 10000);
-    idle_spring_scale = 0.5f + (static_cast<float>(strength) * 0.01f);
+    idle_spring_clip  = clip_t<int32_t>(static_cast<int32_t>(strength) * 40, 0, 10000);
+    idle_spring_scale = 0.5f + (static_cast<float>(strength) * 0.05f);
 }
 
+/* (Re)build the damper/friction/inertia low-pass coefficients for a new
+ * control-loop rate. */
 void AxisLocalEffects::setSamplerate(float hz) {
     if (hz <= 0.0f) hz = FFB_DEFAULT_SAMPLERATE_HZ;
     cfg.samplerate_hz = hz;
@@ -97,11 +107,19 @@ void AxisLocalEffects::setSamplerate(float hz) {
                               cfg.inertia_filter.q / 100.0f, 0.0f);
 }
 
+/* Idle spring: a gentle auto-centering force, used only while host FFB is off.
+ * Proportional to -position (pulls back toward center), clamped to the cached
+ * limit so it never exceeds a comfortable strength. */
 int32_t AxisLocalEffects::updateIdleSpring(int32_t pos_scaled_16b) const {
     int32_t f = static_cast<int32_t>(-pos_scaled_16b * idle_spring_scale);
     return clip_t<int32_t>(f, -idle_spring_clip, idle_spring_clip);
 }
 
+/* Software end-stop: 0 while the wheel is inside its travel range, otherwise a
+ * stiff restoring torque proportional to how many degrees it has overshot the
+ * limit, directed back toward center and clamped to +/-0x7fff. Relies on
+ * pos_scaled_16b exceeding +/-0x7fff past the limit, which is why the metrics
+ * helper leaves the scaled position un-clamped. */
 int32_t AxisLocalEffects::updateEndstop(int32_t pos_scaled_16b, float pos_degrees) const {
     int8_t clipdir = cliptest<int32_t>(pos_scaled_16b, -0x7fff, 0x7fff);
     if (clipdir == 0) return 0;
@@ -111,6 +129,10 @@ int32_t AxisLocalEffects::updateEndstop(int32_t pos_scaled_16b, float pos_degree
     return clip_t<int32_t>(static_cast<int32_t>(addtorque), -0x7fff, 0x7fff);
 }
 
+/* Sum every axis-local "feel" effect into one torque to ADD on top of the host
+ * torque: idle spring (only when FFB is off) + always-on damper/inertia/friction
+ * + end-stop, clamped to +/-0x7fff. Each intensity of 0 skips that effect. The
+ * caller is responsible for adding this to getAxisTorque() and clamping again. */
 int32_t AxisLocalEffects::compute(const AxisState& m, float pos_degrees, bool ffb_on) {
     int32_t axisEffectTorque = 0;
 
