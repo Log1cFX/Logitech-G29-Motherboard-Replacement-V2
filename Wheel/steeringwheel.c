@@ -43,17 +43,17 @@ static void configure_software_exti();
 static void register_initialization_error();
 
 static Wheel_Status wheel_axis_calibration();
-float keep_wheel_in_bounds(int16_t axis);
+static void wheel_recenter();
 
 void wheel_startup() {
 	/* INIT */
-	init_wheel_handle();
 	init_analog();
 	init_buttons();
 	init_sensor();
 	init_motor_driver();
 	configure_software_exti();
 	init_ffb_library();
+	init_wheel_handle();
 
 	/* START MODULES */
 	Magnetometer_HandleTypeDef *magnetometer = wheel.hMagnetometer;
@@ -82,10 +82,7 @@ void wheel_startup() {
 			register_initialization_error();
 		}
 	}
-	// re-center
-	wheel.hActuator->Apply_Force(wheel.hActuator, -CALIBRATION_FORCE);
-	HAL_Delay(1375);
-	wheel.hActuator->Apply_Force(wheel.hActuator, 0);
+	wheel_recenter();
 
 	// set up the metrics helper
 	const float rot_deg = MAX_ROTATION_DEG - (ENDSTOP_DEG_OFFSET * 2);
@@ -109,6 +106,7 @@ void wheel_startup() {
 	uint32_t last_executed_time = HAL_GetTick();
 	uint32_t current_time = HAL_GetTick();
 	while (1) {
+		// mendatory tinyusb's task
 		tud_task();
 		current_time = HAL_GetTick();
 
@@ -182,6 +180,15 @@ static Wheel_Status wheel_axis_calibration() {
 	sensor->axis_scale = (float) (0x7FFF) / (sensor->distance / 2);
 	// In testing, the range is ~64069
 	return (sensor->distance < 63750) ? WHEEL_ERROR : WHEEL_OK;
+}
+
+static void wheel_recenter() {
+	int8_t sign = (wheel.hSensor->virtual_axis > 0) ? 1 : -1;
+	while (abs(wheel.hSensor->virtual_axis) > 150) {
+		wheel.hActuator->Apply_Force(wheel.hActuator,
+				CALIBRATION_FORCE * -sign);
+	}
+	wheel.hActuator->Apply_Force(wheel.hActuator, 0);
 }
 
 /* 		INITIALIZATION FUNCTIONS		 */
@@ -278,13 +285,13 @@ static void init_motor_driver() {
 }
 
 static void init_usb() {
-	// wait till device gets enumerate device
+// wait till device gets enumerate device
 	while (!tud_ready()) {
 		tud_task();
 	}
 	set_hid_driver_state(0);
-	// send a report, when it gets sent and tud_hid_report_complete_cb fires
-	// we'll know the driver has been initialized on the host
+// send a report, when it gets sent and tud_hid_report_complete_cb fires
+// we'll know the driver has been initialized on the host
 	uint8_t empty_buf[REPORT_SIZE] = { 0 };
 	tud_hid_report(JOYSTICK_REPORT_ID, empty_buf, REPORT_SIZE);
 	while (!hid_driver_ready()) {
@@ -359,12 +366,12 @@ void HAL_SPI_TxRxCpltCallback(SPI_HandleTypeDef *hspi) {
 // 1. Used to start, periodically, the transmission with the magnetometer (steering)
 // 2. Used to periodically read the buttons' state (for debouncing)
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
-	// 1
+// 1
 	Magnetometer_HandleTypeDef *hw_magnetometer = wheel.hMagnetometer;
 	if (hw_magnetometer->Config.htim->Instance == htim->Instance) {
 		hw_magnetometer->TransmitRecieve_DMA(hw_magnetometer);
 	}
-	// 2
+// 2
 	Buttons_HandleTypeDef *hButtons = wheel.hButtons;
 	if (hButtons->Config.htim->Instance == htim->Instance) {
 		hButtons->TIM_POLL_CB(hButtons);
