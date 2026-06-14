@@ -88,7 +88,7 @@ void AxisLocalEffects::setIdleSpringStrength(uint8_t strength) {
     /* Idle spring scale matches Axis::setIdleSpringStrength */
     cfg.idle_spring_strength = strength;
     idle_spring_clip  = clip_t<int32_t>(static_cast<int32_t>(strength) * 40, 0, 10000);
-    idle_spring_scale = 0.5f + (static_cast<float>(strength) * 0.05f);
+    idle_spring_scale = 0.5f + (static_cast<float>(strength) * 0.01f);
 }
 
 /* (Re)build the damper/friction/inertia low-pass coefficients for a new

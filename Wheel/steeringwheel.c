@@ -84,9 +84,14 @@ void wheel_startup() {
 	}
 	wheel_recenter();
 
-	// set up the metrics helper
+	// set up the metrics helper. Use ffb_metrics_create_ex so we can lower the
+	// speed/accel low-pass cutoffs below the defaults ({70,55}/{55,30}): a lower
+	// cutoff (Hz) attenuates more high-frequency content from the raw encoder
+	// derivatives, at the cost of slightly more phase lag. q stays Q*100.
 	const float rot_deg = MAX_ROTATION_DEG - (ENDSTOP_DEG_OFFSET * 2);
-	ffb_metrics_t *metrics = ffb_metrics_create(rot_deg, 1000.0f);
+	ffb_metrics_t *metrics = ffb_metrics_create_ex(rot_deg, 1000.0f,
+	/* speed */40, 55,
+	/* accel */25, 30);
 	// set up the local effects
 	ffb_axis_local_config_t local_effects_config = { 0 };
 	ffb_axis_local_config_default(&local_effects_config);
@@ -96,6 +101,21 @@ void wheel_startup() {
 	local_effects_config.damper_intensity = 0;
 	ffb_axis_local_t *local_effects = ffb_axis_local_create(
 			&local_effects_config);
+
+	// also low-pass the host-requested effects harder: edit the active filter
+	// profile (0) in place and lower every cutoff frequency. The engine reads
+	// these when the host creates an effect, so no rebuild is needed at startup.
+	// NOTE: the constant-force filter is bypassed unless its normalised cutoff is
+	// < 0.5 (i.e. freq < samplerate/2), so at 1 kHz the default 500 Hz did
+	// nothing; 200 Hz makes it actually filter.
+	ffb_effect_filter_preset_t filter_preset = { 0 };
+	ffb_get_filter_preset(hFFB, 0, &filter_preset);
+	filter_preset.constant_freq = 50; // was 500 (no-op at 1 kHz)
+	filter_preset.constant_q = 60;    // was 70
+	filter_preset.damper_freq = 15;   // was 30
+	filter_preset.friction_freq = 15; // was 50
+	filter_preset.inertia_freq = 5;   // was 15
+	ffb_set_filter_preset(hFFB, 0, &filter_preset);
 
 	// force variables
 	static int32_t local_force = 0;
@@ -113,13 +133,6 @@ void wheel_startup() {
 		// execute every 1ms
 		if (current_time - last_executed_time >= 1) {
 			last_executed_time = current_time;
-
-			// if no game is controlling the ffb, configure damper effect
-			if (!ffb_is_active(hFFB)) {
-				ffb_axis_local_set_intensities(local_effects, 250, 255, 0, 0);
-			} else {
-				ffb_axis_local_set_intensities(local_effects, 250, 0, 0, 0);
-			}
 
 			// compute current degrees and update the axis state
 			float degrees = wheel.hSensor->virtual_axis
@@ -186,7 +199,7 @@ static void wheel_recenter() {
 	int8_t sign = (wheel.hSensor->virtual_axis > 0) ? 1 : -1;
 	while (abs(wheel.hSensor->virtual_axis) > 150) {
 		wheel.hActuator->Apply_Force(wheel.hActuator,
-				CALIBRATION_FORCE * -sign);
+		CALIBRATION_FORCE * -sign);
 	}
 	wheel.hActuator->Apply_Force(wheel.hActuator, 0);
 }
