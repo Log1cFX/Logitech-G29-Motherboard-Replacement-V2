@@ -113,6 +113,9 @@ int main(void) {
 	MX_TIM3_Init();
 	MX_TIM1_Init();
 	/* USER CODE BEGIN 2 */
+
+	HAL_GPIO_WritePin(GPIOB, GPIO_PIN_2, 1);
+
 	HAL_USB_InitPeriph();
 	tusb_rhport_init_t dev_init = { .role = TUSB_ROLE_DEVICE };
 	tusb_init(BOARD_TUD_RHPORT, &dev_init);
@@ -487,7 +490,8 @@ static void MX_GPIO_Init(void) {
 
 	/*Configure GPIO pin Output Level */
 	HAL_GPIO_WritePin(GPIOB,
-	SPI2_SS_Pin | test_Pin | PWM_R_EN_Pin | PWM_L_EN_Pin, GPIO_PIN_RESET);
+			LED_Pin | SPI2_SS_Pin | test_Pin | PWM_R_EN_Pin | PWM_L_EN_Pin,
+			GPIO_PIN_RESET);
 
 	/*Configure GPIO pins : BUTTON_CLK_Pin BUTTON_LOCK_Pin */
 	GPIO_InitStruct.Pin = BUTTON_CLK_Pin | BUTTON_LOCK_Pin;
@@ -508,8 +512,8 @@ static void MX_GPIO_Init(void) {
 	GPIO_InitStruct.Pull = GPIO_NOPULL;
 	HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
-	/*Configure GPIO pins : SPI2_SS_Pin PWM_R_EN_Pin PWM_L_EN_Pin */
-	GPIO_InitStruct.Pin = SPI2_SS_Pin | PWM_R_EN_Pin | PWM_L_EN_Pin;
+	/*Configure GPIO pins : LED_Pin SPI2_SS_Pin PWM_R_EN_Pin PWM_L_EN_Pin */
+	GPIO_InitStruct.Pin = LED_Pin | SPI2_SS_Pin | PWM_R_EN_Pin | PWM_L_EN_Pin;
 	GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
 	GPIO_InitStruct.Pull = GPIO_NOPULL;
 	GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;

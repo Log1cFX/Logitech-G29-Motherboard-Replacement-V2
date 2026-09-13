@@ -29,7 +29,7 @@
     <stringAttribute key="com.st.stm32cube.ide.mcu.debug.launch.ip_address_local" value="localhost"/>
     <booleanAttribute key="com.st.stm32cube.ide.mcu.debug.launch.limit_swo_clock.enabled" value="false"/>
     <stringAttribute key="com.st.stm32cube.ide.mcu.debug.launch.limit_swo_clock.value" value=""/>
-    <stringAttribute key="com.st.stm32cube.ide.mcu.debug.launch.loadList" value="{&quot;fItems&quot;:[{&quot;fIsFromMainTab&quot;:true,&quot;fPath&quot;:&quot;${config_name:g29-MB-Replacement}/g29-MB-Replacement.elf&quot;,&quot;fProjectName&quot;:&quot;g29-MB-Replacement&quot;,&quot;fPerformBuild&quot;:true,&quot;fDownload&quot;:true,&quot;fLoadSymbols&quot;:true}]}"/>
+    <stringAttribute key="com.st.stm32cube.ide.mcu.debug.launch.loadList" value="{&quot;fItems&quot;:[{&quot;fIsFromMainTab&quot;:false,&quot;fPath&quot;:&quot;../bootloader/bootloader-dfu-fw.elf&quot;,&quot;fPerformBuild&quot;:false,&quot;fDownload&quot;:true,&quot;fLoadSymbols&quot;:true},{&quot;fIsFromMainTab&quot;:true,&quot;fPath&quot;:&quot;${config_name:g29-MB-Replacement}/g29-MB-Replacement.elf&quot;,&quot;fProjectName&quot;:&quot;g29-MB-Replacement&quot;,&quot;fPerformBuild&quot;:true,&quot;fDownload&quot;:true,&quot;fLoadSymbols&quot;:true}]}"/>
     <intAttribute key="com.st.stm32cube.ide.mcu.debug.launch.mode" value="1"/>
     <booleanAttribute key="com.st.stm32cube.ide.mcu.debug.launch.multi_drop_enabled" value="false"/>
     <stringAttribute key="com.st.stm32cube.ide.mcu.debug.launch.override_start_address_mode" value="default"/>

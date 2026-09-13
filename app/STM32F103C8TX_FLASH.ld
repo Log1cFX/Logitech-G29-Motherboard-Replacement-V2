@@ -44,8 +44,8 @@ _Min_Stack_Size = 0x400; /* required amount of stack */
 /* Memories definition */
 MEMORY
 {
-  RAM    (xrw)    : ORIGIN = 0x20000000,   LENGTH = 20K
-  FLASH    (rx)    : ORIGIN = 0x8000000,   LENGTH = 64K
+  RAM    (xrw)    : ORIGIN = 0x20000000,   LENGTH = 20480 - 8
+  FLASH    (rx)    : ORIGIN = 0x8001000,   LENGTH = 60K
 }
 
 /* Sections */
@@ -147,6 +147,28 @@ SECTIONS
     _edata = .;        /* define a global symbol at data end */
 
   } >RAM AT> FLASH
+
+  /* ------------------------------------------------------------------
+   * Application image size info (for the bootloader / CRC / updater)
+   *
+   * The image in FLASH runs from ORIGIN(FLASH) up to the end of the
+   * load (LMA) copy of .data, which is the last thing programmed.
+   *
+   * Use from C as ADDRESSES, not values:
+   *     extern uint32_t _sapp, _eapp, _app_size;
+   *     uint32_t start = (uint32_t)&_sapp;
+   *     uint32_t size  = (uint32_t)&_app_size;
+   * ------------------------------------------------------------------ */
+  _sapp      = ORIGIN(FLASH);                   /* first byte of the app image   */
+  _eapp      = LOADADDR(.data) + SIZEOF(.data); /* one past the last byte         */
+  _app_size  = _eapp - _sapp;                   /* total bytes to flash/checksum  */
+
+  /* Handy extras */
+  _app_flash_total = LENGTH(FLASH);             /* flash space reserved for app   */
+  _app_flash_free  = LENGTH(FLASH) - _app_size; /* bytes left over                */
+
+  /* Fail the link if the image does not fit */
+  ASSERT(_app_size <= LENGTH(FLASH), "ERROR: application image exceeds FLASH region")
 
   /* Uninitialized data section into "RAM" Ram type memory */
   . = ALIGN(4);

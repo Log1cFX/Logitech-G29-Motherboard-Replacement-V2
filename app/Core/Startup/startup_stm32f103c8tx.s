@@ -136,7 +136,7 @@ g_pfnVectors:
   .word BusFault_Handler
   .word UsageFault_Handler
   .word 0
-  .word 0
+  .word _app_size
   .word 0
   .word 0
   .word SVC_Handler
