@@ -53,7 +53,7 @@ TIM_HandleTypeDef htim3;
 TIM_HandleTypeDef htim4;
 
 /* USER CODE BEGIN PV */
-
+extern uint32_t _estack;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -113,8 +113,11 @@ int main(void) {
 	MX_TIM3_Init();
 	MX_TIM1_Init();
 	/* USER CODE BEGIN 2 */
-
 	HAL_GPIO_WritePin(GPIOB, GPIO_PIN_2, 1);
+
+//	HAL_Delay(5000);
+//	uint64_t *ptr = (uint64_t*) &_estack;
+//	*ptr = 0x0000000000000000ULL;
 
 	HAL_USB_InitPeriph();
 	tusb_rhport_init_t dev_init = { .role = TUSB_ROLE_DEVICE };
@@ -490,7 +493,7 @@ static void MX_GPIO_Init(void) {
 
 	/*Configure GPIO pin Output Level */
 	HAL_GPIO_WritePin(GPIOB,
-			LED_Pin | SPI2_SS_Pin | test_Pin | PWM_R_EN_Pin | PWM_L_EN_Pin,
+	LED_Pin | SPI2_SS_Pin | test_Pin | PWM_R_EN_Pin | PWM_L_EN_Pin,
 			GPIO_PIN_RESET);
 
 	/*Configure GPIO pins : BUTTON_CLK_Pin BUTTON_LOCK_Pin */
