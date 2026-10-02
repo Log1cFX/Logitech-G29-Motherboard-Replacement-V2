@@ -115,10 +115,6 @@ int main(void) {
 	/* USER CODE BEGIN 2 */
 	HAL_GPIO_WritePin(GPIOB, GPIO_PIN_2, 1);
 
-//	HAL_Delay(5000);
-//	uint64_t *ptr = (uint64_t*) &_estack;
-//	*ptr = 0x0000000000000000ULL;
-
 	HAL_USB_InitPeriph();
 	tusb_rhport_init_t dev_init = { .role = TUSB_ROLE_DEVICE };
 	tusb_init(BOARD_TUD_RHPORT, &dev_init);

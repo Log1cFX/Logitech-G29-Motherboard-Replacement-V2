@@ -39,6 +39,10 @@ static void init_analog();
 static void init_motor_driver();
 static void init_usb();
 static void init_ffb_library();
+static ffb_axis_local_t* create_local_effects();
+static ffb_metrics_t* create_metrics_helper();
+static void init_filter_preset();
+
 static void configure_software_exti();
 static void register_initialization_error();
 
@@ -84,38 +88,16 @@ void wheel_startup() {
 	}
 	wheel_recenter();
 
-	// set up the metrics helper. Use ffb_metrics_create_ex so we can lower the
-	// speed/accel low-pass cutoffs below the defaults ({70,55}/{55,30}): a lower
-	// cutoff (Hz) attenuates more high-frequency content from the raw encoder
-	// derivatives, at the cost of slightly more phase lag. q stays Q*100.
-	const float rot_deg = MAX_ROTATION_DEG - (ENDSTOP_DEG_OFFSET * 2);
-	ffb_metrics_t *metrics = ffb_metrics_create_ex(rot_deg, 1000.0f,
-	/* speed */40, 55,
-	/* accel */25, 30);
-	// set up the local effects
-	ffb_axis_local_config_t local_effects_config = { 0 };
-	ffb_axis_local_config_default(&local_effects_config);
-	local_effects_config.degrees_of_rotation = rot_deg;
-	local_effects_config.endstop_strength = 250;
-	local_effects_config.idle_spring_strength = 255;
-	local_effects_config.damper_intensity = 0;
-	ffb_axis_local_t *local_effects = ffb_axis_local_create(
-			&local_effects_config);
+	ffb_metrics_t *metrics = create_metrics_helper();
+	ffb_axis_local_t *local_effects = create_local_effects();
+	init_filter_preset();
 
-	// also low-pass the host-requested effects harder: edit the active filter
-	// profile (0) in place and lower every cutoff frequency. The engine reads
-	// these when the host creates an effect, so no rebuild is needed at startup.
-	// NOTE: the constant-force filter is bypassed unless its normalised cutoff is
-	// < 0.5 (i.e. freq < samplerate/2), so at 1 kHz the default 500 Hz did
-	// nothing; 200 Hz makes it actually filter.
-	ffb_effect_filter_preset_t filter_preset = { 0 };
-	ffb_get_filter_preset(hFFB, 0, &filter_preset);
-	filter_preset.constant_freq = 50; // was 500 (no-op at 1 kHz)
-	filter_preset.constant_q = 60;    // was 70
-	filter_preset.damper_freq = 15;   // was 30
-	filter_preset.friction_freq = 15; // was 50
-	filter_preset.inertia_freq = 5;   // was 15
-	ffb_set_filter_preset(hFFB, 0, &filter_preset);
+	// TODO : test additional bootloader protection features
+	// TODO : Separate wheel startup from the infinite loop
+	// TODO : Correct DeInit functions for all modules
+	/* TODO: write isolated unmount and mount logic
+	 * separately without relying on the device power off
+	 * for correct initialization after a deinitialization */
 
 	// force variables
 	static int32_t local_force = 0;
@@ -326,6 +308,37 @@ static void configure_software_exti() {
 	}
 }
 
+static ffb_axis_local_t* create_local_effects() {
+	ffb_axis_local_config_t local_effects_config = { 0 };
+	ffb_axis_local_config_default(&local_effects_config);
+	local_effects_config.degrees_of_rotation = CONSTRAINED_ROTATION_DEG;
+	local_effects_config.endstop_strength = 250;
+	local_effects_config.idle_spring_strength = 255;
+	local_effects_config.damper_intensity = 0;
+	return ffb_axis_local_create(&local_effects_config);
+}
+
+static ffb_metrics_t* create_metrics_helper() {
+	// set up the metrics helper. Use ffb_metrics_create_ex so we can lower the
+	// speed/accel low-pass cutoffs below the defaults ({70,55}/{55,30}): a lower
+	// cutoff (Hz) attenuates more high-frequency content from the raw encoder
+	// derivatives, at the cost of slightly more phase lag. q stays Q*100.
+	return ffb_metrics_create_ex(CONSTRAINED_ROTATION_DEG, 1000.0f,
+	/* speed */40, 55,
+	/* accel */25, 30);
+}
+
+static void init_filter_preset() {
+	ffb_effect_filter_preset_t filter_preset = { 0 };
+	ffb_get_filter_preset(hFFB, 0, &filter_preset);
+	filter_preset.constant_freq = 50; // was 500 (no-op at 1 kHz)
+	filter_preset.constant_q = 60;    // was 70
+	filter_preset.damper_freq = 15;   // was 30
+	filter_preset.friction_freq = 15; // was 50
+	filter_preset.inertia_freq = 5;   // was 15
+	ffb_set_filter_preset(hFFB, 0, &filter_preset);
+}
+
 static void register_initialization_error() {
 #ifdef DEBUG
 	Error_Handler();
@@ -336,6 +349,9 @@ static void register_initialization_error() {
 }
 
 /* 		APPLICATION SPECIFIC FUNCTIONS 		*/
+
+// called from wheel_get_all_component_states
+// and from SysTick_Handler when !hid_driver_ready()
 Wheel_Status wheel_get_all_component_states() {
 	if ((wheel.hPedals == NULL) || (wheel.hShifter == NULL)) {
 		return WHEEL_ERROR;

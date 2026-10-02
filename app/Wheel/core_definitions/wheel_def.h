@@ -1,4 +1,4 @@
- /*
+/*
  MIT License
 
  Copyright (c) 2025 Log1cFX
@@ -60,15 +60,15 @@ extern "C" {
 
 #define MAX_ROTATION_DEG 900
 #define ENDSTOP_DEG_OFFSET 15
+#define CONSTRAINED_ROTATION_DEG MAX_ROTATION_DEG - (ENDSTOP_DEG_OFFSET * 2)
+
 #define CALIBRATION_FORCE 135
 
-#ifdef RELEASE
-#define CALIBRATION_MAX_TRIES 250
-#endif
 #ifdef DEBUG
-#define CALIBRATION_MAX_TRIES 3
+	#define CALIBRATION_MAX_TRIES 3
+#else
+	#define CALIBRATION_MAX_TRIES 250
 #endif
-
 
 typedef struct {
 	uint32_t wheel_error_count;

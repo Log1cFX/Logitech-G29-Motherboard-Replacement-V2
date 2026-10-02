@@ -42,6 +42,7 @@ static uint8_t hat_switch_from_msb(uint8_t byte) {
 	return hat_table[dpadY + 1][dpadX + 1];
 }
 
+// called every milisecond from SysTick_Handler
 void usb_process_report_data() {
 	wheel_get_all_component_states();
 	if (++unsent_report_cnt > 5) {
@@ -49,6 +50,7 @@ void usb_process_report_data() {
 	}
 }
 
+// called after the current report gets sent
 void usb_send_report() {
 	unsent_report_cnt = -1;
 
