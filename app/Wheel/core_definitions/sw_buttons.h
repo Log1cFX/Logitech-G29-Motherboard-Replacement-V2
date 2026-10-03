@@ -42,7 +42,7 @@ extern "C" {
 /* FOR DEBOUNCING */
 #define SAMPLE_TIME_US 1000U
 #define MAX_SAMPLES 65U
-#define HALF_SAMPLES MAX_SAMPLES/2
+#define HALF_SAMPLES (MAX_SAMPLES / 2)
 #define BUTTONS_BUFFER_SIZE MAX_SAMPLES
 
 //yeah, I should write a book about this horror
@@ -77,10 +77,24 @@ typedef struct _Buttons_HandleTypeDef {
 	// Shouldn't be filled manually but instead by calling INIT
 	Buttons_ConfigHandleTypeDef Config;
 
+	/*
+	 * CONTEXTS (see the table in wheel_def.h)
+	 * TIM_POLL_CB() runs in the TIM3 interrupt (priority 6).
+	 * GetState() runs in SysTick (priority 6).
+	 */
+
 	// variable that is used to get the state of buttons
-	uint32_t buttons_state;
+	// written by: SysTick (GetState) | read by: EXTI0 (usb report)
+	// GetState writes it in several steps and EXTI0 has a higher priority than
+	// SysTick. EXTI0 only gets a finished value because it is never triggered
+	// while GetState is running (see usb_processing.c). Nothing else protects it.
+	volatile uint32_t buttons_state;
 
 	/* THIS IS IMPLEMENTATION SPECIFIC AND ONLY USED INSIDE THE SOURCE FILE */
+	// Everything below is written by the TIM3 interrupt (TIM_POLL_CB) and read
+	// by SysTick (GetState). It isn't volatile or protected because TIM3 and
+	// SysTick have the same priority, so one can never interrupt the other.
+	// That stops being true if one of the two priorities is changed.
 	uint32_t sample_buffer[BUTTONS_BUFFER_SIZE];
 	uint32_t knob_rotation_sequence_buffer[ROTATION_SEQUENCE_SIZE];
 	uint32_t knob_lock_init_time_ms;
@@ -88,6 +102,9 @@ typedef struct _Buttons_HandleTypeDef {
 	uint8_t knob_flags;
 	uint16_t sample_head;
 }Buttons_HandleTypeDef;
+
+// the instance of this module, defined in sw_buttons.c
+extern Buttons_HandleTypeDef hButtons;
 
 #ifdef __cplusplus
 }

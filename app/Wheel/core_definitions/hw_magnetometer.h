@@ -38,6 +38,8 @@ extern "C" {
 
 #include "common_types.h"
 
+#define MAGNETOMETER_FRAME_SIZE 8 // size in bytes of every SPI message, in both directions
+
 typedef struct {
 	uint16_t SS_pin; // Slave Select pin
 	GPIO_TypeDef *SS_port; // Slave Select port
@@ -61,16 +63,29 @@ typedef struct _Magnetometer_HandleTypeDef {
 	// Shouldn't be filled manually but instead by calling INIT
 	Magnetometer_ConfigHandleTypeDef Config;
 
+	/*
+	 * CONTEXTS (see the table in wheel_def.h)
+	 * Everything below is used by the TIM4 interrupt (TransmitRecieve_DMA) and
+	 * by the SPI DMA interrupt (TxRxDone_CB). Both have priority 3, so one can
+	 * never interrupt the other and nothing here has to be volatile.
+	 * Start_TIM_POLL also uses the buffers from the main thread, but before
+	 * the timer is started.
+	 */
+
+	// read by the sensor's Update(), in the same SPI DMA interrupt
 	uint16_t reading; // 16 bit resolution value
 	uint16_t err_packets_cnt; // Either missed, corrupted or wrong packets
 
 	/* THIS IS IMPLEMENTATION SPECIFIC AND ONLY USED INSIDE THE SOURCE FILE */
-	uint8_t SPI_Rx_buffer[8];
-	uint8_t SPI_Tx_buffer[8];
+	uint8_t SPI_Rx_buffer[MAGNETOMETER_FRAME_SIZE];
+	uint8_t SPI_Tx_buffer[MAGNETOMETER_FRAME_SIZE];
 	uint8_t transfer_is_done;
 	uint8_t diagnostic_bits;
 	uint8_t roll_cnt;
 } Magnetometer_HandleTypeDef;
+
+// the instance of this module, defined in hw_magnetometer.c
+extern Magnetometer_HandleTypeDef hmlx90363;
 
 #ifdef __cplusplus
 }

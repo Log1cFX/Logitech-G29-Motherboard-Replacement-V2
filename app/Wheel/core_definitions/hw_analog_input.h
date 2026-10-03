@@ -59,7 +59,8 @@ typedef struct _Analog_HandleTypeDef {
 	// Shouldn't be filled manually but instead by calling INIT
 	Analog_ConfigHandleTypeDef Config;
 	// array where output will be stored
-	uint32_t axis[ANALOG_INPUT_NUM];
+	// written by: the ADC through DMA (hardware, all the time) | read by: SysTick (pedals, shifter)
+	volatile uint32_t axis[ANALOG_INPUT_NUM];
 
 } Analog_HandleTypeDef;
 
@@ -76,10 +77,15 @@ typedef struct _Pedals_HandleTypeDef {
 	// Shouldn't be filled manually but instead by calling INIT
 	Pedals_ConfigHandleTypeDef Config;
 	// variables that are used to get the value of pedals after GetState
-	uint8_t clutch;
-	uint8_t brake;
-	uint8_t throtle;
+	// written by: SysTick (GetState) | read by: EXTI0 (usb report)
+	volatile uint8_t clutch;
+	volatile uint8_t brake;
+	volatile uint8_t throtle;
 } Pedals_HandleTypeDef;
+
+// the instances of this module, defined in hw_analog_input.c
+extern Analog_HandleTypeDef hAnalog;
+extern Pedals_HandleTypeDef hPedals;
 
 #ifdef __cplusplus
 }

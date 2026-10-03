@@ -9,9 +9,6 @@
 #include "wheel_def.h"
 #include "ffb/ffb_c.h"
 
-extern Wheel_HandleTypeDef wheel;
-extern ffb_lib_t *hFFB;
-
 //--------------------------------------------------------------------+
 // Device callbacks
 //--------------------------------------------------------------------+

@@ -44,6 +44,37 @@
  * that is also why dynamically called function pointers have been chosen over compile time calls.
  */
 
+/*
+ * WHO RUNS WHERE
+ *
+ * There is no scheduler. The tasks run in interrupts and the priorities decide
+ * who can interrupt who : a lower number can interrupt every bigger number,
+ * equal numbers never interrupt each other, everything interrupts the main thread.
+ *
+ *  priority | context                      | what runs there
+ *  ---------+------------------------------+------------------------------------------------
+ *   0 / 1   | USB_HP / USB_LP              | tud_int_handler (only queues events for tud_task)
+ *   3       | TIM4                         | magnetometer TransmitRecieve_DMA
+ *   3       | DMA1 ch4 / ch5 (SPI2)        | magnetometer TxRxDone_CB, then sensor Update
+ *   4       | EXTI1 (software interrupt)   | nothing
+ *   5       | EXTI0 (software interrupt)   | usb_send_report
+ *   6       | TIM3                         | buttons TIM_POLL_CB
+ *   6       | SysTick                      | wheel_get_all_component_states (every GetState / GetAxis),
+ *           |                              | and tud_task while the HID driver isn't ready
+ *   10      | DMA1 ch1 (ADC)               | nothing, the ADC fills hAnalog.axis through DMA by itself
+ *   -       | main thread                  | tud_task, calibration, force calculation, Apply_Force
+ *
+ * The priorities are set in main.c, stm32f1xx_hal_msp.c and
+ * stm32f1xx_hal_conf.h (TICK_INT_PRIORITY). Update this table if they change.
+ *
+ * Every field that is written in one context and read in another one has a
+ * comment saying so next to it, and is volatile so the compiler always reads
+ * the real value from memory instead of a copy it kept in a register.
+ * volatile doesn't make anything atomic : something that takes more than one
+ * step to update (x++, or two fields that go together) can still be seen
+ * half updated by a context that interrupts the writer.
+ */
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -57,11 +88,13 @@ extern "C" {
 #include "sw_shifter.h"
 #include "hw_motor_driver.h"
 #include "sw_actuator.h"
+#include "ffb/ffb_c.h"
 
 #define MAX_ROTATION_DEG 900
 #define ENDSTOP_DEG_OFFSET 15
-#define CONSTRAINED_ROTATION_DEG MAX_ROTATION_DEG - (ENDSTOP_DEG_OFFSET * 2)
+#define CONSTRAINED_ROTATION_DEG (MAX_ROTATION_DEG - (ENDSTOP_DEG_OFFSET * 2))
 
+/* CALIBRATION */
 #define CALIBRATION_FORCE 135
 
 #ifdef DEBUG
@@ -70,8 +103,60 @@ extern "C" {
 	#define CALIBRATION_MAX_TRIES 250
 #endif
 
+// pause between two calibration attempts
+#define CALIBRATION_RETRY_DELAY_MS 2000
+// time given to the motor to get the wheel moving at the start of a sweep
+#define CALIBRATION_MOTOR_START_DELAY_MS 40
+// time between two position samples during a sweep
+#define CALIBRATION_SAMPLE_PERIOD_MS 10
+// the wheel is considered stopped (it reached the end) when its position
+// changes by less than this between two samples (steering_pos units)
+#define CALIBRATION_STALL_THRESHOLD 150
+// smallest end to end range accepted as a valid calibration (steering_pos units)
+#define CALIBRATION_MIN_RANGE 63750
+// the wheel is considered centered when |virtual_axis| is under this
+#define RECENTER_TOLERANCE 150
+
+/* CONTROL LOOP */
+// period of the force calculation in the main loop
+#define CONTROL_LOOP_PERIOD_MS 1
+// same thing in Hz for the ffb library, has to match CONTROL_LOOP_PERIOD_MS
+#define CONTROL_LOOP_RATE_HZ 1000.0f
+
+/* FORCE FEEDBACK */
+#define FFB_AXIS_COUNT 1
+#define FFB_STEERING_AXIS 0 // index of the steering axis in the ffb library
+#define FFB_FILTER_PROFILE 0 // 0 = default profile, 1 = custom
+
+// low-pass filters applied to speed and acceleration (freq in Hz, q is Q*100)
+// library defaults are {70,55} for speed and {55,30} for acceleration
+#define METRICS_SPEED_FREQ_HZ 40
+#define METRICS_SPEED_Q 55
+#define METRICS_ACCEL_FREQ_HZ 25
+#define METRICS_ACCEL_Q 30
+
+// effects computed by the wheel itself (0..255)
+#define LOCAL_ENDSTOP_STRENGTH 250
+#define LOCAL_IDLE_SPRING_STRENGTH 255
+#define LOCAL_DAMPER_INTENSITY 0
+
+// filters applied to the effects sent by the host (freq in Hz, q is Q*100)
+#define FFB_CONSTANT_FILTER_FREQ_HZ 50 // was 500 (no-op at 1 kHz)
+#define FFB_CONSTANT_FILTER_Q 60 // was 70
+#define FFB_DAMPER_FILTER_FREQ_HZ 15 // was 30
+#define FFB_FRICTION_FILTER_FREQ_HZ 15 // was 50
+#define FFB_INERTIA_FILTER_FREQ_HZ 5 // was 15
+
+/* SOFTWARE INTERRUPTS */
+// EXTI lines 0 to (SOFTWARE_EXTI_LINE_COUNT - 1) are used as software interrupts
+#define SOFTWARE_EXTI_LINE_COUNT 3
+
 typedef struct {
-	uint32_t wheel_error_count;
+	uint32_t wheel_error_count; // main thread only
+	// The pointers are written once by init_wheel_handle() (main thread) and
+	// never change after that. They are read by every context.
+	// SysTick is already running before they are set, that is why
+	// wheel_get_all_component_states() checks them for NULL.
 	DigitalInput_HandleTypeDef *hDigitalInput;
 	Buttons_HandleTypeDef *hButtons;
 	Magnetometer_HandleTypeDef *hMagnetometer;
@@ -82,6 +167,10 @@ typedef struct {
 	MotorDriver_HandleTypeDef *hMotorDriver;
 	Actuator_HandleTypeDef *hActuator;
 }Wheel_HandleTypeDef;
+
+// both defined in steeringwheel.c
+extern Wheel_HandleTypeDef wheel;
+extern ffb_lib_t *hFFB;
 
 Wheel_Status wheel_get_all_component_states();
 void wheel_startup();

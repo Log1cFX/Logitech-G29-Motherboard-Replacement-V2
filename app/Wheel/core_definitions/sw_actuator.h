@@ -36,7 +36,7 @@
 #include "common_types.h"
 
 #define MOTOR_MAX_FORCE 255
-#define MOTOR_MIN_FORCE -255
+#define MOTOR_MIN_FORCE (-255)
 
 typedef struct _Actuator_ConfigHandleTypeDef {
 	MotorDriver_HandleTypeDef *hMotorDriver;
@@ -51,6 +51,10 @@ typedef struct _Actuator_HandleTypeDef {
 
 	// Shouldn't be filled manually but instead by calling INIT
 	Actuator_ConfigHandleTypeDef Config;
+	// this module is only used by the main thread (calibration and control loop)
 } Actuator_HandleTypeDef;
+
+// the instance of this module, defined in sw_actuator.c
+extern Actuator_HandleTypeDef hActuator;
 
 #endif /* CORE_DEFINITIONS_SW_ACTUATOR_H_ */

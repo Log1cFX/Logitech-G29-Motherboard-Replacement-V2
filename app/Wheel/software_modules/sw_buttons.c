@@ -189,6 +189,6 @@ static void update_knob_button_state(Buttons_HandleTypeDef *buttons) {
 		CLEAR_BIT(buttons->knob_flags, KNOB_LOCK_FLAG);
 		CLEAR_BIT(buttons->knob_flags, KNOB_DIRECTION_FLAG);
 		memset(buttons->knob_rotation_sequence_buffer, 0,
-				sizeof(ROTATION_SEQUENCE_SIZE));
+				sizeof(buttons->knob_rotation_sequence_buffer));
 	}
 }

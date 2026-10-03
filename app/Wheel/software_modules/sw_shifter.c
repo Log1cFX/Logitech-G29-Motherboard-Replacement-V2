@@ -21,10 +21,10 @@ static Wheel_Status Shifter_INIT(Shifter_HandleTypeDef *shifter,
 		return WHEEL_ERROR;
 	}
 	memcpy(&shifter->Config, config, sizeof(Shifter_ConfigHandleTypeDef));
-	shifter->min.x = 10000;
-	shifter->min.y = 60000;
-	shifter->max.x = 52000;
-	shifter->max.y = 0;
+	shifter->min.x = SHIFTER_DEFAULT_MIN_X;
+	shifter->min.y = SHIFTER_DEFAULT_MIN_Y;
+	shifter->max.x = SHIFTER_DEFAULT_MAX_X;
+	shifter->max.y = SHIFTER_DEFAULT_MAX_Y;
 	return WHEEL_OK;
 }
 
@@ -63,8 +63,8 @@ static Wheel_Status Shifter_getSpeed(Shifter_HandleTypeDef *shifter) {
 	if (height == 0)
 		height = 1;
 
-	uint16_t cell_w = width / 3;
-	uint16_t cell_h = height / 4;
+	uint16_t cell_w = width / SHIFTER_GRID_COLS;
+	uint16_t cell_h = height / SHIFTER_GRID_ROWS;
 	if (cell_w == 0)
 		cell_w = 1;
 	if (cell_h == 0)
@@ -75,12 +75,13 @@ static Wheel_Status Shifter_getSpeed(Shifter_HandleTypeDef *shifter) {
 	grid_location.x = (current_pos->x - min->x) / cell_w;
 	grid_location.y = (current_pos->y - max->y) / cell_h;
 
-	if (grid_location.x > 2)
-		grid_location.x = 2;
-	if (grid_location.y > 3)
-		grid_location.y = 3;
+	if (grid_location.x > SHIFTER_GRID_COLS - 1)
+		grid_location.x = SHIFTER_GRID_COLS - 1;
+	if (grid_location.y > SHIFTER_GRID_ROWS - 1)
+		grid_location.y = SHIFTER_GRID_ROWS - 1;
 
-	static const uint8_t speed_table[4][5] = {
+	static const uint8_t speed_table[SHIFTER_GRID_ROWS][SHIFTER_GRID_COLS
+			+ SHIFTER_MODIFIER_COL_OFFSET] = {
 	/**/{ 2, 4, 6, 0, 7 },/**/
 	/**/{ 0, 0, 0, 0, 0 },/**/
 	/**/{ 0, 0, 0, 0, 0 },/**/
@@ -88,7 +89,7 @@ static Wheel_Status Shifter_getSpeed(Shifter_HandleTypeDef *shifter) {
 	};
 
 	if (HAL_GPIO_ReadPin(shifter->Config.modifier_port, shifter->Config.modifier_pin)) {
-		grid_location.x += 2;
+		grid_location.x += SHIFTER_MODIFIER_COL_OFFSET;
 	}
 
 	shifter->gear = speed_table[grid_location.y][grid_location.x];

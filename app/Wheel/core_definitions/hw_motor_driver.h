@@ -34,6 +34,9 @@
 
 #include "common_types.h"
 
+// value of right_channel / left_channel when no timer channel is set
+#define MOTOR_INVALID_CHANNEL 0xFFFF
+
 typedef struct _MotorDriver_ConfigHandleTypeDef {
 	uint16_t R_EN_pin;
 	uint16_t L_EN_pin;
@@ -59,8 +62,11 @@ typedef struct _MotorDriver_HandleTypeDef {
 	// Shouldn't be filled manually but instead by calling INIT
 	MotorDriver_ConfigHandleTypeDef Config;
 
-	uint8_t motors_enabled;
+	uint8_t motors_enabled; // main thread only, like the rest of this module
 
 } MotorDriver_HandleTypeDef;
+
+// the instance of this module, defined in hw_motor_driver.c
+extern MotorDriver_HandleTypeDef hMotorDriver;
 
 #endif /* COMMON_TEMPLATES_HW_MOTOR_DRIVER_H_ */

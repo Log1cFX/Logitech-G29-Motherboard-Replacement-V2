@@ -8,10 +8,27 @@
 #include "usb_processing.h"
 #include "wheel_def.h"
 
-extern Wheel_HandleTypeDef wheel;
+// if no report got sent for more than this many SysTick ticks (ms), force one
+#define REPORT_FORCE_SEND_TICKS 5
+#define MICROS_PER_MS 1000
 
-static int8_t unsent_report_cnt;
-static int8_t driver_state;
+/*
+ * CONTEXTS (see the table in wheel_def.h)
+ * usb_process_report_data() runs in SysTick (priority 6).
+ * usb_send_report() runs in the EXTI0 software interrupt (priority 5).
+ * EXTI0 is triggered from two places : by usb_process_report_data(), after it
+ * finished updating the component states, and by tud_hid_report_complete_cb(),
+ * which runs inside tud_task() (main thread, or SysTick before it updates the
+ * component states). As long as nothing else triggers EXTI0, usb_send_report()
+ * doesn't run in the middle of an update.
+ */
+
+// written by: SysTick (usb_process_report_data), EXTI0 (usb_send_report)
+static volatile int8_t unsent_report_cnt;
+// written by: the TinyUSB callbacks, through set_hid_driver_state(). They run
+// inside tud_task(), so in the main thread, or in SysTick while the driver isn't ready
+// read by: SysTick, main thread (init_usb)
+static volatile int8_t driver_state;
 /*
  * returns the encoded direction of the d_pad with the 4 most important bits
  * of the parameter byte
@@ -45,12 +62,13 @@ static uint8_t hat_switch_from_msb(uint8_t byte) {
 // called every milisecond from SysTick_Handler
 void usb_process_report_data() {
 	wheel_get_all_component_states();
-	if (++unsent_report_cnt > 5) {
+	if (++unsent_report_cnt > REPORT_FORCE_SEND_TICKS) {
 		__HAL_GPIO_EXTI_GENERATE_SWIT(SEND_REPORT_SWIT_PIN);
 	}
 }
 
 // called after the current report gets sent
+// context: EXTI0 software interrupt (priority 5)
 void usb_send_report() {
 	unsent_report_cnt = -1;
 
@@ -76,7 +94,7 @@ void usb_send_report() {
 }
 
 uint32_t get_faketime_micros() {
-	return HAL_GetTick() * 1000;
+	return HAL_GetTick() * MICROS_PER_MS;
 }
 
 void set_hid_driver_state(uint8_t en){

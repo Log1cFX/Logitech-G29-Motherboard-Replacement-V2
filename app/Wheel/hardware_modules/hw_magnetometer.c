@@ -22,6 +22,14 @@
 #define NOP_KEY						0xAA // Doesn't matter what it is
 #define GET_TIME_OUT 				0xFF // Max timeout
 
+/* Layout of the answer to GET1. Ref : datasheet page 20 */
+#define MARKER_SHIFT				6 // byte 6, bits 7:6 : type of the result (0 = Alpha)
+#define ROLL_CNT_MASK				0x3F // byte 6, bits 5:0 : rolling counter
+#define ROLL_CNT_MODULO				64 // the rolling counter is 6 bits, it goes from 0 to 63
+#define ALPHA_MSB_MASK				0x3F // byte 1, bits 5:0 : upper bits of the 14 bit angle
+#define ALPHA_TO_16BIT_SHIFT		2 // alpha is 14 bit, shifted to use the full 16 bit range
+#define DIAGNOSTIC_SHIFT			6 // byte 1, bits 7:6 : diagnostic bits
+
 /*
  * In the datasheet there are two opcodes for d16:
  * first in the opcode table (0x10) and second in table 23 (1101 0000)
@@ -98,7 +106,7 @@ static Wheel_Status MLX90363_TransmitRecieve_DMA(
 	HAL_GPIO_WritePin(config->SS_port, config->SS_pin, 0);
 	HAL_StatusTypeDef ret = HAL_OK;
 	ret = HAL_SPI_TransmitReceive_DMA(config->hspi, sensor->SPI_Tx_buffer,
-			sensor->SPI_Rx_buffer, 8);
+			sensor->SPI_Rx_buffer, MAGNETOMETER_FRAME_SIZE);
 	return (ret == HAL_OK) ? WHEEL_OK : WHEEL_ERROR;
 }
 
@@ -179,7 +187,7 @@ static void set_NOP(uint8_t *buffer) {
 static void transmit_blocking(Magnetometer_HandleTypeDef *sensor) {
 	Magnetometer_ConfigHandleTypeDef *config = &sensor->Config;
 	HAL_GPIO_WritePin(config->SS_port, config->SS_pin, 0);
-	HAL_SPI_Transmit(config->hspi, sensor->SPI_Tx_buffer, 8,
+	HAL_SPI_Transmit(config->hspi, sensor->SPI_Tx_buffer, MAGNETOMETER_FRAME_SIZE,
 	HAL_MAX_DELAY);
 	HAL_GPIO_WritePin(config->SS_port, config->SS_pin, 1);
 }
@@ -208,7 +216,7 @@ static Wheel_Status getData(Magnetometer_HandleTypeDef *sensor) {
 	}
 
 	// Check the marker if Alpha (0), otherwise ignore
-	if ((RxBuffer[6] >> 6) != 0) {
+	if ((RxBuffer[6] >> MARKER_SHIFT) != 0) {
 		sensor->err_packets_cnt++;
 		return WHEEL_ERROR; // Not Alpha result
 	}
@@ -226,10 +234,10 @@ static Wheel_Status getData(Magnetometer_HandleTypeDef *sensor) {
 	}
 
 	// Extract the rolling counter
-	uint8_t rollcnt = RxBuffer[6] & 0x3F;
+	uint8_t rollcnt = RxBuffer[6] & ROLL_CNT_MASK;
 	// calculate the difference between the internal sensor's roll counter and the roll counter
 	uint8_t last_rollcnt = sensor->roll_cnt;
-	uint8_t diff = (rollcnt - last_rollcnt + 64) % 64;
+	uint8_t diff = (rollcnt - last_rollcnt + ROLL_CNT_MODULO) % ROLL_CNT_MODULO;
 	if (diff > 1) {
 		sensor->err_packets_cnt += diff - 1; // We expect diff=1 usually (no lost packets)
 	}
@@ -245,8 +253,9 @@ static Wheel_Status getData(Magnetometer_HandleTypeDef *sensor) {
 	// Extract and convert the angle to degrees
 	// Ref : datasheet page 20 + note at page 21
 	// alpha is 14 bit, it is shifted 2 times to get a 16 bit value
-	sensor->reading = (((RxBuffer[1] & 0x3F) << 8) + RxBuffer[0]) << 2;
+	sensor->reading = (((RxBuffer[1] & ALPHA_MSB_MASK) << 8) + RxBuffer[0])
+			<< ALPHA_TO_16BIT_SHIFT;
 	// Extract the error bits
-	sensor->diagnostic_bits = RxBuffer[1] >> 6;
+	sensor->diagnostic_bits = RxBuffer[1] >> DIAGNOSTIC_SHIFT;
 	return WHEEL_OK;
 }

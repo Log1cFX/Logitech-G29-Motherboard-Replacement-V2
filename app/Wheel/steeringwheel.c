@@ -13,24 +13,12 @@
 
 #include <stdlib.h>
 
+// see the comments in wheel_def.h for who uses what
 Wheel_HandleTypeDef wheel;
+// written once by init_ffb_library() (main thread).
+// Used by the main thread and by the TinyUSB callbacks (usb_callbacks.c), which
+// run inside tud_task() : main thread, or SysTick while the HID driver isn't ready
 ffb_lib_t *hFFB;
-
-extern ADC_HandleTypeDef hadc1;
-extern SPI_HandleTypeDef hspi2;
-extern TIM_HandleTypeDef htim1;
-extern TIM_HandleTypeDef htim3;
-extern TIM_HandleTypeDef htim4;
-
-extern DigitalInput_HandleTypeDef hG29Buttons;
-extern Buttons_HandleTypeDef hButtons;
-extern Magnetometer_HandleTypeDef hmlx90363;
-extern Sensor_HandleTypeDef hSensor;
-extern Analog_HandleTypeDef hAnalog;
-extern Pedals_HandleTypeDef hPedals;
-extern Shifter_HandleTypeDef hShifter;
-extern MotorDriver_HandleTypeDef hMotorDriver;
-extern Actuator_HandleTypeDef hActuator;
 
 static void init_wheel_handle();
 static void init_buttons();
@@ -80,7 +68,7 @@ void wheel_startup() {
 	// try calibration until succeeds or the max attempts number is reached
 	uint8_t calibration_tries = 0;
 	while (wheel_axis_calibration() == WHEEL_ERROR) {
-		HAL_Delay(2000);
+		HAL_Delay(CALIBRATION_RETRY_DELAY_MS);
 		calibration_tries++;
 		if (calibration_tries >= CALIBRATION_MAX_TRIES) {
 			register_initialization_error();
@@ -113,8 +101,8 @@ void wheel_startup() {
 		tud_task();
 		current_time = HAL_GetTick();
 
-		// execute every 1ms
-		if (current_time - last_executed_time >= 1) {
+		// execute every CONTROL_LOOP_PERIOD_MS
+		if (current_time - last_executed_time >= CONTROL_LOOP_PERIOD_MS) {
 			last_executed_time = current_time;
 
 			// compute current degrees and update the axis state
@@ -123,9 +111,9 @@ void wheel_startup() {
 			ffb_axis_state_t st = ffb_metrics_update(metrics, degrees);
 
 			// compute forces
-			ffb_set_axis_state_s(hFFB, 0, &st);
+			ffb_set_axis_state_s(hFFB, FFB_STEERING_AXIS, &st);
 			ffb_calculate(hFFB);
-			host_force = ffb_get_axis_torque(hFFB, 0);
+			host_force = ffb_get_axis_torque(hFFB, FFB_STEERING_AXIS);
 			local_force = ffb_axis_local_compute(local_effects, &st, degrees,
 					ffb_is_active(hFFB));
 			total_force = host_force + local_force;
@@ -149,19 +137,19 @@ void wheel_startup() {
  * dir = +1 goes right, tracking a maximum (pos > extremum).
  * dir = -1 goes left,  tracking a minimum (pos < extremum). */
 static void wheel_calib_sweep(Sensor_HandleTypeDef *sensor, int16_t force,
-		int32_t *extremum, int dir) {
+		volatile int32_t *extremum, int dir) {
 	int32_t previous = sensor->steering_pos;
 	wheel.hActuator->Apply_Force(wheel.hActuator, force);
-	HAL_Delay(40); // A: let the motor start
+	HAL_Delay(CALIBRATION_MOTOR_START_DELAY_MS); // A: let the motor start
 	int16_t acceleration = sensor->steering_pos - previous;
-	while (abs(acceleration) > 150) {
+	while (abs(acceleration) > CALIBRATION_STALL_THRESHOLD) {
 		// B: finding out if current position is the farthest
 		if (dir * sensor->steering_pos > dir * *extremum) {
 			*extremum = sensor->steering_pos;
 		}
 		// C: calculating acceleration
 		previous = sensor->steering_pos;
-		HAL_Delay(10);
+		HAL_Delay(CALIBRATION_SAMPLE_PERIOD_MS);
 		acceleration = sensor->steering_pos - previous;
 	}
 }
@@ -173,14 +161,14 @@ static Wheel_Status wheel_axis_calibration() {
 	wheel_calib_sweep(sensor, CALIBRATION_FORCE, &sensor->max, +1); // right
 	wheel.hActuator->Apply_Force(wheel.hActuator, 0);
 
-	sensor->axis_scale = (float) (0x7FFF) / (sensor->distance / 2);
+	sensor->axis_scale = (float) (INT16_MAX) / (sensor->distance / 2);
 	// In testing, the range is ~64069
-	return (sensor->distance < 63750) ? WHEEL_ERROR : WHEEL_OK;
+	return (sensor->distance < CALIBRATION_MIN_RANGE) ? WHEEL_ERROR : WHEEL_OK;
 }
 
 static void wheel_recenter() {
 	int8_t sign = (wheel.hSensor->virtual_axis > 0) ? 1 : -1;
-	while (abs(wheel.hSensor->virtual_axis) > 150) {
+	while (abs(wheel.hSensor->virtual_axis) > RECENTER_TOLERANCE) {
 		wheel.hActuator->Apply_Force(wheel.hActuator,
 		CALIBRATION_FORCE * -sign);
 	}
@@ -296,12 +284,12 @@ static void init_usb() {
 }
 
 static void init_ffb_library() {
-	hFFB = ffb_create(1, HAL_GetTick, get_faketime_micros);
+	hFFB = ffb_create(FFB_AXIS_COUNT, HAL_GetTick, get_faketime_micros);
 	ffb_set_send_report_callback(hFFB, ffb_send_report_cb);
 }
 
 static void configure_software_exti() {
-	for (uint8_t i = 0; i < 3; i++) {
+	for (uint8_t i = 0; i < SOFTWARE_EXTI_LINE_COUNT; i++) {
 		CLEAR_BIT(EXTI->RTSR, (0x1UL << i));  // Clear rising edge
 		CLEAR_BIT(EXTI->FTSR, (0x1UL << i));  // Clear falling edge
 		SET_BIT(EXTI->IMR, (0x1UL << i));  // Already enabled by CubeMX
@@ -313,9 +301,9 @@ static ffb_axis_local_t* create_local_effects() {
 	ffb_axis_local_config_t local_effects_config = { 0 };
 	ffb_axis_local_config_default(&local_effects_config);
 	local_effects_config.degrees_of_rotation = CONSTRAINED_ROTATION_DEG;
-	local_effects_config.endstop_strength = 250;
-	local_effects_config.idle_spring_strength = 255;
-	local_effects_config.damper_intensity = 0;
+	local_effects_config.endstop_strength = LOCAL_ENDSTOP_STRENGTH;
+	local_effects_config.idle_spring_strength = LOCAL_IDLE_SPRING_STRENGTH;
+	local_effects_config.damper_intensity = LOCAL_DAMPER_INTENSITY;
 	return ffb_axis_local_create(&local_effects_config);
 }
 
@@ -324,20 +312,20 @@ static ffb_metrics_t* create_metrics_helper() {
 	// speed/accel low-pass cutoffs below the defaults ({70,55}/{55,30}): a lower
 	// cutoff (Hz) attenuates more high-frequency content from the raw encoder
 	// derivatives, at the cost of slightly more phase lag. q stays Q*100.
-	return ffb_metrics_create_ex(CONSTRAINED_ROTATION_DEG, 1000.0f,
-	/* speed */40, 55,
-	/* accel */25, 30);
+	return ffb_metrics_create_ex(CONSTRAINED_ROTATION_DEG, CONTROL_LOOP_RATE_HZ,
+	/* speed */METRICS_SPEED_FREQ_HZ, METRICS_SPEED_Q,
+	/* accel */METRICS_ACCEL_FREQ_HZ, METRICS_ACCEL_Q);
 }
 
 static void init_filter_preset() {
 	ffb_effect_filter_preset_t filter_preset = { 0 };
-	ffb_get_filter_preset(hFFB, 0, &filter_preset);
-	filter_preset.constant_freq = 50; // was 500 (no-op at 1 kHz)
-	filter_preset.constant_q = 60;    // was 70
-	filter_preset.damper_freq = 15;   // was 30
-	filter_preset.friction_freq = 15; // was 50
-	filter_preset.inertia_freq = 5;   // was 15
-	ffb_set_filter_preset(hFFB, 0, &filter_preset);
+	ffb_get_filter_preset(hFFB, FFB_FILTER_PROFILE, &filter_preset);
+	filter_preset.constant_freq = FFB_CONSTANT_FILTER_FREQ_HZ;
+	filter_preset.constant_q = FFB_CONSTANT_FILTER_Q;
+	filter_preset.damper_freq = FFB_DAMPER_FILTER_FREQ_HZ;
+	filter_preset.friction_freq = FFB_FRICTION_FILTER_FREQ_HZ;
+	filter_preset.inertia_freq = FFB_INERTIA_FILTER_FREQ_HZ;
+	ffb_set_filter_preset(hFFB, FFB_FILTER_PROFILE, &filter_preset);
 }
 
 static void register_initialization_error() {
@@ -351,7 +339,8 @@ static void register_initialization_error() {
 
 /* 		APPLICATION SPECIFIC FUNCTIONS 		*/
 
-// called from wheel_get_all_component_states
+// context: SysTick (priority 6)
+// called from usb_process_report_data
 // and from SysTick_Handler when !hid_driver_ready()
 Wheel_Status wheel_get_all_component_states() {
 	if ((wheel.hPedals == NULL) || (wheel.hShifter == NULL)) {
@@ -373,6 +362,7 @@ Wheel_Status wheel_get_all_component_states() {
 
 /*		HARDWARE CALLBACK FUNCTIONS		 	*/
 // Custom software interrupt implementation using the EXTI line callbacks
+// context: EXTI0 interrupt (priority 5)
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
 	if (GPIO_Pin == SEND_REPORT_SWIT_PIN) {
 		usb_send_report();
@@ -386,6 +376,7 @@ void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef *hadc) {
 }
 
 // Called at the end of a transfer to process the raw data received by the sensor
+// context: SPI2 DMA interrupt (priority 3)
 void HAL_SPI_TxRxCpltCallback(SPI_HandleTypeDef *hspi) {
 	if (wheel.hMagnetometer->Config.hspi->Instance == hspi->Instance) {
 		wheel.hMagnetometer->TxRxDone_CB(wheel.hMagnetometer);
@@ -395,6 +386,7 @@ void HAL_SPI_TxRxCpltCallback(SPI_HandleTypeDef *hspi) {
 
 // 1. Used to start, periodically, the transmission with the magnetometer (steering)
 // 2. Used to periodically read the buttons' state (for debouncing)
+// context: TIM4 interrupt (priority 3) for 1, TIM3 interrupt (priority 6) for 2
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
 // 1
 	Magnetometer_HandleTypeDef *hw_magnetometer = wheel.hMagnetometer;

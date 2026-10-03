@@ -7,6 +7,15 @@
 
 #include "sw_sensor.h"
 
+/* The capture is a 16 bit value that wraps around once per revolution of the magnet */
+#define SENSOR_CAPTURE_MAX 65535.0f // highest capture value
+#define SENSOR_COUNTS_PER_REV 65536 // number of capture values in one revolution
+// a jump bigger than this between two captures means that the capture wrapped around
+#define SENSOR_HALF_REV 32767
+// number of captures ignored at startup before counting revolutions,
+// because the previous capture isn't valid yet
+#define SENSOR_SETTLING_SAMPLES 2
+
 static Wheel_Status Sensor_INIT(Sensor_HandleTypeDef *sensor,
 		Sensor_ConfigHandleTypeDef *config);
 static Wheel_Status Sensor_DeINIT(Sensor_HandleTypeDef *sensor);
@@ -28,7 +37,7 @@ static Wheel_Status Sensor_INIT(Sensor_HandleTypeDef *sensor,
 		return WHEEL_ERROR;
 	}
 	memcpy(&sensor->Config, config, sizeof(Sensor_ConfigHandleTypeDef));
-	sensor->start_settling_cnt = 2;
+	sensor->start_settling_cnt = SENSOR_SETTLING_SAMPLES;
 	sensor->axis_scale = 1.0f;
 	return WHEEL_OK;
 }
@@ -85,24 +94,24 @@ static Wheel_Status Sensor_GetAxis(Sensor_HandleTypeDef *sensor) {
 static const float roll_to_axis_coef = 1560.3571f;
 
 // Calculate full revolutions by comparing current vs previous 16-bit capture,
-// using half-range threshold (32767) for unwrap logic.
+// using half-range threshold (SENSOR_HALF_REV) for unwrap logic.
 static inline void calculate_magnet_rotations(Sensor_HandleTypeDef *sensor) {
 	uint16_t cur = sensor->current_sensor_capture;
 	uint16_t prev = sensor->previous_sensor_capture;
 
 	int32_t diff = (int32_t) cur - (int32_t) prev;
 
-	if (diff > 32767) {
-		diff -= 65536;
+	if (diff > SENSOR_HALF_REV) {
+		diff -= SENSOR_COUNTS_PER_REV;
 		sensor->magnet_full_rotation_cnt--;
-	} else if (diff < -32767) {
-		diff += 65536;
+	} else if (diff < -SENSOR_HALF_REV) {
+		diff += SENSOR_COUNTS_PER_REV;
 		sensor->magnet_full_rotation_cnt++;
 	}
 }
 
 static inline void get_steering_pos(Sensor_HandleTypeDef *sensor) {
-	float fraction = (float) sensor->current_sensor_capture / 65535.0f;
+	float fraction = (float) sensor->current_sensor_capture / SENSOR_CAPTURE_MAX;
 	float pos = sensor->magnet_full_rotation_cnt * roll_to_axis_coef
 			+ fraction * roll_to_axis_coef;
 	sensor->steering_pos = (int32_t) pos;

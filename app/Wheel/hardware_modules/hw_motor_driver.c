@@ -24,10 +24,10 @@ static Wheel_Status MotorDriver_INIT(MotorDriver_HandleTypeDef *hMotorDriver,
 	if (config == NULL) {
 		return WHEEL_ERROR;
 	}
-	if ((config->R_EN_pin == 0) || (config->R_EN_pin == 0)
-			|| (config->L_EN_port == NULL) || (config->L_EN_port == NULL)
-			|| (config->pwm_timer == NULL) || (config->right_channel == 0xFFFF)
-			|| (config->left_channel == 0xFFFF)
+	if ((config->R_EN_pin == 0) || (config->L_EN_pin == 0)
+			|| (config->R_EN_port == NULL) || (config->L_EN_port == NULL)
+			|| (config->pwm_timer == NULL) || (config->right_channel == MOTOR_INVALID_CHANNEL)
+			|| (config->left_channel == MOTOR_INVALID_CHANNEL)
 			|| (config->right_compareRegister == NULL)
 			|| (config->left_compareRegister == NULL)) {
 		return WHEEL_ERROR;
@@ -61,8 +61,8 @@ static Wheel_Status MotorDriver_DeINIT(MotorDriver_HandleTypeDef *hMotorDriver) 
 	ret |= HAL_TIM_PWM_Stop(config->pwm_timer, config->right_channel);
 	ret |= HAL_TIM_PWM_Stop(config->pwm_timer, config->left_channel);
 	memset(&hMotorDriver->Config, 0, sizeof(MotorDriver_ConfigHandleTypeDef));
-	config->right_channel = 0xFFFF;
-	config->left_channel = 0xFFFF;
+	config->right_channel = MOTOR_INVALID_CHANNEL;
+	config->left_channel = MOTOR_INVALID_CHANNEL;
 	return (ret == HAL_OK) ? WHEEL_OK : WHEEL_ERROR;
 }
 

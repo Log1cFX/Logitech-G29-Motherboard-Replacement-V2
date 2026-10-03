@@ -39,6 +39,19 @@ extern "C" {
 #include "common_types.h"
 #include "hw_analog_input.h"
 
+/* Default calibration (raw ADC values), set by INIT. */
+#define SHIFTER_DEFAULT_MIN_X 10000
+#define SHIFTER_DEFAULT_MIN_Y 60000
+#define SHIFTER_DEFAULT_MAX_X 52000
+#define SHIFTER_DEFAULT_MAX_Y 0
+
+/* The shifter's travel is split into a grid, every cell is a gear or neutral */
+#define SHIFTER_GRID_COLS 3
+#define SHIFTER_GRID_ROWS 4
+// when the modifier is pressed the column is moved by this much,
+// to reach the extra columns of the gear table
+#define SHIFTER_MODIFIER_COL_OFFSET 2
+
 typedef struct {
 	uint16_t x;
 	uint16_t y;
@@ -59,14 +72,19 @@ typedef struct _Shifter_HandleTypeDef {
 	// Shouldn't be filled manually but instead by calling INIT
 	Shifter_ConfigHandleTypeDef Config;
 	// value indicating current gear from 0 to 7 where 0 is no gear
-	uint8_t gear;
+	// written by: SysTick (GetState) | read by: EXTI0 (usb report)
+	volatile uint8_t gear;
 	// values used for calibration, can be filled manually after calling INIT
+	// written by: INIT (main thread, before SysTick uses the shifter) | read by: SysTick (GetState)
 	Point min;
 	Point max;
 
 	/* THIS IS IMPLEMENTATION SPECIFIC AND ONLY USED INSIDE THE SOURCE FILE */
-	Point current_pos;
+	Point current_pos; // SysTick only
 }Shifter_HandleTypeDef;
+
+// the instance of this module, defined in sw_shifter.c
+extern Shifter_HandleTypeDef hShifter;
 
 #ifdef __cplusplus
 }
