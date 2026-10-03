@@ -92,10 +92,10 @@ void wheel_startup() {
 	ffb_axis_local_t *local_effects = create_local_effects();
 	init_filter_preset();
 
-	// TODO : test additional bootloader protection features
+	// TODO : Use bootloader's watchdog
 	// TODO : Separate wheel startup from the infinite loop
 	// TODO : Correct DeInit functions for all modules
-	/* TODO: write isolated unmount and mount logic
+	/* TODO : write isolated unmount and mount logic
 	 * separately without relying on the device power off
 	 * for correct initialization after a deinitialization */
 
@@ -107,6 +107,7 @@ void wheel_startup() {
 
 	uint32_t last_executed_time = HAL_GetTick();
 	uint32_t current_time = HAL_GetTick();
+
 	while (1) {
 		// mendatory tinyusb's task
 		tud_task();

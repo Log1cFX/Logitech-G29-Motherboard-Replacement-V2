@@ -162,6 +162,7 @@ SECTIONS
   _sapp      = ORIGIN(FLASH);                   /* first byte of the app image   */
   _eapp      = LOADADDR(.data) + SIZEOF(.data); /* one past the last byte         */
   _app_size  = _eapp - _sapp;                   /* total bytes to flash/checksum  */
+  _w_app_size = _app_size / 4;
 
   /* Handy extras */
   _app_flash_total = LENGTH(FLASH);             /* flash space reserved for app   */
