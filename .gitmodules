@@ -1,3 +1,6 @@
 [submodule "bootloader"]
 	path = bootloader
 	url = https://github.com/davidgfnet/stm32-dfu-bootloader.git
+[submodule "app/tinyusb"]
+	path = app/tinyusb
+	url = https://github.com/hathach/tinyusb.git
