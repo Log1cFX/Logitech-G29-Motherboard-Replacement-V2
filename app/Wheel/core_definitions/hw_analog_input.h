@@ -77,7 +77,7 @@ typedef struct _Pedals_HandleTypeDef {
 	// Shouldn't be filled manually but instead by calling INIT
 	Pedals_ConfigHandleTypeDef Config;
 	// variables that are used to get the value of pedals after GetState
-	// written by: SysTick (GetState) | read by: EXTI0 (usb report)
+	// written by: SysTick (GetState) | read by: main thread (wheel_get_input)
 	volatile uint8_t clutch;
 	volatile uint8_t brake;
 	volatile uint8_t throtle;

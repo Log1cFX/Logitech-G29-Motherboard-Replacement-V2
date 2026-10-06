@@ -72,7 +72,7 @@ typedef struct _Shifter_HandleTypeDef {
 	// Shouldn't be filled manually but instead by calling INIT
 	Shifter_ConfigHandleTypeDef Config;
 	// value indicating current gear from 0 to 7 where 0 is no gear
-	// written by: SysTick (GetState) | read by: EXTI0 (usb report)
+	// written by: SysTick (GetState) | read by: main thread (wheel_get_input)
 	volatile uint8_t gear;
 	// values used for calibration, can be filled manually after calling INIT
 	// written by: INIT (main thread, before SysTick uses the shifter) | read by: SysTick (GetState)

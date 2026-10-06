@@ -22,7 +22,6 @@
 #include "stm32f1xx_it.h"
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include "usbd.h"
 #include "usb_processing.h"
 #include "wheel_def.h"
 /* USER CODE END Includes */
@@ -192,12 +191,8 @@ void SysTick_Handler(void)
   /* USER CODE END SysTick_IRQn 0 */
   HAL_IncTick();
   /* USER CODE BEGIN SysTick_IRQn 1 */
-	if(hid_driver_ready()) {
-		usb_process_report_data();
-	} else {
-		tud_task();
-		wheel_get_all_component_states();
-	}
+	// reads the buttons, the pedals, the shifter and the steering axis
+	wheel_get_all_component_states();
   /* USER CODE END SysTick_IRQn 1 */
 }
 
@@ -207,34 +202,6 @@ void SysTick_Handler(void)
 /* For the available peripheral interrupt handler names,                      */
 /* please refer to the startup file (startup_stm32f1xx.s).                    */
 /******************************************************************************/
-
-/**
-  * @brief This function handles EXTI line0 interrupt.
-  */
-void EXTI0_IRQHandler(void)
-{
-  /* USER CODE BEGIN EXTI0_IRQn 0 */
-//	debug_start_external_time_test();
-  /* USER CODE END EXTI0_IRQn 0 */
-  HAL_GPIO_EXTI_IRQHandler(SWIT_0_Pin);
-  /* USER CODE BEGIN EXTI0_IRQn 1 */
-//	debug_stop_external_time_test();
-  /* USER CODE END EXTI0_IRQn 1 */
-}
-
-/**
-  * @brief This function handles EXTI line1 interrupt.
-  */
-void EXTI1_IRQHandler(void)
-{
-  /* USER CODE BEGIN EXTI1_IRQn 0 */
-//	debug_start_external_time_test();
-  /* USER CODE END EXTI1_IRQn 0 */
-  HAL_GPIO_EXTI_IRQHandler(SWIT_1_Pin);
-  /* USER CODE BEGIN EXTI1_IRQn 1 */
-//	debug_stop_external_time_test();
-  /* USER CODE END EXTI1_IRQn 1 */
-}
 
 /**
   * @brief This function handles DMA1 channel1 global interrupt.
@@ -309,13 +276,13 @@ void TIM4_IRQHandler(void)
 /* USER CODE BEGIN 1 */
 void USB_HP_CAN1_TX_IRQHandler(void) {
 //	debug_start_external_time_test();
-	tud_int_handler(0);
+	usb_irq_handler();
 //	debug_stop_external_time_test();
 }
 
 void USB_LP_CAN1_RX0_IRQHandler(void) {
 //	debug_start_external_time_test();
-	tud_int_handler(0);
+	usb_irq_handler();
 //	debug_stop_external_time_test();
 }
 

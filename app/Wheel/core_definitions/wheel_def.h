@@ -53,19 +53,18 @@
  *
  *  priority | context                      | what runs there
  *  ---------+------------------------------+------------------------------------------------
- *   0 / 1   | USB_HP / USB_LP              | tud_int_handler (only queues events for tud_task)
+ *   0 / 1   | USB_HP / USB_LP              | usb_irq_handler (TinyUSB only notes the event for usb_task)
  *   3       | TIM4                         | magnetometer TransmitRecieve_DMA
  *   3       | DMA1 ch4 / ch5 (SPI2)        | magnetometer TxRxDone_CB, then sensor Update
- *   4       | EXTI1 (software interrupt)   | nothing
- *   5       | EXTI0 (software interrupt)   | usb_send_report
+ *   4 / 5   | EXTI1 / EXTI0                | nothing, the two lines are turned off at startup
  *   6       | TIM3                         | buttons TIM_POLL_CB
- *   6       | SysTick                      | wheel_get_all_component_states (every GetState / GetAxis),
- *           |                              | and tud_task while the HID driver isn't ready
+ *   6       | SysTick                      | wheel_get_all_component_states (every GetState / GetAxis)
  *   10      | DMA1 ch1 (ADC)               | nothing, the ADC fills hAnalog.axis through DMA by itself
- *   -       | main thread                  | tud_task, calibration, force calculation, Apply_Force
+ *   -       | main thread                  | usb_task (all of USB, and the ffb library when the host
+ *           |                              | sends something), calibration, force calculation, Apply_Force
  *
- * The priorities are set in main.c, stm32f1xx_hal_msp.c and
- * stm32f1xx_hal_conf.h (TICK_INT_PRIORITY). Update this table if they change.
+ * The priorities are set in main.c, stm32f1xx_hal_msp.c, usb_processing.c (USB)
+ * and stm32f1xx_hal_conf.h (TICK_INT_PRIORITY). Update this table if they change.
  *
  * Every field that is written in one context and read in another one has a
  * comment saying so next to it, and is volatile so the compiler always reads
@@ -88,7 +87,6 @@ extern "C" {
 #include "sw_shifter.h"
 #include "hw_motor_driver.h"
 #include "sw_actuator.h"
-#include "ffb/ffb_c.h"
 
 #define MAX_ROTATION_DEG 900
 #define ENDSTOP_DEG_OFFSET 15
@@ -147,10 +145,6 @@ extern "C" {
 #define FFB_FRICTION_FILTER_FREQ_HZ 15 // was 50
 #define FFB_INERTIA_FILTER_FREQ_HZ 5 // was 15
 
-/* SOFTWARE INTERRUPTS */
-// EXTI lines 0 to (SOFTWARE_EXTI_LINE_COUNT - 1) are used as software interrupts
-#define SOFTWARE_EXTI_LINE_COUNT 3
-
 typedef struct {
 	uint32_t wheel_error_count; // main thread only
 	// The pointers are written once by init_wheel_handle() (main thread) and
@@ -168,9 +162,8 @@ typedef struct {
 	Actuator_HandleTypeDef *hActuator;
 }Wheel_HandleTypeDef;
 
-// both defined in steeringwheel.c
+// defined in steeringwheel.c
 extern Wheel_HandleTypeDef wheel;
-extern ffb_lib_t *hFFB;
 
 Wheel_Status wheel_get_all_component_states();
 void wheel_startup();

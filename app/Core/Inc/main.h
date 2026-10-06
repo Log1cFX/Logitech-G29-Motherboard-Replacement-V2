@@ -69,12 +69,6 @@ extern TIM_HandleTypeDef htim4;
 #define BUTTON_LOCK_GPIO_Port GPIOC
 #define BUTTON_IN_Pin GPIO_PIN_15
 #define BUTTON_IN_GPIO_Port GPIOC
-#define SWIT_0_Pin GPIO_PIN_0
-#define SWIT_0_GPIO_Port GPIOA
-#define SWIT_0_EXTI_IRQn EXTI0_IRQn
-#define SWIT_1_Pin GPIO_PIN_1
-#define SWIT_1_GPIO_Port GPIOA
-#define SWIT_1_EXTI_IRQn EXTI1_IRQn
 #define LED_Pin GPIO_PIN_2
 #define LED_GPIO_Port GPIOB
 #define SPI2_SS_Pin GPIO_PIN_12

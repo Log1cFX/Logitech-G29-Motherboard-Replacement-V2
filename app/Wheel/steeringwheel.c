@@ -13,29 +13,32 @@
 
 #include <stdlib.h>
 
+#define MICROS_PER_MS 1000
+
 // see the comments in wheel_def.h for who uses what
 Wheel_HandleTypeDef wheel;
-// written once by init_ffb_library() (main thread).
-// Used by the main thread and by the TinyUSB callbacks (usb_callbacks.c), which
-// run inside tud_task() : main thread, or SysTick while the HID driver isn't ready
-ffb_lib_t *hFFB;
+// Created once by init_ffb_library(). Only used by the main thread : by the
+// control loop below, and by the USB module (it gets it in usb_init) when
+// the host sends something
+static ffb_lib_t *hFFB;
 
 static void init_wheel_handle();
 static void init_buttons();
 static void init_sensor();
 static void init_analog();
 static void init_motor_driver();
-static void init_usb();
 static void init_ffb_library();
 static ffb_axis_local_t* create_local_effects();
 static ffb_metrics_t* create_metrics_helper();
 static void init_filter_preset();
 
-static void configure_software_exti();
 static void register_initialization_error();
+static uint32_t get_faketime_micros();
 
 static Wheel_Status wheel_axis_calibration();
 static void wheel_recenter();
+static void wheel_delay(uint32_t ms);
+static void wheel_get_input(wheel_input_t *input);
 
 void wheel_startup() {
 	/* INIT */
@@ -43,7 +46,6 @@ void wheel_startup() {
 	init_buttons();
 	init_sensor();
 	init_motor_driver();
-	configure_software_exti();
 	init_ffb_library();
 	init_wheel_handle();
 
@@ -63,12 +65,15 @@ void wheel_startup() {
 
 	// driver needs to be initialized before we go into calibration
 	// we don't want a timeout to occur on usb port
-	init_usb();
+	usb_init(hFFB, NULL);
+	while (usb_state() != USB_READY) {
+		usb_task();
+	}
 
 	// try calibration until succeeds or the max attempts number is reached
 	uint8_t calibration_tries = 0;
 	while (wheel_axis_calibration() == WHEEL_ERROR) {
-		HAL_Delay(CALIBRATION_RETRY_DELAY_MS);
+		wheel_delay(CALIBRATION_RETRY_DELAY_MS);
 		calibration_tries++;
 		if (calibration_tries >= CALIBRATION_MAX_TRIES) {
 			register_initialization_error();
@@ -97,16 +102,22 @@ void wheel_startup() {
 	uint32_t current_time = HAL_GetTick();
 
 	while (1) {
-		// mendatory tinyusb's task
-		tud_task();
+		// everything usb : answers the host and sends what is waiting
+		usb_task();
 		current_time = HAL_GetTick();
 
 		// execute every CONTROL_LOOP_PERIOD_MS
 		if (current_time - last_executed_time >= CONTROL_LOOP_PERIOD_MS) {
 			last_executed_time = current_time;
 
+			// one copy of the controls for this pass,
+			// the usb module sends it to the host
+			wheel_input_t input;
+			wheel_get_input(&input);
+			usb_set_input(&input);
+
 			// compute current degrees and update the axis state
-			float degrees = wheel.hSensor->virtual_axis
+			float degrees = input.steering
 					* (float) (MAX_ROTATION_DEG / 2) / (float) INT16_MAX;
 			ffb_axis_state_t st = ffb_metrics_update(metrics, degrees);
 
@@ -140,7 +151,7 @@ static void wheel_calib_sweep(Sensor_HandleTypeDef *sensor, int16_t force,
 		volatile int32_t *extremum, int dir) {
 	int32_t previous = sensor->steering_pos;
 	wheel.hActuator->Apply_Force(wheel.hActuator, force);
-	HAL_Delay(CALIBRATION_MOTOR_START_DELAY_MS); // A: let the motor start
+	wheel_delay(CALIBRATION_MOTOR_START_DELAY_MS); // A: let the motor start
 	int16_t acceleration = sensor->steering_pos - previous;
 	while (abs(acceleration) > CALIBRATION_STALL_THRESHOLD) {
 		// B: finding out if current position is the farthest
@@ -149,7 +160,7 @@ static void wheel_calib_sweep(Sensor_HandleTypeDef *sensor, int16_t force,
 		}
 		// C: calculating acceleration
 		previous = sensor->steering_pos;
-		HAL_Delay(CALIBRATION_SAMPLE_PERIOD_MS);
+		wheel_delay(CALIBRATION_SAMPLE_PERIOD_MS);
 		acceleration = sensor->steering_pos - previous;
 	}
 }
@@ -171,8 +182,20 @@ static void wheel_recenter() {
 	while (abs(wheel.hSensor->virtual_axis) > RECENTER_TOLERANCE) {
 		wheel.hActuator->Apply_Force(wheel.hActuator,
 		CALIBRATION_FORCE * -sign);
+		usb_task();
 	}
 	wheel.hActuator->Apply_Force(wheel.hActuator, 0);
+}
+
+// HAL_Delay for the main thread once usb is started : it waits the same
+// time, but it keeps answering the host while it waits
+static void wheel_delay(uint32_t ms) {
+	uint32_t start = HAL_GetTick();
+	// one tick more than asked, like HAL_Delay, to wait at least ms
+	uint32_t wait = ms + 1;
+	while ((HAL_GetTick() - start) < wait) {
+		usb_task();
+	}
 }
 
 /* 		INITIALIZATION FUNCTIONS		 */
@@ -268,33 +291,13 @@ static void init_motor_driver() {
 	}
 }
 
-static void init_usb() {
-// wait till device gets enumerate device
-	while (!tud_ready()) {
-		tud_task();
-	}
-	set_hid_driver_state(0);
-// send a report, when it gets sent and tud_hid_report_complete_cb fires
-// we'll know the driver has been initialized on the host
-	uint8_t empty_buf[REPORT_SIZE] = { 0 };
-	tud_hid_report(JOYSTICK_REPORT_ID, empty_buf, REPORT_SIZE);
-	while (!hid_driver_ready()) {
-		tud_task();
-	}
-}
-
+// the usb module registers itself in the library to send its reports (usb_init)
 static void init_ffb_library() {
 	hFFB = ffb_create(FFB_AXIS_COUNT, HAL_GetTick, get_faketime_micros);
-	ffb_set_send_report_callback(hFFB, ffb_send_report_cb);
 }
 
-static void configure_software_exti() {
-	for (uint8_t i = 0; i < SOFTWARE_EXTI_LINE_COUNT; i++) {
-		CLEAR_BIT(EXTI->RTSR, (0x1UL << i));  // Clear rising edge
-		CLEAR_BIT(EXTI->FTSR, (0x1UL << i));  // Clear falling edge
-		SET_BIT(EXTI->IMR, (0x1UL << i));  // Already enabled by CubeMX
-		SET_BIT(EXTI->PR, (0x1UL << i));  // Clear any pending interrupts
-	}
+static uint32_t get_faketime_micros() {
+	return HAL_GetTick() * MICROS_PER_MS;
 }
 
 static ffb_axis_local_t* create_local_effects() {
@@ -339,9 +342,7 @@ static void register_initialization_error() {
 
 /* 		APPLICATION SPECIFIC FUNCTIONS 		*/
 
-// context: SysTick (priority 6)
-// called from usb_process_report_data
-// and from SysTick_Handler when !hid_driver_ready()
+// context: SysTick (priority 6), called from SysTick_Handler every millisecond
 Wheel_Status wheel_get_all_component_states() {
 	if ((wheel.hPedals == NULL) || (wheel.hShifter == NULL)) {
 		return WHEEL_ERROR;
@@ -360,15 +361,23 @@ Wheel_Status wheel_get_all_component_states() {
 	return ret;
 }
 
-/*		HARDWARE CALLBACK FUNCTIONS		 	*/
-// Custom software interrupt implementation using the EXTI line callbacks
-// context: EXTI0 interrupt (priority 5)
-void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
-	if (GPIO_Pin == SEND_REPORT_SWIT_PIN) {
-		usb_send_report();
-	}
+// Copies the state of the controls for the main thread.
+// SysTick writes these fields (wheel_get_all_component_states) and it can
+// interrupt the main thread anywhere, so the interrupts are turned off for
+// the few instructions of the copy : all the values come from the same update
+static void wheel_get_input(wheel_input_t *input) {
+	uint32_t primask = __get_PRIMASK();
+	__disable_irq();
+	input->buttons = wheel.hButtons->buttons_state;
+	input->steering = wheel.hSensor->virtual_axis;
+	input->throttle = wheel.hPedals->throtle;
+	input->brake = wheel.hPedals->brake;
+	input->clutch = wheel.hPedals->clutch;
+	input->gear = wheel.hShifter->gear;
+	__set_PRIMASK(primask);
 }
 
+/*		HARDWARE CALLBACK FUNCTIONS		 	*/
 // ADC callbacks not used because ADC fills the values in continuous scan mode,
 // paired up with DMA, meaning that we never have to worry about it.
 void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef *hadc) {

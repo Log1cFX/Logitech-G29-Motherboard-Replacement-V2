@@ -23,42 +23,39 @@
  */
 
 /*
- * common_types.h
+ * wheel_input.h
  *
- *  Created on: Aug 1, 2025
+ *  Created on: Oct 6, 2026
  *      Author: raffi
  */
 
-#ifndef CORE_DEFINITIONS_COMMON_TYPES_H_
-#define CORE_DEFINITIONS_COMMON_TYPES_H_
+#ifndef CORE_DEFINITIONS_WHEEL_INPUT_H_
+#define CORE_DEFINITIONS_WHEEL_INPUT_H_
 
 /*
- * By importing this file, you get access to the HAL library functions
- * as well as types commonly used in this project.
+ * The state of all the controls of the wheel at one moment.
+ * This is what the wheel gives to whatever sends it to the computer (the USB
+ * module today). It is a plain copy : whoever gets it doesn't need to know the
+ * modules it comes from, and all the values in it go together.
  */
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-#include "main.h"
-#include "util.h"
-#include "string.h"
-#include <stdio.h>
+#include <stdint.h>
 
-#ifdef DEBUG
-  #define DBG(...)  printf(__VA_ARGS__)
-#else
-  #define DBG(...)  ((void)0)
-#endif
-
-typedef enum {
-	WHEEL_OK, // good
-	WHEEL_ERROR // not good
-} Wheel_Status;
+typedef struct {
+	uint32_t buttons; // one bit per button, same as buttons_state in sw_buttons.h
+	int16_t steering; // steering axis, uses full range of int16, 0 is the center
+	uint8_t throttle; // pedals, from 0 to 255
+	uint8_t brake;
+	uint8_t clutch;
+	uint8_t gear; // current gear from 0 to 7 where 0 is no gear
+} wheel_input_t;
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* CORE_DEFINITIONS_COMMON_TYPES_H_ */
+#endif /* CORE_DEFINITIONS_WHEEL_INPUT_H_ */

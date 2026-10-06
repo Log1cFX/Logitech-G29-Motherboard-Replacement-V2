@@ -59,7 +59,7 @@ typedef struct _Sensor_HandleTypeDef {
 	 * The calibration and the control loop run in the main thread.
 	 */
 
-	// written by: SysTick (GetAxis) | read by: main thread, EXTI0 (usb report)
+	// written by: SysTick (GetAxis) | read by: main thread
 	volatile int16_t virtual_axis; // the actual value that's sent, uses full range of int16
 	// written by: SysTick (GetAxis) | read by: main thread (calibration)
 	volatile int32_t steering_pos; // temporary value relative to wheel's position at startup

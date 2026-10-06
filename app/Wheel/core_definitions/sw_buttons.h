@@ -84,10 +84,9 @@ typedef struct _Buttons_HandleTypeDef {
 	 */
 
 	// variable that is used to get the state of buttons
-	// written by: SysTick (GetState) | read by: EXTI0 (usb report)
-	// GetState writes it in several steps and EXTI0 has a higher priority than
-	// SysTick. EXTI0 only gets a finished value because it is never triggered
-	// while GetState is running (see usb_processing.c). Nothing else protects it.
+	// written by: SysTick (GetState) | read by: main thread (wheel_get_input)
+	// GetState writes it in several steps, so the main thread reads it with the
+	// interrupts turned off, to never get a half written value.
 	volatile uint32_t buttons_state;
 
 	/* THIS IS IMPLEMENTATION SPECIFIC AND ONLY USED INSIDE THE SOURCE FILE */

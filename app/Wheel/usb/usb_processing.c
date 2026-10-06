@@ -3,32 +3,79 @@
  *
  *  Created on: May 31, 2026
  *      Author: raffi
+ *
+ *  The core of the USB module : the state machine, the two mailboxes, and the
+ *  only place of the firmware that sends reports to the host.
+ *  The interface and the meaning of the states are in usb_processing.h
  */
 
-#include "usb_processing.h"
-#include "wheel_def.h"
+#include "usb_internal.h"
+#include "main.h"
+#include <string.h>
 
-// if no report got sent for more than this many SysTick ticks (ms), force one
-#define REPORT_FORCE_SEND_TICKS 5
-#define MICROS_PER_MS 1000
+// priorities of the two USB interrupts (see the table in wheel_def.h)
+#define USB_HP_IRQ_PRIORITY 0
+#define USB_LP_IRQ_PRIORITY 1
+
+// biggest report the ffb library can give us to send. As of today, it only
+// sends the PID state report, which is 2 bytes
+#define FFB_REPORT_MAX_SIZE 8
 
 /*
  * CONTEXTS (see the table in wheel_def.h)
- * usb_process_report_data() runs in SysTick (priority 6).
- * usb_send_report() runs in the EXTI0 software interrupt (priority 5).
- * EXTI0 is triggered from two places : by usb_process_report_data(), after it
- * finished updating the component states, and by tud_hid_report_complete_cb(),
- * which runs inside tud_task() (main thread, or SysTick before it updates the
- * component states). As long as nothing else triggers EXTI0, usb_send_report()
- * doesn't run in the middle of an update.
+ * Everything in this module runs in the main thread, the TinyUSB callbacks of
+ * usb_callbacks.c included : TinyUSB only calls them from inside tud_task(),
+ * and usb_task() is the only place that calls tud_task().
+ * So nothing here is volatile and nothing has to be protected.
+ * The only exception is usb_irq_handler(), which runs in the USB interrupts
+ * and does nothing but pass the interrupt to TinyUSB.
  */
+static struct {
+	usb_state_t state;
+	ffb_lib_t *ffb;
+	// custom task set at initialization
+	void (*custom_task)(usb_state_t *state);
 
-// written by: SysTick (usb_process_report_data), EXTI0 (usb_send_report)
-static volatile int8_t unsent_report_cnt;
-// written by: the TinyUSB callbacks, through set_hid_driver_state(). They run
-// inside tud_task(), so in the main thread, or in SysTick while the driver isn't ready
-// read by: SysTick, main thread (init_usb)
-static volatile int8_t driver_state;
+	// the state of the controls, filled by usb_set_input().
+	// Only the latest one is kept
+	wheel_input_t input;
+	bool input_pending;
+
+	// a report that the ffb library wants to send. It already
+	// starts with its report id. Only the latest one is kept
+	uint8_t ffb_report[FFB_REPORT_MAX_SIZE];
+	uint16_t ffb_report_len; // 0 when nothing is waiting
+} usb;
+
+static void init_peripheral(void) {
+	__HAL_RCC_USB_CLK_ENABLE();
+	__HAL_RCC_GPIOA_CLK_ENABLE();
+
+	GPIO_InitTypeDef GPIO_InitStruct = { 0 };
+	GPIO_InitStruct.Pin = USB_DM_Pin | USB_DP_Pin;
+	GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
+	GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
+	HAL_GPIO_Init(USB_DM_GPIO_Port, &GPIO_InitStruct);
+
+	HAL_NVIC_SetPriority(USB_HP_CAN1_TX_IRQn, USB_HP_IRQ_PRIORITY, 0);
+	HAL_NVIC_SetPriority(USB_LP_CAN1_RX0_IRQn, USB_LP_IRQ_PRIORITY, 0);
+	HAL_NVIC_EnableIRQ(USB_HP_CAN1_TX_IRQn);
+	HAL_NVIC_EnableIRQ(USB_LP_CAN1_RX0_IRQn);
+}
+
+// Given to the ffb library, which calls it when it has a report for the host
+// (it does it while it handles something the host sent, so inside usb_task).
+// The report isn't sent from here : the endpoint may be busy. It is kept and
+// usb_task() sends it as soon as it can
+static bool queue_ffb_report(const uint8_t *report, uint16_t len) {
+	if (len == 0 || len > FFB_REPORT_MAX_SIZE) {
+		return false;
+	}
+	memcpy(usb.ffb_report, report, len);
+	usb.ffb_report_len = len;
+	return true;
+}
+
 /*
  * returns the encoded direction of the d_pad with the 4 most important bits
  * of the parameter byte
@@ -59,54 +106,124 @@ static uint8_t hat_switch_from_msb(uint8_t byte) {
 	return hat_table[dpadY + 1][dpadX + 1];
 }
 
-// called every milisecond from SysTick_Handler
-void usb_process_report_data() {
-	wheel_get_all_component_states();
-	if (++unsent_report_cnt > REPORT_FORCE_SEND_TICKS) {
-		__HAL_GPIO_EXTI_GENERATE_SWIT(SEND_REPORT_SWIT_PIN);
-	}
-}
-
-// called after the current report gets sent
-// context: EXTI0 software interrupt (priority 5)
-void usb_send_report() {
-	unsent_report_cnt = -1;
+// builds the input report from the mailbox and gives it to TinyUSB
+static bool send_input_report(void) {
+	const wheel_input_t *input = &usb.input;
 
 	uint8_t tx[REPORT_SIZE] = { 0 };
 	// fill the first byte with d_pad buttons and the first 4 buttons
-	tx[0] |= 0x0F
-			& hat_switch_from_msb((uint8_t) wheel.hButtons->buttons_state);
-	tx[0] |= 0xF0 & (wheel.hButtons->buttons_state << 4);
+	tx[0] |= 0x0F & hat_switch_from_msb((uint8_t) input->buttons);
+	tx[0] |= 0xF0 & (input->buttons << 4);
 	// set the next buttons
-	tx[1] = wheel.hButtons->buttons_state >> 8;
-	tx[2] = wheel.hButtons->buttons_state >> 16;
+	tx[1] = input->buttons >> 8;
+	tx[2] = input->buttons >> 16;
 	// activate one of 7 buttons depending on the shifter's speed
-	tx[3] = 1U << wheel.hShifter->gear;
+	tx[3] = 1U << input->gear;
 	// set the steering axis
-	tx[4] = wheel.hSensor->virtual_axis;
-	tx[5] = wheel.hSensor->virtual_axis >> 8;
+	tx[4] = input->steering;
+	tx[5] = input->steering >> 8;
 	// set the pedals
-	tx[6] = wheel.hPedals->throtle;
-	tx[7] = wheel.hPedals->brake;
-	tx[8] = wheel.hPedals->clutch;
+	tx[6] = input->throttle;
+	tx[7] = input->brake;
+	tx[8] = input->clutch;
 
-	tud_hid_report(JOYSTICK_REPORT_ID, tx, REPORT_SIZE);
+	return tud_hid_report(JOYSTICK_REPORT_ID, tx, REPORT_SIZE);
 }
 
-uint32_t get_faketime_micros() {
-	return HAL_GetTick() * MICROS_PER_MS;
+// Follows what happens on the bus.
+// TinyUSB has callbacks for this, but none of them is called when the bus is
+// reset (the host enumerating again, or the cable plugged back in), so the
+// module asks TinyUSB where it is instead of waiting to be told
+static void update_state(void) {
+	if (!tud_mounted()) {
+		usb.state = USB_DETACHED;
+	} else if (tud_suspended()) {
+		usb.state = USB_SUSPENDED;
+	} else if (usb.state == USB_DETACHED || usb.state == USB_SUSPENDED) {
+		// just got configured, or just woke up : the driver of the host has
+		// to show that it is reading before we count on it
+		usb.state = USB_WAIT_HOST;
+	}
 }
 
-void set_hid_driver_state(uint8_t en){
-	driver_state = en;
+void usb_init(ffb_lib_t *ffb, void (*custom_task)(usb_state_t *state)) {
+	memset(&usb, 0, sizeof(usb));
+	usb.state = USB_DETACHED;
+	usb.ffb = ffb;
+	usb.custom_task = custom_task;
+	ffb_set_send_report_callback(ffb, queue_ffb_report);
+
+	init_peripheral();
+	tusb_rhport_init_t dev_init = { .role = TUSB_ROLE_DEVICE };
+	tusb_init(BOARD_TUD_RHPORT, &dev_init);
 }
 
-uint8_t hid_driver_ready(){
-	return driver_state & tud_ready();
+void usb_task(void) {
+	// handles everything the host sent since the last call.
+	// All the callbacks of usb_callbacks.c run inside this call
+	tud_task();
+
+	update_state();
+
+	void (*custom_task)(usb_state_t *state) = usb.custom_task;
+	if(custom_task != NULL){
+		custom_task(&usb.state);
+	}
+
+	// not configured, suspended, or the last report hasn't been read yet
+	if (!tud_hid_ready()) {
+		return;
+	}
+
+	switch (usb.state) {
+	case USB_WAIT_HOST:
+		// The device being configured doesn't mean that the HID driver of the
+		// host is running. Put the current input report on the endpoint :
+		// usb_on_report_sent() is called the day the host reads it
+		send_input_report();
+		break;
+	case USB_READY:
+		// one report at a time on the endpoint, the ffb library goes first
+		if (usb.ffb_report_len > 0) {
+			// the report already contains its id, so use id 0
+			if (tud_hid_report(0, usb.ffb_report, usb.ffb_report_len)) {
+				usb.ffb_report_len = 0;
+			}
+		} else if (usb.input_pending) {
+			if (send_input_report()) {
+				usb.input_pending = false;
+			}
+		}
+		break;
+	default:
+		break;
+	}
 }
 
-// send the DirectInput PID State input report
-bool ffb_send_report_cb(const uint8_t *report, uint16_t len) {
-	// report already contains id, so use id 0
-	return tud_hid_report(0, report, len);
+usb_state_t usb_state(void) {
+	return usb.state;
+}
+
+void usb_set_input(const wheel_input_t *input) {
+	usb.input = *input;
+	usb.input_pending = true;
+}
+
+// context: USB_HP and USB_LP interrupts (priority 0 and 1)
+// TinyUSB only notes what happened, the work is done later by tud_task()
+void usb_irq_handler(void) {
+	tud_int_handler(BOARD_TUD_RHPORT);
+}
+
+/*		FOR usb_callbacks.c 		*/
+
+void usb_on_report_sent(void) {
+	// the host read a report : its HID driver is there
+	if (usb.state == USB_WAIT_HOST) {
+		usb.state = USB_READY;
+	}
+}
+
+ffb_lib_t* usb_ffb(void) {
+	return usb.ffb;
 }

@@ -66,7 +66,6 @@ static void MX_ADC1_Init(void);
 static void MX_TIM3_Init(void);
 static void MX_TIM1_Init(void);
 /* USER CODE BEGIN PFP */
-static void HAL_USB_InitPeriph(void);
 extern void initialise_monitor_handles(void);
 /* USER CODE END PFP */
 
@@ -116,9 +115,7 @@ int main(void)
   /* USER CODE BEGIN 2 */
 	HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, 1);
 
-	HAL_USB_InitPeriph();
-	tusb_rhport_init_t dev_init = { .role = TUSB_ROLE_DEVICE };
-	tusb_init(BOARD_TUD_RHPORT, &dev_init);
+	// USB is set up by the USB module (usb_init), called from wheel_startup
 	wheel_startup();
   /* USER CODE END 2 */
 
@@ -530,12 +527,6 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_PULLDOWN;
   HAL_GPIO_Init(BUTTON_IN_GPIO_Port, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : SWIT_0_Pin SWIT_1_Pin */
-  GPIO_InitStruct.Pin = SWIT_0_Pin|SWIT_1_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
-
   /*Configure GPIO pins : LED_Pin SPI2_SS_Pin PWM_R_EN_Pin PWM_L_EN_Pin */
   GPIO_InitStruct.Pin = LED_Pin|SPI2_SS_Pin|PWM_R_EN_Pin|PWM_L_EN_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
@@ -556,33 +547,12 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_PULLDOWN;
   HAL_GPIO_Init(SHIFTER_MODIFIER_GPIO_Port, &GPIO_InitStruct);
 
-  /* EXTI interrupt init*/
-  HAL_NVIC_SetPriority(EXTI0_IRQn, 5, 0);
-  HAL_NVIC_EnableIRQ(EXTI0_IRQn);
-
-  HAL_NVIC_SetPriority(EXTI1_IRQn, 4, 0);
-  HAL_NVIC_EnableIRQ(EXTI1_IRQn);
-
   /* USER CODE BEGIN MX_GPIO_Init_2 */
   /* USER CODE END MX_GPIO_Init_2 */
 }
 
 /* USER CODE BEGIN 4 */
-static void HAL_USB_InitPeriph(void) {
-	__HAL_RCC_USB_CLK_ENABLE();
-	__HAL_RCC_GPIOA_CLK_ENABLE();
 
-	GPIO_InitTypeDef GPIO_InitStruct = { 0 };
-	GPIO_InitStruct.Pin = USB_DM_Pin | USB_DP_Pin;
-	GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
-	GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
-	HAL_GPIO_Init(USB_DM_GPIO_Port, &GPIO_InitStruct);
-
-	HAL_NVIC_SetPriority(USB_HP_CAN1_TX_IRQn, 0, 0);
-	HAL_NVIC_SetPriority(USB_LP_CAN1_RX0_IRQn, 1, 0);
-	HAL_NVIC_EnableIRQ(USB_HP_CAN1_TX_IRQn);
-	HAL_NVIC_EnableIRQ(USB_LP_CAN1_RX0_IRQn);
-}
 /* USER CODE END 4 */
 
 /**
