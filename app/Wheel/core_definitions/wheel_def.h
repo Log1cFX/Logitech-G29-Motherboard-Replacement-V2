@@ -167,6 +167,7 @@ extern Wheel_HandleTypeDef wheel;
 
 Wheel_Status wheel_get_all_component_states();
 void wheel_startup();
+void wheel_task();
 
 #ifdef __cplusplus
 }

@@ -21,6 +21,11 @@ Wheel_HandleTypeDef wheel;
 // control loop below, and by the USB module (it gets it in usb_init) when
 // the host sends something
 static ffb_lib_t *hFFB;
+// Created once at the end of wheel_startup(). Only used by the control loop
+static ffb_metrics_t *metrics;
+static ffb_axis_local_t *local_effects;
+// last time the control loop ran (HAL_GetTick), main thread only
+static uint32_t last_control_time;
 
 static void init_wheel_handle();
 static void init_buttons();
@@ -39,6 +44,8 @@ static Wheel_Status wheel_axis_calibration();
 static void wheel_recenter();
 static void wheel_delay(uint32_t ms);
 static void wheel_get_input(wheel_input_t *input);
+static bool tick();
+static void control_loop_step();
 
 void wheel_startup() {
 	/* INIT */
@@ -81,65 +88,75 @@ void wheel_startup() {
 	}
 	wheel_recenter();
 
-	ffb_metrics_t *metrics = create_metrics_helper();
-	ffb_axis_local_t *local_effects = create_local_effects();
+	metrics = create_metrics_helper();
+	local_effects = create_local_effects();
 	init_filter_preset();
 
 	// TODO : Use bootloader's watchdog
-	// TODO : Separate wheel startup from the infinite loop
 	// TODO : Correct DeInit functions for all modules
 	/* TODO : write isolated unmount and mount logic
 	 * separately without relying on the device power off
 	 * for correct initialization after a deinitialization */
 
+	last_control_time = HAL_GetTick();
+}
+
+// One pass of the main loop. To call from the main thread, as often as
+// possible, once wheel_startup() has returned
+void wheel_task() {
+	// everything usb : answers the host and sends what is waiting
+	usb_task();
+	if (tick()) {
+		control_loop_step();
+	}
+}
+
+// true once every CONTROL_LOOP_PERIOD_MS : it is time to run the control loop
+static bool tick() {
+	uint32_t current_time = HAL_GetTick();
+	if (current_time - last_control_time < CONTROL_LOOP_PERIOD_MS) {
+		return false;
+	}
+	last_control_time = current_time;
+	return true;
+}
+
+// reads the controls, computes the force and applies it on the motor
+static void control_loop_step() {
 	// force variables
 	static int32_t local_force = 0;
 	static int32_t host_force = 0;
 	static int32_t total_force = 0;
 	static int16_t end_force = 0;
 
-	uint32_t last_executed_time = HAL_GetTick();
-	uint32_t current_time = HAL_GetTick();
+	// one copy of the controls for this pass,
+	// the usb module sends it to the host
+	wheel_input_t input;
+	wheel_get_input(&input);
+	usb_set_input(&input);
 
-	while (1) {
-		// everything usb : answers the host and sends what is waiting
-		usb_task();
-		current_time = HAL_GetTick();
+	// compute current degrees and update the axis state
+	float degrees = input.steering
+			* (float) (MAX_ROTATION_DEG / 2)/ (float) INT16_MAX;
+	ffb_axis_state_t st = ffb_metrics_update(metrics, degrees);
 
-		// execute every CONTROL_LOOP_PERIOD_MS
-		if (current_time - last_executed_time >= CONTROL_LOOP_PERIOD_MS) {
-			last_executed_time = current_time;
+	// compute forces
+	ffb_set_axis_state_s(hFFB, FFB_STEERING_AXIS, &st);
+	ffb_calculate(hFFB);
+	host_force = ffb_get_axis_torque(hFFB, FFB_STEERING_AXIS);
+	local_force = ffb_axis_local_compute(local_effects, &st,
+			ffb_is_active(hFFB));
+	total_force = host_force + local_force;
 
-			// one copy of the controls for this pass,
-			// the usb module sends it to the host
-			wheel_input_t input;
-			wheel_get_input(&input);
-			usb_set_input(&input);
+	// remap and clamp the final force
+	end_force = remapf(INT16_MIN, INT16_MAX, total_force,
+	MOTOR_MIN_FORCE, MOTOR_MAX_FORCE);
+	end_force = clamp(end_force, MOTOR_MIN_FORCE, MOTOR_MAX_FORCE);
 
-			// compute current degrees and update the axis state
-			float degrees = input.steering
-					* (float) (MAX_ROTATION_DEG / 2)/ (float) INT16_MAX;
-			ffb_axis_state_t st = ffb_metrics_update(metrics, degrees);
-
-			// compute forces
-			ffb_set_axis_state_s(hFFB, FFB_STEERING_AXIS, &st);
-			ffb_calculate(hFFB);
-			host_force = ffb_get_axis_torque(hFFB, FFB_STEERING_AXIS);
-			local_force = ffb_axis_local_compute(local_effects, &st,
-					ffb_is_active(hFFB));
-			total_force = host_force + local_force;
-
-			// remap and clamp the final force
-			end_force = remapf(INT16_MIN, INT16_MAX, total_force,
-			MOTOR_MIN_FORCE, MOTOR_MAX_FORCE);
-			end_force = clamp(end_force, MOTOR_MIN_FORCE, MOTOR_MAX_FORCE);
-
-			// apply the force on the motor
-			if (wheel.hActuator->Apply_Force(wheel.hActuator,
-					(int16_t) end_force) == WHEEL_ERROR) {
-				wheel.wheel_error_count++;
-			}
-		}
+	// apply the force on the motor
+	if (wheel.hActuator->Apply_Force(wheel.hActuator,
+			(int16_t) end_force) == WHEEL_ERROR) {
+		wheel.wheel_error_count++;
 	}
 }
 
