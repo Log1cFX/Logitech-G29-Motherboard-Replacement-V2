@@ -48,13 +48,17 @@ static Wheel_Status Actuator_INIT(Actuator_HandleTypeDef *hActuator,
 	return WHEEL_OK;
 }
 
+// Deinitializes the motor driver (this module is the only one that uses it),
+// which releases the motor, and forgets everything.
+// Can be called on a module that is not initialized, it does nothing then
 static Wheel_Status Actuator_DeINIT(Actuator_HandleTypeDef *hActuator) {
 	Actuator_ConfigHandleTypeDef *config = &hActuator->Config;
-	if (config->hMotorDriver->DeINIT(config->hMotorDriver) == WHEEL_ERROR) {
-		return WHEEL_ERROR;
+	Wheel_Status ret = WHEEL_OK;
+	if (config->hMotorDriver != NULL) {
+		ret = config->hMotorDriver->DeINIT(config->hMotorDriver);
 	}
-	hActuator = NULL;
-	return WHEEL_OK;
+	memset(&hActuator->Config, 0, sizeof(Actuator_ConfigHandleTypeDef));
+	return ret;
 }
 
 static Wheel_Status Actuator_Apply_Force(Actuator_HandleTypeDef *hActuator,

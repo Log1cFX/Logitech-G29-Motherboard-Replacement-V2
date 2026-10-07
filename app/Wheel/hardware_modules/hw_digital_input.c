@@ -25,10 +25,15 @@ static Wheel_Status DigitalInput_INIT(DigitalInput_HandleTypeDef *buttons,
 		return WHEEL_ERROR;
 	}
 	memcpy(&buttons->Config, config, sizeof(DigitalInput_ConfigHandleTypeDef));
+	buttons->buttons_state = 0;
 	return WHEEL_OK;
 }
 
+// Nothing is started by this module, so there is nothing to stop.
+// ReadState() must not be called anymore after this : the module that polls
+// it (sw_buttons) stops its timer before it calls this function
 static Wheel_Status DigitalInput_DeINIT(DigitalInput_HandleTypeDef *buttons) {
+	buttons->buttons_state = 0;
 	memset(&buttons->Config, 0, sizeof(DigitalInput_ConfigHandleTypeDef));
 	return WHEEL_OK;
 }

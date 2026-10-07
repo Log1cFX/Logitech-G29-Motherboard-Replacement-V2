@@ -49,6 +49,7 @@ Magnetometer_HandleTypeDef hmlx90363 = { MLX90363_INIT, MLX90363_DeINIT,
 		MLX90363_Start_TIM_POLL, MLX90363_Stop_TIM_POLL,
 		MLX90363_TransmitRecieve_DMA, MLX90363_TxRxDone_CB };
 
+static void reset_state(Magnetometer_HandleTypeDef *sensor);
 static uint8_t calculate_crc(uint8_t *message);
 static void set_GET1(uint8_t *buffer, uint8_t reset);
 static void set_NOP(uint8_t *buffer);
@@ -66,15 +67,43 @@ static Wheel_Status MLX90363_INIT(Magnetometer_HandleTypeDef *sensor,
 		return WHEEL_ERROR;
 	}
 	memcpy(&sensor->Config, config, sizeof(Magnetometer_ConfigHandleTypeDef));
+	reset_state(sensor);
 	return WHEEL_OK;
 }
 
+// Stops the poll and the transfer that may be running, and forgets everything.
+// Can be called on a module that is not initialized, it does nothing then
 static Wheel_Status MLX90363_DeINIT(Magnetometer_HandleTypeDef *sensor) {
-	if (MLX90363_Stop_TIM_POLL(sensor) == WHEEL_ERROR) {
-		return WHEEL_ERROR;
+	Magnetometer_ConfigHandleTypeDef *config = &sensor->Config;
+	Wheel_Status ret = WHEEL_OK;
+	// the timer goes first, so that no new transfer is started
+	if (config->htim != NULL) {
+		ret |= MLX90363_Stop_TIM_POLL(sensor);
 	}
+	if (config->hspi != NULL) {
+		// The timer may have started a transfer right before it was stopped.
+		// It has to end here : its interrupt uses what is cleared below
+		if (HAL_SPI_Abort(config->hspi) != HAL_OK) {
+			ret = WHEEL_ERROR;
+		}
+		// release the sensor
+		HAL_GPIO_WritePin(config->SS_port, config->SS_pin, 1);
+	}
+	reset_state(sensor);
 	memset(&sensor->Config, 0, sizeof(Magnetometer_ConfigHandleTypeDef));
-	return WHEEL_OK;
+	return ret;
+}
+
+// puts back everything the module computes, like after a power on.
+// Only to call when the poll timer is stopped and no transfer is running
+static void reset_state(Magnetometer_HandleTypeDef *sensor) {
+	sensor->reading = 0;
+	sensor->err_packets_cnt = 0;
+	memset(sensor->SPI_Rx_buffer, 0, sizeof(sensor->SPI_Rx_buffer));
+	memset(sensor->SPI_Tx_buffer, 0, sizeof(sensor->SPI_Tx_buffer));
+	sensor->transfer_is_done = 0;
+	sensor->diagnostic_bits = 0;
+	sensor->roll_cnt = 0;
 }
 
 static Wheel_Status MLX90363_Start_TIM_POLL(Magnetometer_HandleTypeDef *sensor) {
@@ -93,6 +122,9 @@ static Wheel_Status MLX90363_Start_TIM_POLL(Magnetometer_HandleTypeDef *sensor) 
 }
 
 static Wheel_Status MLX90363_Stop_TIM_POLL(Magnetometer_HandleTypeDef *sensor) {
+	if (sensor->Config.htim == NULL) {
+		return WHEEL_ERROR;
+	}
 	HAL_StatusTypeDef ret = HAL_OK;
 	ret = HAL_TIM_Base_Stop_IT(sensor->Config.htim);
 	return (ret == HAL_OK) ? WHEEL_OK : WHEEL_ERROR;

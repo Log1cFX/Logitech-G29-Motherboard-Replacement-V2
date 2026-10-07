@@ -17,6 +17,7 @@ static Wheel_Status Buttons_Stop_TIM_POLL(Buttons_HandleTypeDef *buttons);
 static Wheel_Status Buttons_TIM_POLL_CB(Buttons_HandleTypeDef *buttons);
 static Wheel_Status Buttons_GetState(Buttons_HandleTypeDef *buttons);
 
+static void reset_state(Buttons_HandleTypeDef *buttons);
 static void get_debounced_state(Buttons_HandleTypeDef *buttons);
 static void read_knob_button_state(Buttons_HandleTypeDef *buttons);
 static void update_knob_button_state(Buttons_HandleTypeDef *buttons);
@@ -35,27 +36,57 @@ static Wheel_Status Buttons_INIT(Buttons_HandleTypeDef *buttons,
 		return WHEEL_ERROR;
 	}
 	memcpy(&buttons->Config, config, sizeof(Buttons_ConfigHandleTypeDef));
-	return WHEEL_OK;
-}
-static Wheel_Status Buttons_DeINIT(Buttons_HandleTypeDef *buttons) {
-	Buttons_ConfigHandleTypeDef *config = &buttons->Config;
-	if (config->hw_buttons->DeINIT(config->hw_buttons) == WHEEL_ERROR) {
-		return WHEEL_ERROR;
-	}
-	memset(&buttons->Config, 0, sizeof(Buttons_ConfigHandleTypeDef));
+	reset_state(buttons);
 	return WHEEL_OK;
 }
 
+// Stops the poll, deinitializes the hardware buttons (this module is the only
+// one that uses them) and forgets everything.
+// Can be called on a module that is not initialized, it does nothing then
+static Wheel_Status Buttons_DeINIT(Buttons_HandleTypeDef *buttons) {
+	Buttons_ConfigHandleTypeDef *config = &buttons->Config;
+	Wheel_Status ret = WHEEL_OK;
+	// the timer goes first : its interrupt uses everything that is cleared below
+	if (config->htim != NULL) {
+		ret |= Buttons_Stop_TIM_POLL(buttons);
+	}
+	if (config->hw_buttons != NULL) {
+		ret |= config->hw_buttons->DeINIT(config->hw_buttons);
+	}
+	reset_state(buttons);
+	memset(&buttons->Config, 0, sizeof(Buttons_ConfigHandleTypeDef));
+	return ret;
+}
+
 static Wheel_Status Buttons_Start_TIM_POLL(Buttons_HandleTypeDef *buttons) {
+	if (buttons->Config.htim == NULL || buttons->Config.hw_buttons == NULL) {
+		return WHEEL_ERROR;
+	}
 	HAL_StatusTypeDef ret = HAL_OK;
 	ret = HAL_TIM_Base_Start_IT(buttons->Config.htim);
 	return (ret == HAL_OK) ? WHEEL_OK : WHEEL_ERROR;
 }
 
 static Wheel_Status Buttons_Stop_TIM_POLL(Buttons_HandleTypeDef *buttons) {
+	if (buttons->Config.htim == NULL) {
+		return WHEEL_ERROR;
+	}
 	HAL_StatusTypeDef ret = HAL_OK;
 	ret = HAL_TIM_Base_Stop_IT(buttons->Config.htim);
 	return (ret == HAL_OK) ? WHEEL_OK : WHEEL_ERROR;
+}
+
+// puts back everything the module computes, like after a power on.
+// Only to call when the poll timer is stopped
+static void reset_state(Buttons_HandleTypeDef *buttons) {
+	buttons->buttons_state = 0;
+	memset(buttons->sample_buffer, 0, sizeof(buttons->sample_buffer));
+	memset(buttons->knob_rotation_sequence_buffer, 0,
+			sizeof(buttons->knob_rotation_sequence_buffer));
+	buttons->knob_lock_init_time_ms = 0;
+	buttons->knob_head = 0;
+	buttons->knob_flags = 0;
+	buttons->sample_head = 0;
 }
 
 static Wheel_Status Buttons_TIM_POLL_CB(Buttons_HandleTypeDef *buttons) {

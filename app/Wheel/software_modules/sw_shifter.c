@@ -11,16 +11,23 @@ static Wheel_Status Shifter_INIT(Shifter_HandleTypeDef *shifter,
 		Shifter_ConfigHandleTypeDef *config);
 static Wheel_Status Shifter_DeINIT(Shifter_HandleTypeDef *shifter);
 static Wheel_Status Shifter_getSpeed(Shifter_HandleTypeDef *shifter);
+static void reset_state(Shifter_HandleTypeDef *shifter);
 
 Shifter_HandleTypeDef hShifter = { Shifter_INIT, Shifter_DeINIT,
 		Shifter_getSpeed };
 
 static Wheel_Status Shifter_INIT(Shifter_HandleTypeDef *shifter,
 		Shifter_ConfigHandleTypeDef *config) {
-	if (config->hw_analog == 0) {
+	if (config == NULL) {
+		return WHEEL_ERROR;
+	}
+	// GetState() reads the pin of the modifier at every call
+	if (config->hw_analog == NULL || config->modifier_port == NULL
+			|| config->modifier_pin == 0) {
 		return WHEEL_ERROR;
 	}
 	memcpy(&shifter->Config, config, sizeof(Shifter_ConfigHandleTypeDef));
+	reset_state(shifter);
 	shifter->min.x = SHIFTER_DEFAULT_MIN_X;
 	shifter->min.y = SHIFTER_DEFAULT_MIN_Y;
 	shifter->max.x = SHIFTER_DEFAULT_MAX_X;
@@ -28,13 +35,20 @@ static Wheel_Status Shifter_INIT(Shifter_HandleTypeDef *shifter,
 	return WHEEL_OK;
 }
 
+// Forgets everything, the calibration included. hw_analog is left alone :
+// the pedals may still be using it (see Analog_DeINIT)
 static Wheel_Status Shifter_DeINIT(Shifter_HandleTypeDef *shifter) {
-	Analog_HandleTypeDef *hw_analog = shifter->Config.hw_analog;
-	if (hw_analog->DeINIT(hw_analog) == WHEEL_ERROR) {
-		Error_Handler();
-	}
+	reset_state(shifter);
 	memset(&shifter->Config, 0, sizeof(Shifter_ConfigHandleTypeDef));
 	return WHEEL_OK;
+}
+
+// puts back everything the module computes, like after a power on
+static void reset_state(Shifter_HandleTypeDef *shifter) {
+	shifter->gear = 0;
+	memset(&shifter->min, 0, sizeof(Point));
+	memset(&shifter->max, 0, sizeof(Point));
+	memset(&shifter->current_pos, 0, sizeof(Point));
 }
 
 // this works just fine, it does
