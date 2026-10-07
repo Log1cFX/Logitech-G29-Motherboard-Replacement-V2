@@ -24,7 +24,7 @@
  */
 
 #include "tusb.h"
-#include "ffb/ffb_c.h"
+#include "usb_hid_desc.h"
 #include <string.h>
 
 /* A combination of interfaces must have a unique product id, since PC will save device driver after the first plug.
@@ -75,8 +75,7 @@ uint8_t const *tud_descriptor_device_cb(void) {
 // Descriptor contents must exist long enough for transfer to complete
 uint8_t const* tud_hid_descriptor_report_cb(uint8_t instance) {
     (void) instance;
-    uint16_t len;
-    return ffb_descriptor_1axis(&len);
+    return hid_g29_desc_bytes;
 }
 
 //--------------------------------------------------------------------+
@@ -91,7 +90,7 @@ enum { ITF_NUM_HID = 0, ITF_NUM_TOTAL };
 #define EPNUM_HID_OUT   0x01    /* host -> device (effect data)         */
 #define EPNUM_HID_IN    0x81    /* device -> host (PID state reports)   */
 
-#define FFB_HID_REPORT_DESC_LEN   (1196 + 29)
+#define FFB_HID_REPORT_DESC_LEN   HID_G29_DESC_LEN
 
 #define CONFIG_TOTAL_LEN   (TUD_CONFIG_DESC_LEN + TUD_HID_INOUT_DESC_LEN)
 
