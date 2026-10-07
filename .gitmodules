@@ -4,3 +4,6 @@
 [submodule "app/tinyusb"]
 	path = app/tinyusb
 	url = https://github.com/hathach/tinyusb.git
+[submodule "app/ffb-lib"]
+	path = app/ffb-lib
+	url = https://github.com/Log1cFX/Force-Feedback-Library.git
