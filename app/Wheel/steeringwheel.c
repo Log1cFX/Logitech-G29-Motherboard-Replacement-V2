@@ -7,6 +7,7 @@
 
 #include "wheel_def.h"
 #include "usb_processing.h"
+#include "watchdog.h"
 #include "ffb/ffb_c.h"
 #include "ffb/ffb_metrics_c.h"
 #include "ffb/ffb_axis_local_c.h"
@@ -46,8 +47,12 @@ static void wheel_delay(uint32_t ms);
 static void wheel_get_input(wheel_input_t *input);
 static bool tick();
 static void control_loop_step();
+#ifndef DEBUG
+static void usb_custom_task(usb_state_t *state);
+#endif
 
 void wheel_startup() {
+
 	/* INIT */
 	init_analog();
 	init_buttons();
@@ -72,7 +77,12 @@ void wheel_startup() {
 
 	// driver needs to be initialized before we go into calibration
 	// we don't want a timeout to occur on usb port
+#ifdef DEBUG
 	usb_init(hFFB, NULL);
+#else
+	watchdog_init();
+	usb_init(hFFB, usb_custom_task);
+#endif
 	while (usb_state() != USB_READY) {
 		usb_task();
 	}
@@ -92,19 +102,32 @@ void wheel_startup() {
 	local_effects = create_local_effects();
 	init_filter_preset();
 
-	// TODO : Use bootloader's watchdog
 	// TODO : Correct DeInit functions for all modules
 	/* TODO : write isolated unmount and mount logic
 	 * separately without relying on the device power off
 	 * for correct initialization after a deinitialization */
 
+#ifndef DEBUG
+	// end of the startup : from now on the watchdog is only fed when the
+	// control loop, SysTick and the sensor are all alive
+	watchdog_start_supervision();
+#endif
+
 	last_control_time = HAL_GetTick();
 }
+
+#ifndef DEBUG
+// Given to the USB module, which calls it in every usb_task().
+// It is the only place where the watchdog is fed
+static void usb_custom_task(usb_state_t *state) {
+	UNUSED(state);
+	watchdog_task();
+}
+#endif
 
 // One pass of the main loop. To call from the main thread, as often as
 // possible, once wheel_startup() has returned
 void wheel_task() {
-	// everything usb : answers the host and sends what is waiting
 	usb_task();
 	if (tick()) {
 		control_loop_step();
@@ -154,10 +177,12 @@ static void control_loop_step() {
 	end_force = clamp(end_force, MOTOR_MIN_FORCE, MOTOR_MAX_FORCE);
 
 	// apply the force on the motor
-	if (wheel.hActuator->Apply_Force(wheel.hActuator,
-			(int16_t) end_force) == WHEEL_ERROR) {
+	if (wheel.hActuator->Apply_Force(wheel.hActuator, (int16_t) end_force)
+			== WHEEL_ERROR) {
 		wheel.wheel_error_count++;
 	}
+
+	watchdog_checkin(WATCHDOG_SOURCE_CONTROL_LOOP);
 }
 
 /* One calibration sweep: push with `force` until the wheel stalls
@@ -361,6 +386,7 @@ static void register_initialization_error() {
 
 // context: SysTick (priority 6), called from SysTick_Handler every millisecond
 Wheel_Status wheel_get_all_component_states() {
+	watchdog_checkin(WATCHDOG_SOURCE_SYSTICK);
 	if ((wheel.hPedals == NULL) || (wheel.hShifter == NULL)) {
 		return WHEEL_ERROR;
 	}
@@ -405,7 +431,10 @@ void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef *hadc) {
 // context: SPI2 DMA interrupt (priority 3)
 void HAL_SPI_TxRxCpltCallback(SPI_HandleTypeDef *hspi) {
 	if (wheel.hMagnetometer->Config.hspi->Instance == hspi->Instance) {
-		wheel.hMagnetometer->TxRxDone_CB(wheel.hMagnetometer);
+		// WHEEL_OK only when the frame passed every check (CRC included)
+		if (wheel.hMagnetometer->TxRxDone_CB(wheel.hMagnetometer) == WHEEL_OK) {
+			watchdog_checkin(WATCHDOG_SOURCE_SENSOR);
+		}
 		wheel.hSensor->Update(wheel.hSensor);
 	}
 }
