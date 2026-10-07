@@ -118,14 +118,14 @@ void wheel_startup() {
 
 			// compute current degrees and update the axis state
 			float degrees = input.steering
-					* (float) (MAX_ROTATION_DEG / 2) / (float) INT16_MAX;
+					* (float) (MAX_ROTATION_DEG / 2)/ (float) INT16_MAX;
 			ffb_axis_state_t st = ffb_metrics_update(metrics, degrees);
 
 			// compute forces
 			ffb_set_axis_state_s(hFFB, FFB_STEERING_AXIS, &st);
 			ffb_calculate(hFFB);
 			host_force = ffb_get_axis_torque(hFFB, FFB_STEERING_AXIS);
-			local_force = ffb_axis_local_compute(local_effects, &st, degrees,
+			local_force = ffb_axis_local_compute(local_effects, &st,
 					ffb_is_active(hFFB));
 			total_force = host_force + local_force;
 
