@@ -92,7 +92,7 @@ static uint8_t hat_switch_from_msb(uint8_t byte) {
     {6, 8, 2},
     {5, 4, 3}
   };
-  // @formatter:on
+    // @formatter:on
   return hat_table[dpadY + 1][dpadX + 1];
 }
 

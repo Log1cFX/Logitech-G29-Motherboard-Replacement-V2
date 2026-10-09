@@ -78,8 +78,8 @@ enum {
 #define CONFIG_TOTAL_LEN   (TUD_CONFIG_DESC_LEN + TUD_HID_INOUT_DESC_LEN)
 
 uint8_t const desc_configuration[] = {
-    // Config number, interface count, string index, total length, attributes,
-    // power in mA
+// Config number, interface count, string index, total length, attributes,
+// power in mA
     TUD_CONFIG_DESCRIPTOR(1, 1, 0, CONFIG_TOTAL_LEN,
                           TUSB_DESC_CONFIG_ATT_REMOTE_WAKEUP, 100),
 
@@ -105,7 +105,6 @@ static char const *string_desc_arr[] = {(const char[])
     "000001",         // 3: serial, ideally from the chip id
 };
 // @formatter:on
-
 static uint16_t _desc_str[32];
 
 // Builds the UTF-16 string descriptor in _desc_str

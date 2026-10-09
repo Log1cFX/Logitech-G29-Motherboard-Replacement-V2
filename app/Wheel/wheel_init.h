@@ -136,10 +136,8 @@ static ffb_metrics_t* create_metrics_helper() {
   // The _ex variant takes the low-pass filters of the speed and the
   // acceleration: see METRICS_* in wheel_def.h
   return ffb_metrics_create_ex(CONSTRAINED_ROTATION_DEG, CONTROL_LOOP_RATE_HZ,
-  METRICS_SPEED_FREQ_HZ,
-                               METRICS_SPEED_Q,
-                               METRICS_ACCEL_FREQ_HZ,
-                               METRICS_ACCEL_Q);
+                               METRICS_SPEED_FREQ_HZ, METRICS_SPEED_Q,
+                               METRICS_ACCEL_FREQ_HZ, METRICS_ACCEL_Q);
 }
 
 static void init_filter_preset() {

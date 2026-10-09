@@ -92,7 +92,7 @@ static Wheel_Status Shifter_getSpeed(Shifter_HandleTypeDef *shifter) {
     {0, 0, 0, 0, 0},
     {1, 3, 5, 0, 0}
   };
-  // @formatter:on
+    // @formatter:on
 
   if (HAL_GPIO_ReadPin(shifter->Config.modifier_port,
                        shifter->Config.modifier_pin)) {
