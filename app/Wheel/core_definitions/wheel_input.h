@@ -43,11 +43,13 @@ extern "C" {
 typedef struct {
   uint32_t buttons; // one bit per button, see buttons_state in sw_buttons.h
   int16_t steering; // full int16 range, 0 = center
-  uint8_t throttle; // pedals: 0 to 255
+  uint8_t clutch; // pedals: 0 to 255
   uint8_t brake;
-  uint8_t clutch;
+  uint8_t throttle;
   uint8_t gear; // 0 (no gear) to 7
 } wheel_input_t;
+// The first 4 MSB bits in "buttons" are used for the hat switch
+// See hat_switch_from_msb in usb_processing.c
 
 #ifdef __cplusplus
 }

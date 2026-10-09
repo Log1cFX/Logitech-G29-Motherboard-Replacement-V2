@@ -16,19 +16,19 @@
 
 // The datasheet gives the NOP opcode twice: 0x10 in the opcode table and
 // 1101 0000 (0xD0) in Table 23. NOP_OPCODE uses the second
-#define GET1_OPCODE 				0x13 // Ref: Table 21 - Opcode Table
-#define NOP_OPCODE					0xD0 // Ref: Table 23 - NOP (Challenge)
-#define NULL_DATA					0x00
-#define NOP_KEY						0xAA // any value
-#define GET_TIME_OUT 				0xFF // the longest timeout
+#define GET1_OPCODE       0x13 // Ref: Table 21 - Opcode Table
+#define NOP_OPCODE        0xD0 // Ref: Table 23 - NOP (Challenge)
+#define NULL_DATA         0x00
+#define NOP_KEY           0xAA // any value
+#define GET_TIME_OUT      0xFF // the longest timeout
 
 /* ANSWER TO GET1. Ref: datasheet page 20 */
-#define MARKER_SHIFT				6 // byte 6, bits 7:6: type of the result (0 = Alpha)
-#define ROLL_CNT_MASK				0x3F // byte 6, bits 5:0: rolling counter
-#define ROLL_CNT_MODULO				64 // the rolling counter goes from 0 to 63
-#define ALPHA_MSB_MASK				0x3F // byte 1, bits 5:0: upper bits of the 14-bit angle
-#define ALPHA_TO_16BIT_SHIFT		2 // spreads the 14-bit angle over the 16-bit range
-#define DIAGNOSTIC_SHIFT			6 // byte 1, bits 7:6: diagnostic bits
+#define MARKER_SHIFT            6U  // byte 6, bits 7:6: type of the result (0 = Alpha)
+#define ROLL_CNT_MASK         0x3F  // byte 6, bits 5:0: rolling counter
+#define ROLL_CNT_MODULO        64U  // the rolling counter goes from 0 to 63
+#define ALPHA_MSB_MASK        0x3F  // byte 1, bits 5:0: upper bits of the 14-bit angle
+#define ALPHA_TO_16BIT_SHIFT    2U  // spreads the 14-bit angle over the 16-bit range
+#define DIAGNOSTIC_SHIFT        6U  // byte 1, bits 7:6: diagnostic bits
 
 static Wheel_Status MLX90363_INIT(Magnetometer_HandleTypeDef *sensor,
                                   Magnetometer_ConfigHandleTypeDef *config);

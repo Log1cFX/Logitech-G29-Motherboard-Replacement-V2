@@ -111,9 +111,9 @@ static bool send_input_report(void) {
   tx[3] = 1U << input->gear;
   tx[4] = input->steering;
   tx[5] = input->steering >> 8;
-  tx[6] = input->throttle;
+  tx[6] = input->clutch;
   tx[7] = input->brake;
-  tx[8] = input->clutch;
+  tx[8] = input->throttle;
 
   return tud_hid_report(JOYSTICK_REPORT_ID, tx, REPORT_SIZE);
 }
