@@ -57,50 +57,50 @@ extern "C" {
 #define KNOB_DIRECTION_FLAG (1U << (6)) // 0 = left, 1 = right (active only when KNOB_LOCK_FLAG = 1)
 
 typedef struct {
-	TIM_HandleTypeDef *htim; // This timer is used to periodically read the state of buttons
-	DigitalInput_HandleTypeDef *hw_buttons;
-}Buttons_ConfigHandleTypeDef;
+  TIM_HandleTypeDef *htim; // This timer is used to periodically read the state of buttons
+  DigitalInput_HandleTypeDef *hw_buttons;
+} Buttons_ConfigHandleTypeDef;
 
 typedef struct _Buttons_HandleTypeDef {
-	Wheel_Status (*INIT)(struct _Buttons_HandleTypeDef *buttons,
-			Buttons_ConfigHandleTypeDef *config);
-	Wheel_Status (*DeINIT)(struct _Buttons_HandleTypeDef *buttons);
-	// Start the timer that is used to periodically read the state of buttons
-	Wheel_Status (*Start_TIM_POLL)(struct _Buttons_HandleTypeDef *buttons);
-	// Stop it
-	Wheel_Status (*Stop_TIM_POLL)(struct _Buttons_HandleTypeDef *buttons);
-	// Must be called by the timer
-	Wheel_Status (*TIM_POLL_CB)(struct _Buttons_HandleTypeDef *buttons);
-	// Call GetState before reading the state from buttons_state
-	Wheel_Status (*GetState)(struct _Buttons_HandleTypeDef *buttons);
+  Wheel_Status (*INIT)(struct _Buttons_HandleTypeDef *buttons,
+                       Buttons_ConfigHandleTypeDef *config);
+  Wheel_Status (*DeINIT)(struct _Buttons_HandleTypeDef *buttons);
+  // Start the timer that is used to periodically read the state of buttons
+  Wheel_Status (*Start_TIM_POLL)(struct _Buttons_HandleTypeDef *buttons);
+  // Stop it
+  Wheel_Status (*Stop_TIM_POLL)(struct _Buttons_HandleTypeDef *buttons);
+  // Must be called by the timer
+  Wheel_Status (*TIM_POLL_CB)(struct _Buttons_HandleTypeDef *buttons);
+  // Call GetState before reading the state from buttons_state
+  Wheel_Status (*GetState)(struct _Buttons_HandleTypeDef *buttons);
 
-	// Shouldn't be filled manually but instead by calling INIT
-	Buttons_ConfigHandleTypeDef Config;
+  // Shouldn't be filled manually but instead by calling INIT
+  Buttons_ConfigHandleTypeDef Config;
 
-	/*
-	 * CONTEXTS (see the table in wheel_def.h)
-	 * TIM_POLL_CB() runs in the TIM3 interrupt (priority 6).
-	 * GetState() runs in SysTick (priority 6).
-	 */
+  /*
+   * CONTEXTS (see the table in wheel_def.h)
+   * TIM_POLL_CB() runs in the TIM3 interrupt (priority 6).
+   * GetState() runs in SysTick (priority 6).
+   */
 
-	// variable that is used to get the state of buttons
-	// written by: SysTick (GetState) | read by: main thread (wheel_get_input)
-	// GetState writes it in several steps, so the main thread reads it with the
-	// interrupts turned off, to never get a half written value.
-	volatile uint32_t buttons_state;
+  // variable that is used to get the state of buttons
+  // written by: SysTick (GetState) | read by: main thread (wheel_get_input)
+  // GetState writes it in several steps, so the main thread reads it with the
+  // interrupts turned off, to never get a half written value.
+  volatile uint32_t buttons_state;
 
-	/* THIS IS IMPLEMENTATION SPECIFIC AND ONLY USED INSIDE THE SOURCE FILE */
-	// Everything below is written by the TIM3 interrupt (TIM_POLL_CB) and read
-	// by SysTick (GetState). It isn't volatile or protected because TIM3 and
-	// SysTick have the same priority, so one can never interrupt the other.
-	// That stops being true if one of the two priorities is changed.
-	uint32_t sample_buffer[BUTTONS_BUFFER_SIZE];
-	uint32_t knob_rotation_sequence_buffer[ROTATION_SEQUENCE_SIZE];
-	uint32_t knob_lock_init_time_ms;
-	uint8_t knob_head;
-	uint8_t knob_flags;
-	uint16_t sample_head;
-}Buttons_HandleTypeDef;
+  /* THIS IS IMPLEMENTATION SPECIFIC AND ONLY USED INSIDE THE SOURCE FILE */
+  // Everything below is written by the TIM3 interrupt (TIM_POLL_CB) and read
+  // by SysTick (GetState). It isn't volatile or protected because TIM3 and
+  // SysTick have the same priority, so one can never interrupt the other.
+  // That stops being true if one of the two priorities is changed.
+  uint32_t sample_buffer[BUTTONS_BUFFER_SIZE];
+  uint32_t knob_rotation_sequence_buffer[ROTATION_SEQUENCE_SIZE];
+  uint32_t knob_lock_init_time_ms;
+  uint8_t knob_head;
+  uint8_t knob_flags;
+  uint16_t sample_head;
+} Buttons_HandleTypeDef;
 
 // the instance of this module, defined in sw_buttons.c
 extern Buttons_HandleTypeDef hButtons;

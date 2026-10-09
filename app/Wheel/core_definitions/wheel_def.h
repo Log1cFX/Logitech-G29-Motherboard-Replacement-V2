@@ -96,7 +96,7 @@ extern "C" {
 #define CALIBRATION_FORCE 135
 
 #ifdef DEBUG
-	#define CALIBRATION_MAX_TRIES 3
+#define CALIBRATION_MAX_TRIES 3
 #else
 	#define CALIBRATION_MAX_TRIES 250
 #endif
@@ -146,21 +146,21 @@ extern "C" {
 #define FFB_INERTIA_FILTER_FREQ_HZ 5 // was 15
 
 typedef struct {
-	uint32_t wheel_error_count; // main thread only
-	// The pointers are written once by init_wheel_handle() (main thread) and
-	// never change after that. They are read by every context.
-	// SysTick is already running before they are set, that is why
-	// wheel_get_all_component_states() checks them for NULL.
-	DigitalInput_HandleTypeDef *hDigitalInput;
-	Buttons_HandleTypeDef *hButtons;
-	Magnetometer_HandleTypeDef *hMagnetometer;
-	Sensor_HandleTypeDef *hSensor;
-	Analog_HandleTypeDef *hAnalog;
-	Pedals_HandleTypeDef *hPedals;
-	Shifter_HandleTypeDef *hShifter;
-	MotorDriver_HandleTypeDef *hMotorDriver;
-	Actuator_HandleTypeDef *hActuator;
-}Wheel_HandleTypeDef;
+  uint32_t wheel_error_count; // main thread only
+  // The pointers are written once by init_wheel_handle() (main thread) and
+  // never change after that. They are read by every context.
+  // SysTick is already running before they are set, that is why
+  // wheel_get_all_component_states() checks them for NULL.
+  DigitalInput_HandleTypeDef *hDigitalInput;
+  Buttons_HandleTypeDef *hButtons;
+  Magnetometer_HandleTypeDef *hMagnetometer;
+  Sensor_HandleTypeDef *hSensor;
+  Analog_HandleTypeDef *hAnalog;
+  Pedals_HandleTypeDef *hPedals;
+  Shifter_HandleTypeDef *hShifter;
+  MotorDriver_HandleTypeDef *hMotorDriver;
+  Actuator_HandleTypeDef *hActuator;
+} Wheel_HandleTypeDef;
 
 // defined in steeringwheel.c
 extern Wheel_HandleTypeDef wheel;

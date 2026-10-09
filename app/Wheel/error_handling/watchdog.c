@@ -63,89 +63,88 @@ static uint32_t last_check_time;
 static bool supervising;
 
 static void feed(void) {
-	// does nothing if the watchdog was never started
-	IWDG->KR = WATCHDOG_KEY_FEED;
+  // does nothing if the watchdog was never started
+  IWDG->KR = WATCHDOG_KEY_FEED;
 }
 
 // number of LSI periods, after the divider, that fit in timeout_ms
 static uint32_t count_for(uint32_t timeout_ms, uint32_t divider) {
-	return (timeout_ms * WATCHDOG_LSI_FREQ_HZ) / (divider * 1000u);
+  return (timeout_ms * WATCHDOG_LSI_FREQ_HZ) / (divider * 1000u);
 }
 
 // Sets the timeout of the watchdog, then feeds it.
 // It also starts the watchdog if nobody did it yet
 static void set_timeout(uint32_t timeout_ms) {
-	// take the smallest divider whose count fits in the counter : it is the
-	// one that gives the most precise timeout
-	uint32_t prescaler = 0u;
-	uint32_t divider = WATCHDOG_FIRST_DIVIDER;
-	uint32_t count = count_for(timeout_ms, divider);
-	while (count > WATCHDOG_MAX_COUNT && prescaler < WATCHDOG_MAX_PRESCALER) {
-		prescaler++;
-		divider <<= 1;
-		count = count_for(timeout_ms, divider);
-	}
-	if (count > WATCHDOG_MAX_COUNT) {
-		count = WATCHDOG_MAX_COUNT;
-	}
-	if (count == 0u) {
-		count = 1u;
-	}
+  // take the smallest divider whose count fits in the counter : it is the
+  // one that gives the most precise timeout
+  uint32_t prescaler = 0u;
+  uint32_t divider = WATCHDOG_FIRST_DIVIDER;
+  uint32_t count = count_for(timeout_ms, divider);
+  while (count > WATCHDOG_MAX_COUNT && prescaler < WATCHDOG_MAX_PRESCALER) {
+    prescaler++;
+    divider <<= 1;
+    count = count_for(timeout_ms, divider);
+  }
+  if (count > WATCHDOG_MAX_COUNT) {
+    count = WATCHDOG_MAX_COUNT;
+  }
+  if (count == 0u) {
+    count = 1u;
+  }
 
-	// starting a watchdog that already runs does nothing
-	IWDG->KR = WATCHDOG_KEY_START;
-	// the two registers below can't be written without this
-	IWDG->KR = WATCHDOG_KEY_UNLOCK;
-	IWDG->PR = prescaler;
-	IWDG->RLR = count - 1u;
+  // starting a watchdog that already runs does nothing
+  IWDG->KR = WATCHDOG_KEY_START;
+  // the two registers below can't be written without this
+  IWDG->KR = WATCHDOG_KEY_UNLOCK;
+  IWDG->PR = prescaler;
+  IWDG->RLR = count - 1u;
 
-	// The watchdog needs a few LSI periods to take the new values. If it takes
-	// too long, don't stay stuck here : it is fed anyway and the new values
-	// apply when they are ready
-	uint32_t start = HAL_GetTick();
-	while (IWDG->SR != 0u
-			&& (HAL_GetTick() - start) <= WATCHDOG_REGISTER_UPDATE_TIMEOUT_MS) {
-	}
+  // The watchdog needs a few LSI periods to take the new values. If it takes
+  // too long, don't stay stuck here : it is fed anyway and the new values
+  // apply when they are ready
+  uint32_t start = HAL_GetTick();
+  while (IWDG->SR != 0u
+      && (HAL_GetTick() - start) <= WATCHDOG_REGISTER_UPDATE_TIMEOUT_MS) {}
 
-	feed();
+  feed();
 }
 
 void watchdog_init(void) {
-	supervising = false;
-	set_timeout(WATCHDOG_STARTUP_TIMEOUT_MS);
+  supervising = false;
+  set_timeout(WATCHDOG_STARTUP_TIMEOUT_MS);
 }
 
 void watchdog_start_supervision(void) {
-	set_timeout(WATCHDOG_SUPERVISION_TIMEOUT_MS);
-	last_check_time = HAL_GetTick();
-	// forget what checked in during the startup
-	(void) __atomic_exchange_n(&checked_in_sources, 0u, __ATOMIC_RELAXED);
-	supervising = true;
+  set_timeout(WATCHDOG_SUPERVISION_TIMEOUT_MS);
+  last_check_time = HAL_GetTick();
+  // forget what checked in during the startup
+  (void)__atomic_exchange_n(&checked_in_sources, 0u, __ATOMIC_RELAXED);
+  supervising = true;
 }
 
 void watchdog_checkin(watchdog_source_t source) {
-	__atomic_fetch_or(&checked_in_sources, (uint32_t) source, __ATOMIC_RELAXED);
+  __atomic_fetch_or(&checked_in_sources, (uint32_t)source, __ATOMIC_RELAXED);
 }
 
 void watchdog_task(void) {
-	// startup : waiting is normal, feed every time
-	if (!supervising) {
-		feed();
-		return;
-	}
+  // startup : waiting is normal, feed every time
+  if (!supervising) {
+    feed();
+    return;
+  }
 
-	uint32_t current_time = HAL_GetTick();
-	if (current_time - last_check_time < WATCHDOG_CHECK_PERIOD_MS) {
-		return;
-	}
-	last_check_time = current_time;
+  uint32_t current_time = HAL_GetTick();
+  if (current_time - last_check_time < WATCHDOG_CHECK_PERIOD_MS) {
+    return;
+  }
+  last_check_time = current_time;
 
-	// read the sources and clear them for the next check in one step
-	uint32_t sources = __atomic_exchange_n(&checked_in_sources, 0u,
-			__ATOMIC_RELAXED);
-	if ((sources & WATCHDOG_REQUIRED_SOURCES) == WATCHDOG_REQUIRED_SOURCES) {
-		feed();
-	}
-	// otherwise the watchdog isn't fed : if a source stays silent until the
-	// timeout, the board resets and the bootloader takes over
+  // read the sources and clear them for the next check in one step
+  uint32_t sources = __atomic_exchange_n(&checked_in_sources, 0u,
+  __ATOMIC_RELAXED);
+  if ((sources & WATCHDOG_REQUIRED_SOURCES) == WATCHDOG_REQUIRED_SOURCES) {
+    feed();
+  }
+  // otherwise the watchdog isn't fed : if a source stays silent until the
+  // timeout, the board resets and the bootloader takes over
 }

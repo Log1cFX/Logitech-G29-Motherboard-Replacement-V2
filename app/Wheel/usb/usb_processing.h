@@ -29,18 +29,18 @@ extern "C" {
 #include "ffb/ffb_c.h"
 
 typedef enum {
-	// Not configured by a host : nothing is plugged in, or the host is still
-	// enumerating the device
-	USB_DETACHED,
-	// Configured, but the HID driver of the host hasn't read anything from us
-	// yet. A report is waiting on the endpoint, the day the host reads it we
-	// know that the driver is there
-	USB_WAIT_HOST,
-	// The host reads our reports
-	USB_READY,
-	// The bus is suspended : the host is asleep. A cable that gets unplugged
-	// also ends up here, the board has no way to tell the difference
-	USB_SUSPENDED
+  // Not configured by a host : nothing is plugged in, or the host is still
+  // enumerating the device
+  USB_DETACHED,
+  // Configured, but the HID driver of the host hasn't read anything from us
+  // yet. A report is waiting on the endpoint, the day the host reads it we
+  // know that the driver is there
+  USB_WAIT_HOST,
+  // The host reads our reports
+  USB_READY,
+  // The bus is suspended : the host is asleep. A cable that gets unplugged
+  // also ends up here, the board has no way to tell the difference
+  USB_SUSPENDED
 } usb_state_t;
 
 // Sets up the USB peripheral and starts TinyUSB. To call once, when the ffb

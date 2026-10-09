@@ -44,43 +44,42 @@ extern "C" {
 #define SHIFTER_IDX 3 // index inside the axis array for the shifter
 
 typedef struct {
-	ADC_HandleTypeDef *hadc;
+  ADC_HandleTypeDef *hadc;
 } Analog_ConfigHandleTypeDef;
 
 typedef struct _Analog_HandleTypeDef {
-	Wheel_Status (*INIT)(struct _Analog_HandleTypeDef *analog,
-			Analog_ConfigHandleTypeDef *config);
-	Wheel_Status (*DeINIT)(struct _Analog_HandleTypeDef *analog);
-	// look up "CONTINUOUS DMA SCAN STM32"
-	Wheel_Status (*Start_CONTINUOUS_SCAN_DMA)(
-			struct _Analog_HandleTypeDef *analog);
-	Wheel_Status (*Stop)(struct _Analog_HandleTypeDef *analog);
+  Wheel_Status (*INIT)(struct _Analog_HandleTypeDef *analog,
+                       Analog_ConfigHandleTypeDef *config);
+  Wheel_Status (*DeINIT)(struct _Analog_HandleTypeDef *analog);
+  // look up "CONTINUOUS DMA SCAN STM32"
+  Wheel_Status (*Start_CONTINUOUS_SCAN_DMA)(struct _Analog_HandleTypeDef *analog);
+  Wheel_Status (*Stop)(struct _Analog_HandleTypeDef *analog);
 
-	// Shouldn't be filled manually but instead by calling INIT
-	Analog_ConfigHandleTypeDef Config;
-	// array where output will be stored
-	// written by: the ADC through DMA (hardware, all the time) | read by: SysTick (pedals, shifter)
-	volatile uint32_t axis[ANALOG_INPUT_NUM];
+  // Shouldn't be filled manually but instead by calling INIT
+  Analog_ConfigHandleTypeDef Config;
+  // array where output will be stored
+  // written by: the ADC through DMA (hardware, all the time) | read by: SysTick (pedals, shifter)
+  volatile uint32_t axis[ANALOG_INPUT_NUM];
 
 } Analog_HandleTypeDef;
 
 typedef struct _Pedals_ConfigHandleTypeDef {
-	Analog_HandleTypeDef *hw_analog;
+  Analog_HandleTypeDef *hw_analog;
 } Pedals_ConfigHandleTypeDef;
 
 typedef struct _Pedals_HandleTypeDef {
-	Wheel_Status (*INIT)(struct _Pedals_HandleTypeDef *analog,
-			Pedals_ConfigHandleTypeDef *config);
-	Wheel_Status (*DeINIT)(struct _Pedals_HandleTypeDef *analog);
-	Wheel_Status (*GetState)(struct _Pedals_HandleTypeDef *analog);
+  Wheel_Status (*INIT)(struct _Pedals_HandleTypeDef *analog,
+                       Pedals_ConfigHandleTypeDef *config);
+  Wheel_Status (*DeINIT)(struct _Pedals_HandleTypeDef *analog);
+  Wheel_Status (*GetState)(struct _Pedals_HandleTypeDef *analog);
 
-	// Shouldn't be filled manually but instead by calling INIT
-	Pedals_ConfigHandleTypeDef Config;
-	// variables that are used to get the value of pedals after GetState
-	// written by: SysTick (GetState) | read by: main thread (wheel_get_input)
-	volatile uint8_t clutch;
-	volatile uint8_t brake;
-	volatile uint8_t throtle;
+  // Shouldn't be filled manually but instead by calling INIT
+  Pedals_ConfigHandleTypeDef Config;
+  // variables that are used to get the value of pedals after GetState
+  // written by: SysTick (GetState) | read by: main thread (wheel_get_input)
+  volatile uint8_t clutch;
+  volatile uint8_t brake;
+  volatile uint8_t throtle;
 } Pedals_HandleTypeDef;
 
 // the instances of this module, defined in hw_analog_input.c

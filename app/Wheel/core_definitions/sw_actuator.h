@@ -39,19 +39,19 @@
 #define MOTOR_MIN_FORCE (-255)
 
 typedef struct _Actuator_ConfigHandleTypeDef {
-	MotorDriver_HandleTypeDef *hMotorDriver;
+  MotorDriver_HandleTypeDef *hMotorDriver;
 } Actuator_ConfigHandleTypeDef;
 
 typedef struct _Actuator_HandleTypeDef {
-	Wheel_Status (*INIT)(struct _Actuator_HandleTypeDef *hActuator,
-			Actuator_ConfigHandleTypeDef *config);
-	Wheel_Status (*DeINIT)(struct _Actuator_HandleTypeDef *hActuator);
-	Wheel_Status (*Apply_Force)(struct _Actuator_HandleTypeDef *hActuator,
-			int16_t force); // full range -> [-255;+255]
+  Wheel_Status (*INIT)(struct _Actuator_HandleTypeDef *hActuator,
+                       Actuator_ConfigHandleTypeDef *config);
+  Wheel_Status (*DeINIT)(struct _Actuator_HandleTypeDef *hActuator);
+  Wheel_Status (*Apply_Force)(struct _Actuator_HandleTypeDef *hActuator,
+                              int16_t force); // full range -> [-255;+255]
 
-	// Shouldn't be filled manually but instead by calling INIT
-	Actuator_ConfigHandleTypeDef Config;
-	// this module is only used by the main thread (calibration and control loop)
+  // Shouldn't be filled manually but instead by calling INIT
+  Actuator_ConfigHandleTypeDef Config;
+  // this module is only used by the main thread (calibration and control loop)
 } Actuator_HandleTypeDef;
 
 // the instance of this module, defined in sw_actuator.c

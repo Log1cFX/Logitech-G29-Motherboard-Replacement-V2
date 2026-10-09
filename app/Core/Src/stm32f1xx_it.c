@@ -70,84 +70,73 @@ extern TIM_HandleTypeDef htim4;
 /*           Cortex-M3 Processor Interruption and Exception Handlers          */
 /******************************************************************************/
 /**
-  * @brief This function handles Non maskable interrupt.
-  */
-void NMI_Handler(void)
-{
+ * @brief This function handles Non maskable interrupt.
+ */
+void NMI_Handler(void) {
   /* USER CODE BEGIN NonMaskableInt_IRQn 0 */
 
   /* USER CODE END NonMaskableInt_IRQn 0 */
   /* USER CODE BEGIN NonMaskableInt_IRQn 1 */
-	while (1) {
-	}
+  while (1) {}
   /* USER CODE END NonMaskableInt_IRQn 1 */
 }
 
 /**
-  * @brief This function handles Hard fault interrupt.
-  */
-void HardFault_Handler(void)
-{
+ * @brief This function handles Hard fault interrupt.
+ */
+void HardFault_Handler(void) {
   /* USER CODE BEGIN HardFault_IRQn 0 */
 
   /* USER CODE END HardFault_IRQn 0 */
-  while (1)
-  {
+  while (1) {
     /* USER CODE BEGIN W1_HardFault_IRQn 0 */
     /* USER CODE END W1_HardFault_IRQn 0 */
   }
 }
 
 /**
-  * @brief This function handles Memory management fault.
-  */
-void MemManage_Handler(void)
-{
+ * @brief This function handles Memory management fault.
+ */
+void MemManage_Handler(void) {
   /* USER CODE BEGIN MemoryManagement_IRQn 0 */
 
   /* USER CODE END MemoryManagement_IRQn 0 */
-  while (1)
-  {
+  while (1) {
     /* USER CODE BEGIN W1_MemoryManagement_IRQn 0 */
     /* USER CODE END W1_MemoryManagement_IRQn 0 */
   }
 }
 
 /**
-  * @brief This function handles Prefetch fault, memory access fault.
-  */
-void BusFault_Handler(void)
-{
+ * @brief This function handles Prefetch fault, memory access fault.
+ */
+void BusFault_Handler(void) {
   /* USER CODE BEGIN BusFault_IRQn 0 */
 
   /* USER CODE END BusFault_IRQn 0 */
-  while (1)
-  {
+  while (1) {
     /* USER CODE BEGIN W1_BusFault_IRQn 0 */
     /* USER CODE END W1_BusFault_IRQn 0 */
   }
 }
 
 /**
-  * @brief This function handles Undefined instruction or illegal state.
-  */
-void UsageFault_Handler(void)
-{
+ * @brief This function handles Undefined instruction or illegal state.
+ */
+void UsageFault_Handler(void) {
   /* USER CODE BEGIN UsageFault_IRQn 0 */
 
   /* USER CODE END UsageFault_IRQn 0 */
-  while (1)
-  {
+  while (1) {
     /* USER CODE BEGIN W1_UsageFault_IRQn 0 */
     /* USER CODE END W1_UsageFault_IRQn 0 */
   }
 }
 
 /**
-  * @brief This function handles System service call via SWI instruction.
-  */
-void SVC_Handler(void)
-{
+ * @brief This function handles System service call via SWI instruction.
+ */
+void SVC_Handler(void) {
   /* USER CODE BEGIN SVCall_IRQn 0 */
 
   /* USER CODE END SVCall_IRQn 0 */
@@ -157,10 +146,9 @@ void SVC_Handler(void)
 }
 
 /**
-  * @brief This function handles Debug monitor.
-  */
-void DebugMon_Handler(void)
-{
+ * @brief This function handles Debug monitor.
+ */
+void DebugMon_Handler(void) {
   /* USER CODE BEGIN DebugMonitor_IRQn 0 */
 
   /* USER CODE END DebugMonitor_IRQn 0 */
@@ -170,10 +158,9 @@ void DebugMon_Handler(void)
 }
 
 /**
-  * @brief This function handles Pendable request for system service.
-  */
-void PendSV_Handler(void)
-{
+ * @brief This function handles Pendable request for system service.
+ */
+void PendSV_Handler(void) {
   /* USER CODE BEGIN PendSV_IRQn 0 */
 
   /* USER CODE END PendSV_IRQn 0 */
@@ -183,16 +170,15 @@ void PendSV_Handler(void)
 }
 
 /**
-  * @brief This function handles System tick timer.
-  */
-void SysTick_Handler(void)
-{
+ * @brief This function handles System tick timer.
+ */
+void SysTick_Handler(void) {
   /* USER CODE BEGIN SysTick_IRQn 0 */
   /* USER CODE END SysTick_IRQn 0 */
   HAL_IncTick();
   /* USER CODE BEGIN SysTick_IRQn 1 */
-	// reads the buttons, the pedals, the shifter and the steering axis
-	wheel_get_all_component_states();
+  // reads the buttons, the pedals, the shifter and the steering axis
+  wheel_get_all_component_states();
   /* USER CODE END SysTick_IRQn 1 */
 }
 
@@ -204,90 +190,85 @@ void SysTick_Handler(void)
 /******************************************************************************/
 
 /**
-  * @brief This function handles DMA1 channel1 global interrupt.
-  */
-void DMA1_Channel1_IRQHandler(void)
-{
+ * @brief This function handles DMA1 channel1 global interrupt.
+ */
+void DMA1_Channel1_IRQHandler(void) {
   /* USER CODE BEGIN DMA1_Channel1_IRQn 0 */
-//	debug_start_external_time_test();
+  //	debug_start_external_time_test();
   /* USER CODE END DMA1_Channel1_IRQn 0 */
   HAL_DMA_IRQHandler(&hdma_adc1);
   /* USER CODE BEGIN DMA1_Channel1_IRQn 1 */
-//	debug_stop_external_time_test();
+  //	debug_stop_external_time_test();
   /* USER CODE END DMA1_Channel1_IRQn 1 */
 }
 
 /**
-  * @brief This function handles DMA1 channel4 global interrupt.
-  */
-void DMA1_Channel4_IRQHandler(void)
-{
+ * @brief This function handles DMA1 channel4 global interrupt.
+ */
+void DMA1_Channel4_IRQHandler(void) {
   /* USER CODE BEGIN DMA1_Channel4_IRQn 0 */
-//	debug_start_external_time_test();
+  //	debug_start_external_time_test();
   /* USER CODE END DMA1_Channel4_IRQn 0 */
   HAL_DMA_IRQHandler(&hdma_spi2_rx);
   /* USER CODE BEGIN DMA1_Channel4_IRQn 1 */
-//	debug_stop_external_time_test();
+  //	debug_stop_external_time_test();
   /* USER CODE END DMA1_Channel4_IRQn 1 */
 }
 
 /**
-  * @brief This function handles DMA1 channel5 global interrupt.
-  */
-void DMA1_Channel5_IRQHandler(void)
-{
+ * @brief This function handles DMA1 channel5 global interrupt.
+ */
+void DMA1_Channel5_IRQHandler(void) {
   /* USER CODE BEGIN DMA1_Channel5_IRQn 0 */
-//	debug_start_external_time_test();
+  //	debug_start_external_time_test();
   /* USER CODE END DMA1_Channel5_IRQn 0 */
   HAL_DMA_IRQHandler(&hdma_spi2_tx);
   /* USER CODE BEGIN DMA1_Channel5_IRQn 1 */
-//	debug_stop_external_time_test();
+  //	debug_stop_external_time_test();
   /* USER CODE END DMA1_Channel5_IRQn 1 */
 }
 
 /**
-  * @brief This function handles TIM3 global interrupt.
-  */
-void TIM3_IRQHandler(void)
-{
+ * @brief This function handles TIM3 global interrupt.
+ */
+void TIM3_IRQHandler(void) {
   /* USER CODE BEGIN TIM3_IRQn 0 */
-//	debug_start_external_time_test();
+  //	debug_start_external_time_test();
   /* USER CODE END TIM3_IRQn 0 */
   HAL_TIM_IRQHandler(&htim3);
   /* USER CODE BEGIN TIM3_IRQn 1 */
-//	debug_stop_external_time_test();
+  //	debug_stop_external_time_test();
   /* USER CODE END TIM3_IRQn 1 */
 }
 
 /**
-  * @brief This function handles TIM4 global interrupt.
-  */
-void TIM4_IRQHandler(void)
-{
+ * @brief This function handles TIM4 global interrupt.
+ */
+void TIM4_IRQHandler(void) {
   /* USER CODE BEGIN TIM4_IRQn 0 */
-//	debug_start_external_time_test();
+  //	debug_start_external_time_test();
   /* USER CODE END TIM4_IRQn 0 */
   HAL_TIM_IRQHandler(&htim4);
   /* USER CODE BEGIN TIM4_IRQn 1 */
-//	debug_stop_external_time_test();
+  //	debug_stop_external_time_test();
   /* USER CODE END TIM4_IRQn 1 */
 }
 
 /* USER CODE BEGIN 1 */
 void USB_HP_CAN1_TX_IRQHandler(void) {
-//	debug_start_external_time_test();
-	usb_irq_handler();
-//	debug_stop_external_time_test();
+  //	debug_start_external_time_test();
+  usb_irq_handler();
+  //	debug_stop_external_time_test();
 }
 
 void USB_LP_CAN1_RX0_IRQHandler(void) {
-//	debug_start_external_time_test();
-	usb_irq_handler();
-//	debug_stop_external_time_test();
+  //	debug_start_external_time_test();
+  usb_irq_handler();
+  //	debug_stop_external_time_test();
 }
 
 int __io_putchar(int ch) {
-    ITM_SendChar(ch);
-    return ch;
+  ITM_SendChar(ch);
+  return ch;
 }
 /* USER CODE END 1 */

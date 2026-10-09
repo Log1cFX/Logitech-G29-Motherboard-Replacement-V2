@@ -46,12 +46,12 @@ extern "C" {
 #include <stdint.h>
 
 typedef struct {
-	uint32_t buttons; // one bit per button, same as buttons_state in sw_buttons.h
-	int16_t steering; // steering axis, uses full range of int16, 0 is the center
-	uint8_t throttle; // pedals, from 0 to 255
-	uint8_t brake;
-	uint8_t clutch;
-	uint8_t gear; // current gear from 0 to 7 where 0 is no gear
+  uint32_t buttons; // one bit per button, same as buttons_state in sw_buttons.h
+  int16_t steering; // steering axis, uses full range of int16, 0 is the center
+  uint8_t throttle; // pedals, from 0 to 255
+  uint8_t brake;
+  uint8_t clutch;
+  uint8_t gear; // current gear from 0 to 7 where 0 is no gear
 } wheel_input_t;
 
 #ifdef __cplusplus

@@ -18,6 +18,7 @@
 // the HIDDESC_* macros use the report ids of the library without the ffb::
 using namespace ffb;
 
+// @formatter:off
 const uint8_t hid_g29_desc_bytes[] = {
     0x05, 0x01,                /* USAGE_PAGE (Generic Desktop)            */
     0x09, 0x04,                /* USAGE (Joystick)                        */
@@ -91,8 +92,9 @@ const uint8_t hid_g29_desc_bytes[] = {
         HIDDESC_FFB_POOLREP,
     0xC0  /* END_COLLECTION */
 };
+// @formatter:on
 
 // the host is told HID_G29_DESC_LEN in the configuration descriptor, so it has
 // to be the real size of the array
 static_assert(sizeof(hid_g29_desc_bytes) == HID_G29_DESC_LEN,
-        "HID_G29_DESC_LEN in usb_hid_desc.h does not match the descriptor");
+    "HID_G29_DESC_LEN in usb_hid_desc.h does not match the descriptor");

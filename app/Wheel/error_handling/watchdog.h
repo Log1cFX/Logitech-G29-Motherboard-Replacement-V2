@@ -39,12 +39,12 @@ extern "C" {
 // The contexts that have to show that they are alive during the supervision.
 // To add one : add it here and in WATCHDOG_REQUIRED_SOURCES (watchdog.c)
 typedef enum {
-	// the main thread did one pass of the control loop
-	WATCHDOG_SOURCE_CONTROL_LOOP = (1u << 0),
-	// SysTick ran : the controls were read
-	WATCHDOG_SOURCE_SYSTICK = (1u << 1),
-	// the magnetometer answered with a valid frame
-	WATCHDOG_SOURCE_SENSOR = (1u << 2)
+  // the main thread did one pass of the control loop
+  WATCHDOG_SOURCE_CONTROL_LOOP = (1u << 0),
+  // SysTick ran : the controls were read
+  WATCHDOG_SOURCE_SYSTICK = (1u << 1),
+  // the magnetometer answered with a valid frame
+  WATCHDOG_SOURCE_SENSOR = (1u << 2)
 } watchdog_source_t;
 
 // Takes over the watchdog started by the bootloader, with the long timeout of

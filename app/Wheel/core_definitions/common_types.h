@@ -47,14 +47,14 @@ extern "C" {
 #include <stdio.h>
 
 #ifdef DEBUG
-  #define DBG(...)  printf(__VA_ARGS__)
+#define DBG(...)  printf(__VA_ARGS__)
 #else
   #define DBG(...)  ((void)0)
 #endif
 
 typedef enum {
-	WHEEL_OK, // good
-	WHEEL_ERROR // not good
+  WHEEL_OK, // good
+  WHEEL_ERROR // not good
 } Wheel_Status;
 
 #ifdef __cplusplus

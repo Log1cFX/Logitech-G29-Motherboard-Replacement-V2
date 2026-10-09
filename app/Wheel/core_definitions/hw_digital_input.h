@@ -42,23 +42,23 @@ extern "C" {
 #define MAX_BUTTONS 32U
 
 typedef struct {
-	uint16_t clk_pin;
-	uint16_t lock_pin;
-	uint16_t in_pin;
-	GPIO_TypeDef *buttons_port;
+  uint16_t clk_pin;
+  uint16_t lock_pin;
+  uint16_t in_pin;
+  GPIO_TypeDef *buttons_port;
 } DigitalInput_ConfigHandleTypeDef;
 
 typedef struct _DigitalInput_HandleTypeDef {
-	Wheel_Status (*INIT)(struct _DigitalInput_HandleTypeDef *buttons,
-			DigitalInput_ConfigHandleTypeDef *config);
-	Wheel_Status (*DeINIT)(struct _DigitalInput_HandleTypeDef *buttons);
-	Wheel_Status (*ReadState)(struct _DigitalInput_HandleTypeDef *buttons);
+  Wheel_Status (*INIT)(struct _DigitalInput_HandleTypeDef *buttons,
+                       DigitalInput_ConfigHandleTypeDef *config);
+  Wheel_Status (*DeINIT)(struct _DigitalInput_HandleTypeDef *buttons);
+  Wheel_Status (*ReadState)(struct _DigitalInput_HandleTypeDef *buttons);
 
-	// Shouldn't be filled manually but instead by calling INIT
-	DigitalInput_ConfigHandleTypeDef Config;
-	// the raw state of the read buttons
-	// written and read by the TIM3 interrupt only (ReadState, then the buttons' TIM_POLL_CB)
-	uint32_t buttons_state;
+  // Shouldn't be filled manually but instead by calling INIT
+  DigitalInput_ConfigHandleTypeDef Config;
+  // the raw state of the read buttons
+  // written and read by the TIM3 interrupt only (ReadState, then the buttons' TIM_POLL_CB)
+  uint32_t buttons_state;
 } DigitalInput_HandleTypeDef;
 
 // the instance of this module, defined in hw_digital_input.c

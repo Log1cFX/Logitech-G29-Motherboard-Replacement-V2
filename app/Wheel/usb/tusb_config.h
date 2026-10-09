@@ -27,7 +27,7 @@
 #define TUSB_CONFIG_H_
 
 #ifdef __cplusplus
- extern "C" {
+extern "C" {
 #endif
 
 //--------------------------------------------------------------------+
@@ -100,7 +100,7 @@
 #define CFG_TUD_HID_EP_BUFSIZE    64
 
 #ifdef __cplusplus
- }
+}
 #endif
 
 #endif /* TUSB_CONFIG_H_ */
