@@ -27,20 +27,17 @@
 #include "usb_hid_desc.h"
 #include <string.h>
 
-/* A combination of interfaces must have a unique product id, since PC will save device driver after the first plug.
- * Same VID/PID with different interface e.g MSC (first), then CDC (later) will possibly cause system error on PC.
- *
- * Auto ProductID layout's Bitmap:
- *   [MSB]         HID | MSC | CDC          [LSB]
- */
+// The descriptors of the device and the TinyUSB callbacks that return them.
+// What a callback returns has to stay valid until the transfer completes
+
+// One PID bit per enabled TinyUSB class. Unused: the PID is fixed below
 #define PID_MAP(itf, n) ((CFG_TUD_##itf) ? (1 << (n)) : 0)
 
-#define USB_VID   0x1209    /* pid.codes community VID - use your own!  */
-#define USB_PID   0xFFB0    /* OpenFFBoard's PID; pick your own product */
+#define USB_VID   0x1209 // pid.codes community VID, to replace with our own
+#define USB_PID   0xFFB0 // OpenFFBoard's PID, to replace with our own
 
-//--------------------------------------------------------------------+
-// Device Descriptors
-//--------------------------------------------------------------------+
+/* DEVICE DESCRIPTOR */
+
 static tusb_desc_device_t const desc_device = {.bLength = sizeof(tusb_desc_device_t),
     .bDescriptorType = TUSB_DESC_DEVICE, .bcdUSB = 0x0200, .bDeviceClass = 0x00,
     .bDeviceSubClass = 0x00, .bDeviceProtocol = 0x00, .bMaxPacketSize0 =
@@ -52,78 +49,66 @@ static tusb_desc_device_t const desc_device = {.bLength = sizeof(tusb_desc_devic
 
     .bNumConfigurations = 0x01};
 
-// Invoked when received GET DEVICE DESCRIPTOR
-// Application return pointer to descriptor
 uint8_t const*
 tud_descriptor_device_cb(void) {
   return (uint8_t const*)&desc_device;
 }
 
-//--------------------------------------------------------------------+
-// HID Report Descriptor
-//--------------------------------------------------------------------+
+/* HID REPORT DESCRIPTOR */
 
-// Invoked when received GET HID REPORT DESCRIPTOR
-// Application return pointer to descriptor
-// Descriptor contents must exist long enough for transfer to complete
 uint8_t const*
 tud_hid_descriptor_report_cb(uint8_t instance) {
   (void)instance;
   return hid_g29_desc_bytes;
 }
 
-//--------------------------------------------------------------------+
-// Configuration Descriptor
-//--------------------------------------------------------------------+
+/* CONFIGURATION DESCRIPTOR */
 
 enum {
   ITF_NUM_HID = 0, ITF_NUM_TOTAL
 };
 
-/* FFB needs BOTH an IN endpoint (status reports to the host) and an OUT
- * endpoint (effect reports from the host), so we MUST use the IN+OUT HID
- * template - the plain IN-only TUD_HID_DESCRIPTOR will not work. */
-#define EPNUM_HID_OUT   0x01    /* host -> device (effect data)         */
-#define EPNUM_HID_IN    0x81    /* device -> host (PID state reports)   */
+// FFB needs both endpoints, hence TUD_HID_INOUT_DESCRIPTOR below and not the
+// IN-only TUD_HID_DESCRIPTOR
+#define EPNUM_HID_OUT   0x01 // host -> device: effects
+#define EPNUM_HID_IN    0x81 // device -> host: input and PID state reports
 
 #define FFB_HID_REPORT_DESC_LEN   HID_G29_DESC_LEN
 
 #define CONFIG_TOTAL_LEN   (TUD_CONFIG_DESC_LEN + TUD_HID_INOUT_DESC_LEN)
 
 uint8_t const desc_configuration[] = {
-// Config number, interface count, string index, total length, attribute, power in mA
+    // Config number, interface count, string index, total length, attributes,
+    // power in mA
     TUD_CONFIG_DESCRIPTOR(1, 1, 0, CONFIG_TOTAL_LEN,
                           TUSB_DESC_CONFIG_ATT_REMOTE_WAKEUP, 100),
 
-    // Interface number, string index, protocol, report descriptor len, EP In address, size & polling interval
-    /* HID IN+OUT interface:
-     * itf number, string index, boot protocol, report-desc length,
-     * EP OUT addr, EP IN addr, EP size, polling interval (ms).
-     * interval 1 ms => 1000 Hz, the FFB default. */
+    // Interface number, string index, boot protocol, report descriptor length,
+    // EP OUT address, EP IN address, EP size, polling interval (1 ms = 1000 Hz)
     TUD_HID_INOUT_DESCRIPTOR(ITF_NUM_HID, 0, HID_ITF_PROTOCOL_NONE,
                              FFB_HID_REPORT_DESC_LEN, EPNUM_HID_OUT, EPNUM_HID_IN,
                              CFG_TUD_HID_EP_BUFSIZE, 1)};
 
-// Invoked when received GET CONFIGURATION DESCRIPTOR
-// Application return pointer to descriptor
-// Descriptor contents must exist long enough for transfer to complete
 uint8_t const*
 tud_descriptor_configuration_cb(uint8_t index) {
-  (void)index; // for multiple configurations
+  (void)index;
   return desc_configuration;
 }
 
+/* STRING DESCRIPTORS */
+
 // @formatter:off
 static char const *string_desc_arr[] = {(const char[])
-    {0x09, 0x04},     /* 0: language = English (0x0409)   */
-    "Open FFBoard",   /* 1: Manufacturer                  */
-    "FFB Wheel",      /* 2: Product                       */
-    "000001",         /* 3: Serial - ideally from chip ID */
+    {0x09, 0x04},     // 0: language, English (0x0409)
+    "Open FFBoard",   // 1: manufacturer
+    "FFB Wheel",      // 2: product
+    "000001",         // 3: serial, ideally from the chip id
 };
 // @formatter:on
 
 static uint16_t _desc_str[32];
 
+// Builds the UTF-16 string descriptor in _desc_str
 uint16_t const*
 tud_descriptor_string_cb(uint8_t index, uint16_t langid) {
   (void)langid;
@@ -144,7 +129,7 @@ tud_descriptor_string_cb(uint8_t index, uint16_t langid) {
     }
   }
 
-  /* first byte = total length (incl. header), second = string type */
+  // Header: the length in bytes (header included), then the descriptor type
   _desc_str[0] = (uint16_t)((TUSB_DESC_STRING << 8) | (2 * chr_count + 2));
   return _desc_str;
 }

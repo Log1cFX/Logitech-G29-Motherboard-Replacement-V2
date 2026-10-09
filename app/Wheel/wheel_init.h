@@ -4,12 +4,11 @@
  *  Created on: 8 oct. 2026
  *      Author: raffi
  *
- *  The functions that initialize the modules of the wheel and the ffb library.
+ *  Initialization of the modules of the wheel and of the ffb library.
  *
- *  This is not a normal header : it is a part of steeringwheel.c that was moved
- *  out to keep that file short. It is included by steeringwheel.c and by
- *  nothing else. It uses what is defined there before the include : wheel,
- *  hFFB and register_initialization_error()
+ *  Not a regular header: it is a part of steeringwheel.c, included only there.
+ *  It uses wheel, hFFB and register_initialization_error(), defined above the
+ *  include
  */
 
 #ifndef WHEEL_INIT_H_
@@ -117,7 +116,8 @@ static void init_motor_driver() {
   }
 }
 
-// the usb module registers itself in the library to send its reports (usb_init)
+// No micros() source: the library times its effects in whole milliseconds.
+// Its send callback is registered later, by usb_init()
 static void init_ffb_library() {
   hFFB = ffb_create(FFB_AXIS_COUNT, HAL_GetTick, NULL);
 }
@@ -133,14 +133,12 @@ static ffb_axis_local_t* create_local_effects() {
 }
 
 static ffb_metrics_t* create_metrics_helper() {
-  // set up the metrics helper. Use ffb_metrics_create_ex so we can lower the
-  // speed/accel low-pass cutoffs below the defaults ({70,55}/{55,30}): a lower
-  // cutoff (Hz) attenuates more high-frequency content from the raw encoder
-  // derivatives, at the cost of slightly more phase lag. q stays Q*100.
+  // The _ex variant takes the low-pass filters of the speed and the
+  // acceleration: see METRICS_* in wheel_def.h
   return ffb_metrics_create_ex(CONSTRAINED_ROTATION_DEG, CONTROL_LOOP_RATE_HZ,
-  /* speed */METRICS_SPEED_FREQ_HZ,
+  METRICS_SPEED_FREQ_HZ,
                                METRICS_SPEED_Q,
-                               /* accel */METRICS_ACCEL_FREQ_HZ,
+                               METRICS_ACCEL_FREQ_HZ,
                                METRICS_ACCEL_Q);
 }
 

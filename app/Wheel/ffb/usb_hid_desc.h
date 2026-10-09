@@ -4,8 +4,7 @@
  *  Created on: 7 oct. 2026
  *      Author: raffi
  *
- *  The HID report descriptor of the wheel, for the C code.
- *  The array itself is built in usb_hid_desc.cpp
+ *  HID report descriptor of the wheel, built in usb_hid_desc.cpp
  */
 
 #ifndef FFB_USB_HID_DESC_H_
@@ -13,8 +12,7 @@
 
 #include <stdint.h>
 
-// Size of hid_g29_desc_bytes in bytes. It is checked against the real array
-// in usb_hid_desc.cpp : the build fails if the two ever disagree
+// Size of hid_g29_desc_bytes, checked at build time in usb_hid_desc.cpp
 #define HID_G29_DESC_LEN 1225
 
 #ifdef __cplusplus

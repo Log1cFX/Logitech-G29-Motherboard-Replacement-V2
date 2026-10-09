@@ -7,10 +7,9 @@
 
 #include "hw_analog_input.h"
 
-// the ADC gives 16 bit values (12 bit, left aligned), the pedals are sent on 8 bits
+// The ADC values are 16 bits (12 bits left-aligned), the pedals are sent on 8
 #define PEDAL_ADC_TO_8BIT_SHIFT 8
-// the pedal axes are inverted : PEDAL_MAX - value
-#define PEDAL_MAX 0xFF
+#define PEDAL_MAX 0xFF // the pedal axes are inverted: PEDAL_MAX - value
 
 static Wheel_Status Analog_INIT(Analog_HandleTypeDef *analog,
                                 Analog_ConfigHandleTypeDef *config);
@@ -41,13 +40,11 @@ static Wheel_Status Analog_INIT(Analog_HandleTypeDef *analog,
   return WHEEL_OK;
 }
 
-// Stops the conversions and forgets everything.
-// The pedals and the shifter both read this module, and neither of them
-// deinitializes it : it is to call once both of them are deinitialized.
-// Can be called on a module that is not initialized, it does nothing then
+// Shared by the pedals and the shifter, which never deinitialize it: call it
+// once both are deinitialized. Safe on a module that is not initialized
 static Wheel_Status Analog_DeINIT(Analog_HandleTypeDef *analog) {
   Wheel_Status ret = WHEEL_OK;
-  // the DMA goes first : it writes in the array that is cleared below
+  // Stop the DMA first: it writes in the array cleared below
   if (analog->Config.hadc != NULL) {
     ret = Analog_Stop(analog);
   }
@@ -64,8 +61,7 @@ static Wheel_Status Analog_Start_CONTINIOUS_SCAN_DMA(Analog_HandleTypeDef *analo
     return WHEEL_ERROR;
   }
   HAL_StatusTypeDef ret = HAL_OK;
-  // the cast removes the volatile : HAL only gives the address to the DMA,
-  // it never reads the array itself
+  // The cast drops volatile: HAL only hands the address to the DMA
   ret = HAL_ADC_Start_DMA(config->hadc, (uint32_t*)analog->axis,
   ANALOG_INPUT_NUM);
   return (ret == HAL_OK) ? WHEEL_OK : WHEEL_ERROR;
@@ -93,15 +89,13 @@ static Wheel_Status Pedals_INIT(Pedals_HandleTypeDef *pedals,
   return WHEEL_OK;
 }
 
-// Forgets everything. hw_analog is left alone : the shifter may still be
-// using it (see Analog_DeINIT)
+// hw_analog keeps running: the shifter may still use it (see Analog_DeINIT)
 static Wheel_Status Pedals_DeINIT(Pedals_HandleTypeDef *pedals) {
   reset_pedals(pedals);
   memset(&pedals->Config, 0, sizeof(Pedals_ConfigHandleTypeDef));
   return WHEEL_OK;
 }
 
-// puts back the values of the pedals, like after a power on
 static void reset_pedals(Pedals_HandleTypeDef *pedals) {
   pedals->clutch = 0;
   pedals->brake = 0;

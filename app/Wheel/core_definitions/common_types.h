@@ -27,15 +27,12 @@
  *
  *  Created on: Aug 1, 2025
  *      Author: raffi
+ *
+ *  HAL, the utilities and the types that every module uses
  */
 
 #ifndef CORE_DEFINITIONS_COMMON_TYPES_H_
 #define CORE_DEFINITIONS_COMMON_TYPES_H_
-
-/*
- * By importing this file, you get access to the HAL library functions
- * as well as types commonly used in this project.
- */
 
 #ifdef __cplusplus
 extern "C" {
@@ -53,8 +50,8 @@ extern "C" {
 #endif
 
 typedef enum {
-  WHEEL_OK, // good
-  WHEEL_ERROR // not good
+  WHEEL_OK, // must stay 0: statuses are combined with |=
+  WHEEL_ERROR
 } Wheel_Status;
 
 #ifdef __cplusplus

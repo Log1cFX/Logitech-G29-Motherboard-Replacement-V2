@@ -39,25 +39,30 @@ extern "C" {
 #include "common_types.h"
 #include "hw_digital_input.h"
 
-/* FOR DEBOUNCING */
-#define SAMPLE_TIME_US 1000U
-#define MAX_SAMPLES 65U
+/* DEBOUNCING */
+#define SAMPLE_TIME_US 1000U // period of the poll timer, applied in main.c
+#define MAX_SAMPLES 65U // majority vote over this many samples
 #define HALF_SAMPLES (MAX_SAMPLES / 2)
 #define BUTTONS_BUFFER_SIZE MAX_SAMPLES
 
-//yeah, I should write a book about this horror
-/* FOR THE KNOB */
+/*
+ * KNOB
+ * A rotary encoder on buttons 23 and 24. One detent is a sequence of 5 states
+ * (see right/left_sequence_backwards in sw_buttons.c). Once it is seen, the
+ * matching button is reported pressed for KNOB_LOCK_TIME_MS and the knob is
+ * ignored meanwhile.
+ */
 #define GET_BIT(var, mask) ((mask) & (var))
 #define	KNOB_LOCK_TIME_MS 30U
 #define R_KNOB_BIT_MASK (1U << (23-1))
 #define	L_KNOB_BIT_MASK (1U << (24-1))
 #define RL_KNOB_BIT_MASK (R_KNOB_BIT_MASK | L_KNOB_BIT_MASK)
 #define ROTATION_SEQUENCE_SIZE 5U
-#define KNOB_LOCK_FLAG (1U << (7))
-#define KNOB_DIRECTION_FLAG (1U << (6)) // 0 = left, 1 = right (active only when KNOB_LOCK_FLAG = 1)
+#define KNOB_LOCK_FLAG (1U << (7)) // a detent is being reported
+#define KNOB_DIRECTION_FLAG (1U << (6)) // its direction: 0 = left, 1 = right
 
 typedef struct {
-  TIM_HandleTypeDef *htim; // This timer is used to periodically read the state of buttons
+  TIM_HandleTypeDef *htim; // one sample per period, see SAMPLE_TIME_US
   DigitalInput_HandleTypeDef *hw_buttons;
 } Buttons_ConfigHandleTypeDef;
 
@@ -65,35 +70,23 @@ typedef struct _Buttons_HandleTypeDef {
   Wheel_Status (*INIT)(struct _Buttons_HandleTypeDef *buttons,
                        Buttons_ConfigHandleTypeDef *config);
   Wheel_Status (*DeINIT)(struct _Buttons_HandleTypeDef *buttons);
-  // Start the timer that is used to periodically read the state of buttons
   Wheel_Status (*Start_TIM_POLL)(struct _Buttons_HandleTypeDef *buttons);
-  // Stop it
   Wheel_Status (*Stop_TIM_POLL)(struct _Buttons_HandleTypeDef *buttons);
-  // Must be called by the timer
+  // Takes one sample. Call from the period-elapsed callback of htim
   Wheel_Status (*TIM_POLL_CB)(struct _Buttons_HandleTypeDef *buttons);
-  // Call GetState before reading the state from buttons_state
+  // Refreshes buttons_state
   Wheel_Status (*GetState)(struct _Buttons_HandleTypeDef *buttons);
 
-  // Shouldn't be filled manually but instead by calling INIT
   Buttons_ConfigHandleTypeDef Config;
 
-  /*
-   * CONTEXTS (see the table in wheel_def.h)
-   * TIM_POLL_CB() runs in the TIM3 interrupt (priority 6).
-   * GetState() runs in SysTick (priority 6).
-   */
-
-  // variable that is used to get the state of buttons
-  // written by: SysTick (GetState) | read by: main thread (wheel_get_input)
-  // GetState writes it in several steps, so the main thread reads it with the
-  // interrupts turned off, to never get a half written value.
+  // One bit per button, debounced. Written in SysTick (GetState) in several
+  // steps, so main reads it with the interrupts off (wheel_get_input)
   volatile uint32_t buttons_state;
 
-  /* THIS IS IMPLEMENTATION SPECIFIC AND ONLY USED INSIDE THE SOURCE FILE */
-  // Everything below is written by the TIM3 interrupt (TIM_POLL_CB) and read
-  // by SysTick (GetState). It isn't volatile or protected because TIM3 and
-  // SysTick have the same priority, so one can never interrupt the other.
-  // That stops being true if one of the two priorities is changed.
+  /* PRIVATE */
+  // Written in the TIM3 interrupt (TIM_POLL_CB), read in SysTick (GetState).
+  // Neither volatile nor protected: both have priority 6 and cannot interrupt
+  // each other. Review this if one of the two priorities changes
   uint32_t sample_buffer[BUTTONS_BUFFER_SIZE];
   uint32_t knob_rotation_sequence_buffer[ROTATION_SEQUENCE_SIZE];
   uint32_t knob_lock_init_time_ms;
@@ -102,7 +95,6 @@ typedef struct _Buttons_HandleTypeDef {
   uint16_t sample_head;
 } Buttons_HandleTypeDef;
 
-// the instance of this module, defined in sw_buttons.c
 extern Buttons_HandleTypeDef hButtons;
 
 #ifdef __cplusplus

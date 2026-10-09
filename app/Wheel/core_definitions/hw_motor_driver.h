@@ -34,7 +34,7 @@
 
 #include "common_types.h"
 
-// value of right_channel / left_channel when no timer channel is set
+// "No channel" for right_channel and left_channel: 0 is TIM_CHANNEL_1
 #define MOTOR_INVALID_CHANNEL 0xFFFF
 
 typedef struct _MotorDriver_ConfigHandleTypeDef {
@@ -53,20 +53,19 @@ typedef struct _MotorDriver_HandleTypeDef {
   Wheel_Status (*INIT)(struct _MotorDriver_HandleTypeDef *hMotorDriver,
                        MotorDriver_ConfigHandleTypeDef *config);
   Wheel_Status (*DeINIT)(struct _MotorDriver_HandleTypeDef *hMotorDriver);
+  // force: 0 to 255. Left is counterclockwise, right is clockwise
   Wheel_Status (*Drive_Left)(struct _MotorDriver_HandleTypeDef *hMotorDriver,
-                             uint8_t force); // Counterclockwise; 	full range -> [0;255]
+                             uint8_t force);
   Wheel_Status (*Drive_Right)(struct _MotorDriver_HandleTypeDef *hMotorDriver,
-                              uint8_t force); // Clockwise; 		 	full range -> [0;255]
+                              uint8_t force);
   Wheel_Status (*Coast)(struct _MotorDriver_HandleTypeDef *hMotorDriver);
 
-  // Shouldn't be filled manually but instead by calling INIT
   MotorDriver_ConfigHandleTypeDef Config;
 
-  uint8_t motors_enabled; // main thread only, like the rest of this module
+  uint8_t motors_enabled; // main only, like the whole module
 
 } MotorDriver_HandleTypeDef;
 
-// the instance of this module, defined in hw_motor_driver.c
 extern MotorDriver_HandleTypeDef hMotorDriver;
 
-#endif /* COMMON_TEMPLATES_HW_MOTOR_DRIVER_H_ */
+#endif /* CORE_DEFINITIONS_HW_MOTOR_DRIVER_H_ */

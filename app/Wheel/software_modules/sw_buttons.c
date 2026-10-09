@@ -1,6 +1,5 @@
 /*
- *
- * buttons.c
+ * sw_buttons.c
  *
  *  Created on: Jul 26, 2025
  *      Author: raffi
@@ -40,13 +39,12 @@ static Wheel_Status Buttons_INIT(Buttons_HandleTypeDef *buttons,
   return WHEEL_OK;
 }
 
-// Stops the poll, deinitializes the hardware buttons (this module is the only
-// one that uses them) and forgets everything.
-// Can be called on a module that is not initialized, it does nothing then
+// Stops the poll and also deinitializes the hardware buttons: this module is
+// their only user. Safe on a module that is not initialized
 static Wheel_Status Buttons_DeINIT(Buttons_HandleTypeDef *buttons) {
   Buttons_ConfigHandleTypeDef *config = &buttons->Config;
   Wheel_Status ret = WHEEL_OK;
-  // the timer goes first : its interrupt uses everything that is cleared below
+  // Stop the timer first: its interrupt uses everything cleared below
   if (config->htim != NULL) {
     ret |= Buttons_Stop_TIM_POLL(buttons);
   }
@@ -76,8 +74,7 @@ static Wheel_Status Buttons_Stop_TIM_POLL(Buttons_HandleTypeDef *buttons) {
   return (ret == HAL_OK) ? WHEEL_OK : WHEEL_ERROR;
 }
 
-// puts back everything the module computes, like after a power on.
-// Only to call when the poll timer is stopped
+// Only call with the poll timer stopped
 static void reset_state(Buttons_HandleTypeDef *buttons) {
   buttons->buttons_state = 0;
   memset(buttons->sample_buffer, 0, sizeof(buttons->sample_buffer));
@@ -108,6 +105,8 @@ static Wheel_Status Buttons_GetState(Buttons_HandleTypeDef *buttons) {
   return WHEEL_OK;
 }
 
+// Majority vote: a button is pressed when it is set in more than half of the
+// last MAX_SAMPLES samples
 static void get_debounced_state(Buttons_HandleTypeDef *buttons) {
   uint16_t buttonSum[BUTTONS_NUM] = {0};
   uint32_t *buffer = buttons->sample_buffer;
@@ -156,6 +155,7 @@ static void get_debounced_state(Buttons_HandleTypeDef *buttons) {
   buttons->buttons_state = result;
 }
 
+// Replaces the two raw bits of the knob with the detent being reported, if any
 static void get_current_knob_state(Buttons_HandleTypeDef *buttons) {
   CLEAR_BIT(buttons->buttons_state, RL_KNOB_BIT_MASK);
   if (GET_BIT(buttons->knob_flags, KNOB_LOCK_FLAG)) {
@@ -167,11 +167,13 @@ static void get_current_knob_state(Buttons_HandleTypeDef *buttons) {
   }
 }
 
+// The states of the two knob bits during one detent, newest first
 const uint32_t right_sequence_backwards[ROTATION_SEQUENCE_SIZE] = {0,
 L_KNOB_BIT_MASK, RL_KNOB_BIT_MASK, R_KNOB_BIT_MASK, 0};
 const uint32_t left_sequence_backwards[ROTATION_SEQUENCE_SIZE] = {0,
 R_KNOB_BIT_MASK, RL_KNOB_BIT_MASK, L_KNOB_BIT_MASK, 0};
 
+// Records every change of the two knob bits and looks for a complete detent
 static void read_knob_button_state(Buttons_HandleTypeDef *buttons) {
   uint32_t *buffer = buttons->sample_buffer;
   uint32_t *sequence = buttons->knob_rotation_sequence_buffer;
@@ -192,7 +194,7 @@ static void read_knob_button_state(Buttons_HandleTypeDef *buttons) {
   for (seq = 0; seq < 2; seq++) {
     uint8_t idx = knob_idx;
     for (uint8_t offset = 0; offset < ROTATION_SEQUENCE_SIZE; offset++) {
-      // Walk backwards through circular buffer
+      // Walk the circular buffer backwards
       idx = (knob_idx + ROTATION_SEQUENCE_SIZE - offset) % ROTATION_SEQUENCE_SIZE;
       if (sequence[idx] != sequences[seq][offset]) {
         break;
@@ -212,6 +214,7 @@ static void read_knob_button_state(Buttons_HandleTypeDef *buttons) {
   }
 }
 
+// Ends the report of a detent after KNOB_LOCK_TIME_MS
 static void update_knob_button_state(Buttons_HandleTypeDef *buttons) {
   if (HAL_GetTick() - buttons->knob_lock_init_time_ms > KNOB_LOCK_TIME_MS) {
     CLEAR_BIT(buttons->knob_flags, KNOB_LOCK_FLAG);

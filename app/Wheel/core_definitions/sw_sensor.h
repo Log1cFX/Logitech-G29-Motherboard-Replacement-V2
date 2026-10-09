@@ -47,45 +47,42 @@ typedef struct _Sensor_HandleTypeDef {
   Wheel_Status (*INIT)(struct _Sensor_HandleTypeDef *sensor,
                        Sensor_ConfigHandleTypeDef *config);
   Wheel_Status (*DeINIT)(struct _Sensor_HandleTypeDef *sensor);
+  // Follows the turns of the magnet. Call after every magnetometer transfer
   Wheel_Status (*Update)(struct _Sensor_HandleTypeDef *sensor);
+  // Refreshes steering_pos and virtual_axis
   Wheel_Status (*GetAxis)(struct _Sensor_HandleTypeDef *sensor);
 
-  // Shouldn't be filled manually but instead by calling INIT
   Sensor_ConfigHandleTypeDef Config;
 
   /*
-   * CONTEXTS (see the table in wheel_def.h)
-   * Update() runs in the SPI DMA interrupt (priority 3).
-   * GetAxis() runs in SysTick (priority 6).
-   * The calibration and the control loop run in the main thread.
+   * Update() runs in the SPI DMA interrupt (priority 3), GetAxis() in SysTick
+   * (priority 6), the calibration and the control loop in main
+   * (see the table in wheel_def.h).
    */
 
-  // written by: SysTick (GetAxis) | read by: main thread
-  volatile int16_t virtual_axis; // the actual value that's sent, uses full range of int16
-  // written by: SysTick (GetAxis) | read by: main thread (calibration)
-  volatile int32_t steering_pos; // temporary value relative to wheel's position at startup
-  // written by: main thread (calibration) | read by: SysTick (GetAxis)
-  volatile int32_t min; // definition of the minimum (counterclockwise) rotation using steering_pos as reference
-  volatile int32_t max; // definition of the maximum (clockwise) rotation using steering_pos as reference
+  // Written in SysTick (GetAxis), read in main
+  volatile int16_t virtual_axis; // steering over the full int16 range, 0 = center
+  volatile int32_t steering_pos; // relative to the position of the wheel at startup
+  // Ends of the travel, in steering_pos units.
+  // Written in main (calibration), read in SysTick (GetAxis)
+  volatile int32_t min; // counterclockwise
+  volatile int32_t max; // clockwise
 
-  /* THIS IS IMPLEMENTATION SPECIFIC AND ONLY USED INSIDE THE SOURCE FILE */
+  /* PRIVATE */
   uint16_t physical_axis; // SysTick only
   uint16_t previous_sensor_capture; // SPI DMA interrupt only
-  // written by: SPI DMA interrupt (Update) | read by: SysTick (GetAxis)
-  // These two go together (position = rotations + capture) but they are
-  // written and read one after the other. The SPI DMA interrupt can run
-  // between the two reads of SysTick, which then gets a pair that doesn't match.
-  // NOT PROTECTED YET.
+  // Written in the SPI DMA interrupt (Update), read in SysTick (GetAxis).
+  // NOT PROTECTED: the position is turns + capture, but SysTick reads the two
+  // one after the other and the SPI DMA interrupt can change both in between
   volatile uint16_t current_sensor_capture;
   volatile int8_t magnet_full_rotation_cnt;
   uint8_t start_settling_cnt; // set by INIT, then SPI DMA interrupt only
-  // written by: SysTick (GetAxis) | read by: main thread (calibration)
+  // max - min. Written in SysTick (GetAxis), read in main (calibration)
   volatile uint16_t distance;
-  // written by: main thread (calibration) | read by: SysTick (GetAxis)
+  // Written in main (calibration), read in SysTick (GetAxis)
   volatile float axis_scale;
 } Sensor_HandleTypeDef;
 
-// the instance of this module, defined in sw_sensor.c
 extern Sensor_HandleTypeDef hSensor;
 
 #ifdef __cplusplus

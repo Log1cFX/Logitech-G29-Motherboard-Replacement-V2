@@ -1,5 +1,5 @@
 /*
- * g29_buttons.c
+ * hw_digital_input.c
  *
  *  Created on: Aug 1, 2025
  *      Author: raffi
@@ -29,27 +29,27 @@ static Wheel_Status DigitalInput_INIT(DigitalInput_HandleTypeDef *buttons,
   return WHEEL_OK;
 }
 
-// Nothing is started by this module, so there is nothing to stop.
-// ReadState() must not be called anymore after this : the module that polls
-// it (sw_buttons) stops its timer before it calls this function
+// Nothing to stop here. ReadState() must not be called afterwards: sw_buttons
+// stops its poll timer before it calls this
 static Wheel_Status DigitalInput_DeINIT(DigitalInput_HandleTypeDef *buttons) {
   buttons->buttons_state = 0;
   memset(&buttons->Config, 0, sizeof(DigitalInput_ConfigHandleTypeDef));
   return WHEEL_OK;
 }
 
+// Locks the state of the buttons, then reads one button per clock pulse
 static Wheel_Status DigitalInput_ReadState(DigitalInput_HandleTypeDef *buttons) {
   buttons->buttons_state = 0;
   DigitalInput_ConfigHandleTypeDef *config = &buttons->Config;
-  HAL_GPIO_WritePin(config->buttons_port, config->clk_pin, 0); //clock low
-  HAL_GPIO_WritePin(config->buttons_port, config->lock_pin, 1); //lock buttons
+  HAL_GPIO_WritePin(config->buttons_port, config->clk_pin, 0);
+  HAL_GPIO_WritePin(config->buttons_port, config->lock_pin, 1);
   for (uint8_t i = 0; i < BUTTONS_NUM; i++) {
-    HAL_GPIO_WritePin(config->buttons_port, config->clk_pin, 0); //clock low
-    if (HAL_GPIO_ReadPin(config->buttons_port, config->in_pin)) { // read
+    HAL_GPIO_WritePin(config->buttons_port, config->clk_pin, 0);
+    if (HAL_GPIO_ReadPin(config->buttons_port, config->in_pin)) {
       SET_BIT(buttons->buttons_state, (1U << i));
     }
-    HAL_GPIO_WritePin(config->buttons_port, config->clk_pin, 1); //clock high
+    HAL_GPIO_WritePin(config->buttons_port, config->clk_pin, 1);
   }
-  HAL_GPIO_WritePin(config->buttons_port, config->lock_pin, 0); //unlock buttons
+  HAL_GPIO_WritePin(config->buttons_port, config->lock_pin, 0);
   return WHEEL_OK;
 }

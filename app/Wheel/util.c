@@ -27,7 +27,7 @@ void debug_stop_external_time_test() {
 float remapf(float old_min, float old_max, float old_value, float new_min,
              float new_max) {
   if (old_max == old_min) {
-    return new_min; // or old_value, or 0.0f — your choice
+    return new_min; // empty input range: avoids the division by zero below
   }
 
   return (old_value - old_min) * (new_max - new_min) / (old_max - old_min) + new_min;

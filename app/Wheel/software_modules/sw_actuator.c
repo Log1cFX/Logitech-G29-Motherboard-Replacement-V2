@@ -16,7 +16,8 @@ static Wheel_Status Actuator_Apply_Force(Actuator_HandleTypeDef *hActuator,
 Actuator_HandleTypeDef hActuator = {Actuator_INIT, Actuator_DeINIT,
     Actuator_Apply_Force};
 
-// force correction generated with wheelcheck and lut generator
+// Force correction: lut[force asked] is the force given to the motor driver.
+// Generated with WheelCheck and the LUT generator
 const uint8_t lut[256] = {0, 37, 42, 42, 42, 42, 42, 43, 43, 43, 43, 43, 43, 43, 43,
     43, 44, 44, 44, 45, 45, 45, 46, 46, 47, 47, 48, 48, 49, 50, 51, 52, 53, 54, 54,
     55, 56, 56, 57, 58, 59, 59, 60, 61, 62, 63, 64, 64, 65, 66, 67, 68, 69, 70, 71,
@@ -46,9 +47,8 @@ static Wheel_Status Actuator_INIT(Actuator_HandleTypeDef *hActuator,
   return WHEEL_OK;
 }
 
-// Deinitializes the motor driver (this module is the only one that uses it),
-// which releases the motor, and forgets everything.
-// Can be called on a module that is not initialized, it does nothing then
+// Also deinitializes the motor driver, which releases the motor: this module
+// is its only user. Safe on a module that is not initialized
 static Wheel_Status Actuator_DeINIT(Actuator_HandleTypeDef *hActuator) {
   Actuator_ConfigHandleTypeDef *config = &hActuator->Config;
   Wheel_Status ret = WHEEL_OK;
@@ -62,12 +62,10 @@ static Wheel_Status Actuator_DeINIT(Actuator_HandleTypeDef *hActuator) {
 static Wheel_Status Actuator_Apply_Force(Actuator_HandleTypeDef *hActuator,
                                          int16_t force) {
   MotorDriver_HandleTypeDef *motor = hActuator->Config.hMotorDriver;
-  Wheel_Status ret = WHEEL_OK; // just to confirm that nothing has gone wrong
+  Wheel_Status ret = WHEEL_OK;
   uint8_t corrected_force = 0;
-  /*
-   * force is set to 0 because if it is more than 255 it means that something went critically wrong
-   * in the steps before and if that is the case then we don't want these forces to get to the user
-   */
+  // Out of range means that something went badly wrong upstream: apply no
+  // force rather than a wrong one
   if (force > MOTOR_MAX_FORCE) {
     force = 0;
     ret = WHEEL_ERROR;
@@ -84,7 +82,7 @@ static Wheel_Status Actuator_Apply_Force(Actuator_HandleTypeDef *hActuator,
   } else {
     motor->Drive_Right(motor, 0);
     motor->Drive_Left(motor, 0);
-    //		ret |= motor->Coast(motor);
+    // The drivers stay enabled: Coast() is not used
   }
   return ret;
 }

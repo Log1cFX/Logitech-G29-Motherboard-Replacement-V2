@@ -46,15 +46,14 @@ typedef struct _Actuator_HandleTypeDef {
   Wheel_Status (*INIT)(struct _Actuator_HandleTypeDef *hActuator,
                        Actuator_ConfigHandleTypeDef *config);
   Wheel_Status (*DeINIT)(struct _Actuator_HandleTypeDef *hActuator);
+  // force: MOTOR_MIN_FORCE (full left) to MOTOR_MAX_FORCE (full right).
+  // Out of range: applies 0 and returns WHEEL_ERROR
   Wheel_Status (*Apply_Force)(struct _Actuator_HandleTypeDef *hActuator,
-                              int16_t force); // full range -> [-255;+255]
+                              int16_t force);
 
-  // Shouldn't be filled manually but instead by calling INIT
-  Actuator_ConfigHandleTypeDef Config;
-  // this module is only used by the main thread (calibration and control loop)
+  Actuator_ConfigHandleTypeDef Config; // main only, like the whole module
 } Actuator_HandleTypeDef;
 
-// the instance of this module, defined in sw_actuator.c
 extern Actuator_HandleTypeDef hActuator;
 
 #endif /* CORE_DEFINITIONS_SW_ACTUATOR_H_ */

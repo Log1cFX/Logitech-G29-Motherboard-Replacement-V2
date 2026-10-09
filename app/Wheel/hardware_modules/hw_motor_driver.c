@@ -1,5 +1,5 @@
 /*
- * hw_pwm.c
+ * hw_motor_driver.c
  *
  *  Created on: Dec 28, 2025
  *      Author: raffi
@@ -35,14 +35,14 @@ static Wheel_Status MotorDriver_INIT(MotorDriver_HandleTypeDef *hMotorDriver,
     return WHEEL_ERROR;
   }
   memcpy(&hMotorDriver->Config, config, sizeof(MotorDriver_ConfigHandleTypeDef));
-  // The PWM must start with no force and the drivers off, whatever a
-  // previous use left in the registers
+  // The PWM starts with no force and the drivers off, whatever the registers
+  // held before
   release_motors(hMotorDriver);
   uint8_t ret = 0;
   ret |= HAL_TIM_PWM_Start(config->pwm_timer, config->right_channel);
   ret |= HAL_TIM_PWM_Start(config->pwm_timer, config->left_channel);
   if (ret != HAL_OK) {
-    // don't stay half started
+    // Do not stay half started
     MotorDriver_DeINIT(hMotorDriver);
     return WHEEL_ERROR;
   }
@@ -63,7 +63,7 @@ static inline void disable_motors(MotorDriver_HandleTypeDef *hMotorDriver) {
   hMotorDriver->motors_enabled = 0;
 }
 
-// no force in both directions and the drivers off : the motor turns freely
+// No force on either side and the drivers off: the motor turns freely
 static void release_motors(MotorDriver_HandleTypeDef *hMotorDriver) {
   MotorDriver_ConfigHandleTypeDef *config = &hMotorDriver->Config;
   *(config->right_compareRegister) = 0;
@@ -71,21 +71,20 @@ static void release_motors(MotorDriver_HandleTypeDef *hMotorDriver) {
   disable_motors(hMotorDriver);
 }
 
-// Releases the motor, stops the PWM and forgets everything.
-// Can be called on a module that is not initialized, it does nothing then
+// Releases the motor and stops the PWM. Safe on a module that is not initialized
 static Wheel_Status MotorDriver_DeINIT(MotorDriver_HandleTypeDef *hMotorDriver) {
   MotorDriver_ConfigHandleTypeDef *config = &hMotorDriver->Config;
   uint8_t ret = 0;
   if (config->pwm_timer != NULL) {
-    // the motor is released before the PWM stops : a driver that stays
-    // enabled would keep the last force, or brake
+    // Release before the PWM stops: a driver left enabled would keep the last
+    // force, or brake
     release_motors(hMotorDriver);
     ret |= HAL_TIM_PWM_Stop(config->pwm_timer, config->right_channel);
     ret |= HAL_TIM_PWM_Stop(config->pwm_timer, config->left_channel);
   }
   hMotorDriver->motors_enabled = 0;
   memset(&hMotorDriver->Config, 0, sizeof(MotorDriver_ConfigHandleTypeDef));
-  // 0 is a valid channel (TIM_CHANNEL_1)
+  // memset left 0 there, which is a channel: see MOTOR_INVALID_CHANNEL
   config->right_channel = MOTOR_INVALID_CHANNEL;
   config->left_channel = MOTOR_INVALID_CHANNEL;
   return (ret == HAL_OK) ? WHEEL_OK : WHEEL_ERROR;

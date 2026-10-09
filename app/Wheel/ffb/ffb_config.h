@@ -30,19 +30,15 @@
 /*
  * ffb_config.h
  *
- * Compile-time configuration for the standalone FFB library.
- *
- * Users may override any of these by defining them on the compiler
- * command line (-DFFB_MAX_AXIS=1) or in a project-wide header included
- * before any ffb header.
+ * Compile-time options of the ffb library for this project. The library reads
+ * them through ffb_options.h, which documents each option and its default.
  */
 
 #ifndef FFB_CONFIG_H_
 #define FFB_CONFIG_H_
 
-#include "common_types.h"
+#include "common_types.h" // DBG
 
-/* Number of physical axes the device exposes. Must be 1, 2, or 3. */
 #ifndef FFB_MAX_AXIS
 #  define FFB_MAX_AXIS 1
 #endif
@@ -51,27 +47,24 @@
 #  error "FFB_MAX_AXIS must be 1, 2, or 3"
 #endif
 
-/* Number of simultaneous effects the device can hold. The host's PID
- * pool report advertises this value; 40 is the OpenFFBoard default. */
+// Effect slots advertised to the host. 40 is the OpenFFBoard default
 #ifndef FFB_MAX_EFFECTS
 #  define FFB_MAX_EFFECTS 40
 #endif
 
-/* Default effect-calculation rate, in Hz. Used to initialise biquad
- * filter coefficients before the user calls setSamplerate(). */
+// Rate of ffb_calculate(). The firmware never calls ffb_set_samplerate(), so
+// keep it equal to CONTROL_LOOP_RATE_HZ (wheel_def.h)
 #ifndef FFB_DEFAULT_SAMPLERATE_HZ
 #  define FFB_DEFAULT_SAMPLERATE_HZ 1000.0f
 #endif
 
-/* Offset added to every HID report ID before transmission. 0 matches
- * the OpenFFBoard descriptor; advanced users with composite HID stacks
- * may shift the IDs to avoid collisions. */
+// Added to every HID report id of the library. 0 matches the OpenFFBoard
+// descriptor
 #ifndef FFB_ID_OFFSET
 #  define FFB_ID_OFFSET 0
 #endif
 
-/* Optional debug log hook. Define this to your own logging function
- * before including any ffb header to capture effect lifecycle events. */
+// The logs of the library go to the debug console
 #define FFB_LOG(...)  DBG(__VA_ARGS__)
 
 #endif /* FFB_CONFIG_H_ */

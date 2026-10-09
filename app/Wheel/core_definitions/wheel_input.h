@@ -32,26 +32,21 @@
 #ifndef CORE_DEFINITIONS_WHEEL_INPUT_H_
 #define CORE_DEFINITIONS_WHEEL_INPUT_H_
 
-/*
- * The state of all the controls of the wheel at one moment.
- * This is what the wheel gives to whatever sends it to the computer (the USB
- * module today). It is a plain copy : whoever gets it doesn't need to know the
- * modules it comes from, and all the values in it go together.
- */
-
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 #include <stdint.h>
 
+// Every control of the wheel at one instant (see wheel_get_input).
+// A plain copy: its user, the USB module, needs nothing from the wheel modules
 typedef struct {
-  uint32_t buttons; // one bit per button, same as buttons_state in sw_buttons.h
-  int16_t steering; // steering axis, uses full range of int16, 0 is the center
-  uint8_t throttle; // pedals, from 0 to 255
+  uint32_t buttons; // one bit per button, see buttons_state in sw_buttons.h
+  int16_t steering; // full int16 range, 0 = center
+  uint8_t throttle; // pedals: 0 to 255
   uint8_t brake;
   uint8_t clutch;
-  uint8_t gear; // current gear from 0 to 7 where 0 is no gear
+  uint8_t gear; // 0 (no gear) to 7
 } wheel_input_t;
 
 #ifdef __cplusplus

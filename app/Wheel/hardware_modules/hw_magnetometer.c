@@ -4,37 +4,31 @@
  *  Created on: Sep 22, 2024
  *      Author: raffi
  *
- *  Datasheet : MLX90363 Magnetometer IC
- *  with High Speed Serial Interface
- *  REVISION 006 – DEC 2016
+ *  MLX90363 magnetometer, used in trigger mode 1.
  *
- *  Using Trigger mode 1
- *  Ref : starting from page 21 section 13.5
+ *  Datasheet: MLX90363 Magnetometer IC with High Speed Serial Interface,
+ *  revision 006, Dec 2016. Trigger mode 1: section 13.5, from page 21.
  *
- *  BTW : if you're receiving NTT messages, maybe a timing issue.
+ *  NTT messages from the sensor may come from a timing issue
  */
 
 #include "hw_magnetometer.h"
 
-#define GET1_OPCODE 				0x13 // Ref : Table 21 – Opcode Table
-#define NOP_OPCODE					0xD0 // Ref : Table 23 – NOP (Challenge)
-#define NULL_DATA					0x00 // NULL
-#define NOP_KEY						0xAA // Doesn't matter what it is
-#define GET_TIME_OUT 				0xFF // Max timeout
+// The datasheet gives the NOP opcode twice: 0x10 in the opcode table and
+// 1101 0000 (0xD0) in Table 23. NOP_OPCODE uses the second
+#define GET1_OPCODE 				0x13 // Ref: Table 21 - Opcode Table
+#define NOP_OPCODE					0xD0 // Ref: Table 23 - NOP (Challenge)
+#define NULL_DATA					0x00
+#define NOP_KEY						0xAA // any value
+#define GET_TIME_OUT 				0xFF // the longest timeout
 
-/* Layout of the answer to GET1. Ref : datasheet page 20 */
-#define MARKER_SHIFT				6 // byte 6, bits 7:6 : type of the result (0 = Alpha)
-#define ROLL_CNT_MASK				0x3F // byte 6, bits 5:0 : rolling counter
-#define ROLL_CNT_MODULO				64 // the rolling counter is 6 bits, it goes from 0 to 63
-#define ALPHA_MSB_MASK				0x3F // byte 1, bits 5:0 : upper bits of the 14 bit angle
-#define ALPHA_TO_16BIT_SHIFT		2 // alpha is 14 bit, shifted to use the full 16 bit range
-#define DIAGNOSTIC_SHIFT			6 // byte 1, bits 7:6 : diagnostic bits
-
-/*
- * In the datasheet there are two opcodes for d16:
- * first in the opcode table (0x10) and second in table 23 (1101 0000)
- * That's weird.
- */
+/* ANSWER TO GET1. Ref: datasheet page 20 */
+#define MARKER_SHIFT				6 // byte 6, bits 7:6: type of the result (0 = Alpha)
+#define ROLL_CNT_MASK				0x3F // byte 6, bits 5:0: rolling counter
+#define ROLL_CNT_MODULO				64 // the rolling counter goes from 0 to 63
+#define ALPHA_MSB_MASK				0x3F // byte 1, bits 5:0: upper bits of the 14-bit angle
+#define ALPHA_TO_16BIT_SHIFT		2 // spreads the 14-bit angle over the 16-bit range
+#define DIAGNOSTIC_SHIFT			6 // byte 1, bits 7:6: diagnostic bits
 
 static Wheel_Status MLX90363_INIT(Magnetometer_HandleTypeDef *sensor,
                                   Magnetometer_ConfigHandleTypeDef *config);
@@ -69,22 +63,21 @@ static Wheel_Status MLX90363_INIT(Magnetometer_HandleTypeDef *sensor,
   return WHEEL_OK;
 }
 
-// Stops the poll and the transfer that may be running, and forgets everything.
-// Can be called on a module that is not initialized, it does nothing then
+// Stops the poll and the transfer that may be running. Safe on a module that
+// is not initialized
 static Wheel_Status MLX90363_DeINIT(Magnetometer_HandleTypeDef *sensor) {
   Magnetometer_ConfigHandleTypeDef *config = &sensor->Config;
   Wheel_Status ret = WHEEL_OK;
-  // the timer goes first, so that no new transfer is started
+  // Stop the timer first, so that no new transfer starts
   if (config->htim != NULL) {
     ret |= MLX90363_Stop_TIM_POLL(sensor);
   }
   if (config->hspi != NULL) {
-    // The timer may have started a transfer right before it was stopped.
-    // It has to end here : its interrupt uses what is cleared below
+    // A transfer may have started right before the timer stopped. End it
+    // here: its interrupt uses what is cleared below
     if (HAL_SPI_Abort(config->hspi) != HAL_OK) {
       ret = WHEEL_ERROR;
     }
-    // release the sensor
     HAL_GPIO_WritePin(config->SS_port, config->SS_pin, 1);
   }
   reset_state(sensor);
@@ -92,8 +85,7 @@ static Wheel_Status MLX90363_DeINIT(Magnetometer_HandleTypeDef *sensor) {
   return ret;
 }
 
-// puts back everything the module computes, like after a power on.
-// Only to call when the poll timer is stopped and no transfer is running
+// Only call with the poll timer stopped and no transfer running
 static void reset_state(Magnetometer_HandleTypeDef *sensor) {
   sensor->reading = 0;
   sensor->err_packets_cnt = 0;
@@ -140,7 +132,6 @@ static Wheel_Status MLX90363_TransmitRecieve_DMA(Magnetometer_HandleTypeDef *sen
   return (ret == HAL_OK) ? WHEEL_OK : WHEEL_ERROR;
 }
 
-// marks transfer as done and extracts data
 static Wheel_Status MLX90363_TxRxDone_CB(Magnetometer_HandleTypeDef *sensor) {
   Magnetometer_ConfigHandleTypeDef *config = &sensor->Config;
   HAL_GPIO_WritePin(config->SS_port, config->SS_pin, 1);
@@ -150,7 +141,7 @@ static Wheel_Status MLX90363_TxRxDone_CB(Magnetometer_HandleTypeDef *sensor) {
   return ret;
 }
 
-// Ref : datasheet page 19
+// CRC lookup table. Ref: datasheet page 19
 const static char cba_256_TAB[] = {0x00, 0x2F, 0x5E, 0x71, 0xBC, 0x93, 0xE2, 0xCD,
     0x57, 0x78, 0x09, 0x26, 0xEB, 0xC4, 0xB5, 0x9A, 0xAE, 0x81, 0xF0, 0xDF, 0x12,
     0x3D, 0x4C, 0x63, 0xF9, 0xD6, 0xA7, 0x88, 0x45, 0x6A, 0x1B, 0x34, 0x73, 0x5C,
@@ -173,7 +164,7 @@ const static char cba_256_TAB[] = {0x00, 0x2F, 0x5E, 0x71, 0xBC, 0x93, 0xE2, 0xC
     0x86, 0xA9, 0x64, 0x4B, 0x3A, 0x15, 0x8F, 0xA0, 0xD1, 0xFE, 0x33, 0x1C, 0x6D,
     0x42};
 
-// calculates the CRC using the 7 bytes of the buffer
+// CRC of the first 7 bytes of a frame
 static uint8_t calculate_crc(uint8_t *message) {
   uint8_t crc = message[7];
   crc = 0xFF;
@@ -188,10 +179,10 @@ static uint8_t calculate_crc(uint8_t *message) {
   return crc;
 }
 
-// Ref : datasheet page 22
+// Ref: datasheet page 22
 static void set_GET1(uint8_t *buffer, uint8_t reset) {
   buffer[0] = NULL_DATA;
-  buffer[1] = reset; // reset roll. Ref : on the same page
+  buffer[1] = reset; // 1 resets the rolling counter. Ref: same page
   buffer[2] = GET_TIME_OUT;
   buffer[3] = GET_TIME_OUT;
   buffer[4] = NULL_DATA;
@@ -200,7 +191,7 @@ static void set_GET1(uint8_t *buffer, uint8_t reset) {
   buffer[7] = calculate_crc(buffer);
 }
 
-// Ref : datasheet page 30
+// Ref: datasheet page 30
 static void set_NOP(uint8_t *buffer) {
   buffer[0] = NULL_DATA;
   buffer[1] = NULL_DATA;
@@ -220,70 +211,60 @@ static void transmit_blocking(Magnetometer_HandleTypeDef *sensor) {
   HAL_GPIO_WritePin(config->SS_port, config->SS_pin, 1);
 }
 
-// resets the roll counter and stops communication
+// Resets the rolling counter of the sensor, then ends the exchange.
+// Ref: Figure 4 - Trigger Mode 1
 static void reset_roll_counter(Magnetometer_HandleTypeDef *sensor) {
-  // fill buffer with a GET1 request with a roll_cnt reset
   set_GET1(sensor->SPI_Tx_buffer, 1);
-  // should reset the roll_cnt
   transmit_blocking(sensor);
-  // a delay is required
-  HAL_Delay(1);
-  // fill the buffer with a NOP request to stop the communication
+  HAL_Delay(1); // required between the two frames
+  // A NOP ends the exchange without incrementing the rolling counter
   set_NOP(sensor->SPI_Tx_buffer);
-  // should stop the communication without increasing the roll_cnt
-  // Ref : Figure 4 – Trigger Mode 1
   transmit_blocking(sensor);
 }
 
 static Wheel_Status getData(Magnetometer_HandleTypeDef *sensor) {
   uint8_t *RxBuffer = sensor->SPI_Rx_buffer;
-  /* 		ERROR CHECKING 		*/
-  // Check if the transfer is done to avoid race conditions
+  /* CHECKS */
   if (!sensor->transfer_is_done) {
     return WHEEL_ERROR;
   }
 
-  // Check the marker if Alpha (0), otherwise ignore
+  // Only Alpha results are expected
   if ((RxBuffer[6] >> MARKER_SHIFT) != 0) {
     sensor->err_packets_cnt++;
-    return WHEEL_ERROR; // Not Alpha result
+    return WHEEL_ERROR;
   }
 
-  // Check if bits 2,3,5 if they are 0x00
+  // Bytes 2, 3 and 5 other than 0: probably wrong data
   if (RxBuffer[2] != 0x00 || RxBuffer[3] != 0x00 || RxBuffer[5] != 0x00) {
     sensor->err_packets_cnt++;
-    return WHEEL_ERROR; // Probably wrong data
+    return WHEEL_ERROR;
   }
 
-  // Virtual Gain at 0?
+  // A virtual gain (byte 4) of 0: probably wrong data
   if (RxBuffer[4] == 0x00) {
     sensor->err_packets_cnt++;
-    return WHEEL_ERROR; // Probably wrong data
+    return WHEEL_ERROR;
   }
 
-  // Extract the rolling counter
+  // The rolling counter grows by 1 per frame: a bigger step is missed frames
   uint8_t rollcnt = RxBuffer[6] & ROLL_CNT_MASK;
-  // calculate the difference between the internal sensor's roll counter and the roll counter
   uint8_t last_rollcnt = sensor->roll_cnt;
   uint8_t diff = (rollcnt - last_rollcnt + ROLL_CNT_MODULO) % ROLL_CNT_MODULO;
   if (diff > 1) {
-    sensor->err_packets_cnt += diff - 1; // We expect diff=1 usually (no lost packets)
+    sensor->err_packets_cnt += diff - 1;
   }
   sensor->roll_cnt = rollcnt;
 
-  // Check the checksum of the message
   if (RxBuffer[7] != calculate_crc(RxBuffer)) {
     sensor->err_packets_cnt++;
-    return WHEEL_ERROR; // CRC not valid
+    return WHEEL_ERROR;
   }
 
-  /* 		EXTRACTING THE DATA 		*/
-  // Extract and convert the angle to degrees
-  // Ref : datasheet page 20 + note at page 21
-  // alpha is 14 bit, it is shifted 2 times to get a 16 bit value
+  /* DATA */
+  // Ref: datasheet page 20 and the note on page 21
   sensor->reading = (((RxBuffer[1] & ALPHA_MSB_MASK) << 8) + RxBuffer[0])
       << ALPHA_TO_16BIT_SHIFT;
-  // Extract the error bits
   sensor->diagnostic_bits = RxBuffer[1] >> DIAGNOSTIC_SHIFT;
   return WHEEL_OK;
 }

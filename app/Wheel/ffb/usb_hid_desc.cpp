@@ -4,18 +4,17 @@
  *  Created on: 7 oct. 2026
  *      Author: raffi
  *
- *  The HID report descriptor of the wheel : the G29 input report followed by
- *  the 1-axis FFB reports of the ffb library.
- *  It has to be a C++ file : the HIDDESC_* macros of the library only work in
- *  C++, with the names of the ffb namespace in scope. The C code gets the
- *  result through usb_hid_desc.h
+ *  HID report descriptor of the wheel: the G29 input report, then the 1-axis
+ *  FFB reports of the ffb library.
+ *  C++ because the HIDDESC_* macros of the library need the ffb namespace.
+ *  The C code gets the array through usb_hid_desc.h
  */
 
-// first, so that the array gets its C linkage from the declaration
+// First, so that the array takes its C linkage from the declaration
 #include "usb_hid_desc.h"
 #include "ffb/ffb_descriptor.h"
 
-// the HIDDESC_* macros use the report ids of the library without the ffb::
+// The HIDDESC_* macros name the report ids of the library without ffb::
 using namespace ffb;
 
 // @formatter:off
@@ -94,7 +93,6 @@ const uint8_t hid_g29_desc_bytes[] = {
 };
 // @formatter:on
 
-// the host is told HID_G29_DESC_LEN in the configuration descriptor, so it has
-// to be the real size of the array
+// The configuration descriptor announces HID_G29_DESC_LEN to the host
 static_assert(sizeof(hid_g29_desc_bytes) == HID_G29_DESC_LEN,
     "HID_G29_DESC_LEN in usb_hid_desc.h does not match the descriptor");

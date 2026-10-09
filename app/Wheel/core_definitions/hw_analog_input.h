@@ -38,10 +38,11 @@ extern "C" {
 
 #include "common_types.h"
 
-#define ANALOG_INPUT_NUM 5 // number of analog inputs
-#define PEDALS_NUM 3 // number of pedals
-#define PEDALS_IDX 0 // index inside the axis array for the first pedal
-#define SHIFTER_IDX 3 // index inside the axis array for the shifter
+// Layout of Analog_HandleTypeDef.axis: the scan order of the ADC, set in main.c
+#define ANALOG_INPUT_NUM 5
+#define PEDALS_NUM 3
+#define PEDALS_IDX 0 // clutch, brake, throttle
+#define SHIFTER_IDX 3 // x, y
 
 typedef struct {
   ADC_HandleTypeDef *hadc;
@@ -51,14 +52,12 @@ typedef struct _Analog_HandleTypeDef {
   Wheel_Status (*INIT)(struct _Analog_HandleTypeDef *analog,
                        Analog_ConfigHandleTypeDef *config);
   Wheel_Status (*DeINIT)(struct _Analog_HandleTypeDef *analog);
-  // look up "CONTINUOUS DMA SCAN STM32"
   Wheel_Status (*Start_CONTINUOUS_SCAN_DMA)(struct _Analog_HandleTypeDef *analog);
   Wheel_Status (*Stop)(struct _Analog_HandleTypeDef *analog);
 
-  // Shouldn't be filled manually but instead by calling INIT
   Analog_ConfigHandleTypeDef Config;
-  // array where output will be stored
-  // written by: the ADC through DMA (hardware, all the time) | read by: SysTick (pedals, shifter)
+  // Raw conversions, 12 bits left-aligned in 16. Written by the ADC through DMA
+  // at any time, read in SysTick (pedals, shifter)
   volatile uint32_t axis[ANALOG_INPUT_NUM];
 
 } Analog_HandleTypeDef;
@@ -73,16 +72,13 @@ typedef struct _Pedals_HandleTypeDef {
   Wheel_Status (*DeINIT)(struct _Pedals_HandleTypeDef *analog);
   Wheel_Status (*GetState)(struct _Pedals_HandleTypeDef *analog);
 
-  // Shouldn't be filled manually but instead by calling INIT
   Pedals_ConfigHandleTypeDef Config;
-  // variables that are used to get the value of pedals after GetState
-  // written by: SysTick (GetState) | read by: main thread (wheel_get_input)
+  // 0 to 255. Written in SysTick (GetState), read in main (wheel_get_input)
   volatile uint8_t clutch;
   volatile uint8_t brake;
   volatile uint8_t throtle;
 } Pedals_HandleTypeDef;
 
-// the instances of this module, defined in hw_analog_input.c
 extern Analog_HandleTypeDef hAnalog;
 extern Pedals_HandleTypeDef hPedals;
 

@@ -20,7 +20,6 @@ static Wheel_Status Shifter_INIT(Shifter_HandleTypeDef *shifter,
   if (config == NULL) {
     return WHEEL_ERROR;
   }
-  // GetState() reads the pin of the modifier at every call
   if (config->hw_analog == NULL || config->modifier_port == NULL
       || config->modifier_pin == 0) {
     return WHEEL_ERROR;
@@ -34,15 +33,13 @@ static Wheel_Status Shifter_INIT(Shifter_HandleTypeDef *shifter,
   return WHEEL_OK;
 }
 
-// Forgets everything, the calibration included. hw_analog is left alone :
-// the pedals may still be using it (see Analog_DeINIT)
+// hw_analog keeps running: the pedals may still use it (see Analog_DeINIT)
 static Wheel_Status Shifter_DeINIT(Shifter_HandleTypeDef *shifter) {
   reset_state(shifter);
   memset(&shifter->Config, 0, sizeof(Shifter_ConfigHandleTypeDef));
   return WHEEL_OK;
 }
 
-// puts back everything the module computes, like after a power on
 static void reset_state(Shifter_HandleTypeDef *shifter) {
   shifter->gear = 0;
   memset(&shifter->min, 0, sizeof(Point));
@@ -50,7 +47,7 @@ static void reset_state(Shifter_HandleTypeDef *shifter) {
   memset(&shifter->current_pos, 0, sizeof(Point));
 }
 
-// this works just fine, it does
+// Finds the grid cell the lever is in and looks up its gear
 static Wheel_Status Shifter_getSpeed(Shifter_HandleTypeDef *shifter) {
   shifter->current_pos.x = shifter->Config.hw_analog->axis[SHIFTER_IDX];
   shifter->current_pos.y = shifter->Config.hw_analog->axis[SHIFTER_IDX + 1];
@@ -59,6 +56,7 @@ static Wheel_Status Shifter_getSpeed(Shifter_HandleTypeDef *shifter) {
   Point *max = &shifter->max;
   Point *current_pos = &shifter->current_pos;
 
+  // Clamp to the calibrated area (y decreases from min to max)
   if (current_pos->x < min->x) current_pos->x = min->x;
   if (current_pos->y > min->y) current_pos->y = min->y;
   if (current_pos->x > max->x) current_pos->x = max->x;
@@ -85,13 +83,16 @@ static Wheel_Status Shifter_getSpeed(Shifter_HandleTypeDef *shifter) {
   if (grid_location.y > SHIFTER_GRID_ROWS - 1)
     grid_location.y = SHIFTER_GRID_ROWS - 1;
 
+  // 0 is neutral. The last two columns are only reached with the modifier
+  // @formatter:off
   static const uint8_t speed_table[SHIFTER_GRID_ROWS][SHIFTER_GRID_COLS
       + SHIFTER_MODIFIER_COL_OFFSET] = {
-  /**/{2, 4, 6, 0, 7},/**/
-  /**/{0, 0, 0, 0, 0},/**/
-  /**/{0, 0, 0, 0, 0},/**/
-  /**/{1, 3, 5, 0, 0} /**/
+    {2, 4, 6, 0, 7},
+    {0, 0, 0, 0, 0},
+    {0, 0, 0, 0, 0},
+    {1, 3, 5, 0, 0}
   };
+  // @formatter:on
 
   if (HAL_GPIO_ReadPin(shifter->Config.modifier_port,
                        shifter->Config.modifier_pin)) {

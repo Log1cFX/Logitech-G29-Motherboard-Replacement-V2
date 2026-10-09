@@ -4,7 +4,7 @@
  *  Created on: 7 oct. 2026
  *      Author: raffi
  *
- *  The interface and the two phases of the watchdog are in watchdog.h
+ *  See watchdog.h for the interface and the two phases
  */
 
 #include "watchdog.h"
@@ -13,70 +13,61 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-/* 		SETTINGS 		*/
+/* SETTINGS */
 
-// timeout of the startup, the same one the bootloader starts the watchdog with
+// The timeout the bootloader starts the watchdog with
 #define WATCHDOG_STARTUP_TIMEOUT_MS 20000u
 
-// Timeout of the supervision. The PWM of the motor is made by a timer : a
-// firmware that is stuck keeps pushing with the last force, so keep it short.
-// The clock of the watchdog (LSI) isn't precise, it runs between 30 and 60 kHz :
-// the real timeout is between 2/3 and 3/2 of this value
+// Keep it short: the PWM of the motor comes from a timer, so a stuck firmware
+// keeps pushing with the last force. The clock of the watchdog (LSI) runs
+// between 30 and 60 kHz: the real timeout is 2/3 to 3/2 of this value
 #define WATCHDOG_SUPERVISION_TIMEOUT_MS 500u
 
-// time between two checks of the sources during the supervision
+// Period of the source checks during the supervision
 #define WATCHDOG_CHECK_PERIOD_MS 100u
 
-// the sources that have to check in between two checks
 #define WATCHDOG_REQUIRED_SOURCES (WATCHDOG_SOURCE_CONTROL_LOOP \
 		| WATCHDOG_SOURCE_SYSTICK | WATCHDOG_SOURCE_SENSOR)
 
-// Even with the shortest real timeout (2/3 of the value), one check has to be
-// able to fail without a reset : the next one must still arrive in time
+// One failed check must not reset the board: even with the shortest real
+// timeout (2/3), the next check still has to arrive in time
 #if (WATCHDOG_SUPERVISION_TIMEOUT_MS * 2u / 3u) < (2u * WATCHDOG_CHECK_PERIOD_MS)
 #error "WATCHDOG_SUPERVISION_TIMEOUT_MS is too short for WATCHDOG_CHECK_PERIOD_MS"
 #endif
 
-/* 		IWDG REGISTERS 		*/
+/* IWDG REGISTERS */
 
-// typical frequency of the LSI
-#define WATCHDOG_LSI_FREQ_HZ 40000u
-// values to write in the key register (IWDG->KR)
+#define WATCHDOG_LSI_FREQ_HZ 40000u // typical
+// Keys of IWDG->KR
 #define WATCHDOG_KEY_FEED 0xAAAAu
-#define WATCHDOG_KEY_UNLOCK 0x5555u
+#define WATCHDOG_KEY_UNLOCK 0x5555u // allows writing PR and RLR
 #define WATCHDOG_KEY_START 0xCCCCu
-// the divider of the LSI is 4 << prescaler, with a prescaler from 0 to 6
+// The LSI is divided by 4 << prescaler, with a prescaler from 0 to 6
 #define WATCHDOG_FIRST_DIVIDER 4u
 #define WATCHDOG_MAX_PRESCALER 6u
-// the counter is 12 bits wide
-#define WATCHDOG_MAX_COUNT 0x1000u
-// longest time given to the watchdog to take a new timeout into account
+#define WATCHDOG_MAX_COUNT 0x1000u // the counter is 12 bits wide
+// Longest wait for the watchdog to take a new prescaler and reload value
 #define WATCHDOG_REGISTER_UPDATE_TIMEOUT_MS 100u
 
-// One bit per source that checked in since the last check.
-// Written by every context (watchdog_checkin) : it is only read and written
-// with atomic operations, so no check-in can be lost
+// One bit per source that checked in since the last check. Written from every
+// context, only through atomic operations: no check-in can be lost
 static volatile uint32_t checked_in_sources;
-// time of the last check (HAL_GetTick), main thread only
-static uint32_t last_check_time;
-// false during the startup, true during the supervision. main thread only
-static bool supervising;
+static uint32_t last_check_time; // HAL_GetTick() of the last check, main only
+static bool supervising; // false during the startup, main only
 
 static void feed(void) {
-  // does nothing if the watchdog was never started
+  // No effect if the watchdog was never started
   IWDG->KR = WATCHDOG_KEY_FEED;
 }
 
-// number of LSI periods, after the divider, that fit in timeout_ms
+// LSI periods, after the divider, that fit in timeout_ms
 static uint32_t count_for(uint32_t timeout_ms, uint32_t divider) {
   return (timeout_ms * WATCHDOG_LSI_FREQ_HZ) / (divider * 1000u);
 }
 
-// Sets the timeout of the watchdog, then feeds it.
-// It also starts the watchdog if nobody did it yet
+// Sets the timeout and feeds. Starts the watchdog if it is not running yet
 static void set_timeout(uint32_t timeout_ms) {
-  // take the smallest divider whose count fits in the counter : it is the
-  // one that gives the most precise timeout
+  // The smallest divider whose count fits in the counter is the most precise
   uint32_t prescaler = 0u;
   uint32_t divider = WATCHDOG_FIRST_DIVIDER;
   uint32_t count = count_for(timeout_ms, divider);
@@ -92,16 +83,13 @@ static void set_timeout(uint32_t timeout_ms) {
     count = 1u;
   }
 
-  // starting a watchdog that already runs does nothing
-  IWDG->KR = WATCHDOG_KEY_START;
-  // the two registers below can't be written without this
+  IWDG->KR = WATCHDOG_KEY_START; // no effect if it already runs
   IWDG->KR = WATCHDOG_KEY_UNLOCK;
   IWDG->PR = prescaler;
   IWDG->RLR = count - 1u;
 
-  // The watchdog needs a few LSI periods to take the new values. If it takes
-  // too long, don't stay stuck here : it is fed anyway and the new values
-  // apply when they are ready
+  // The new values take a few LSI periods to apply. Do not wait forever: the
+  // watchdog is fed anyway and they apply when they are ready
   uint32_t start = HAL_GetTick();
   while (IWDG->SR != 0u
       && (HAL_GetTick() - start) <= WATCHDOG_REGISTER_UPDATE_TIMEOUT_MS) {}
@@ -117,7 +105,7 @@ void watchdog_init(void) {
 void watchdog_start_supervision(void) {
   set_timeout(WATCHDOG_SUPERVISION_TIMEOUT_MS);
   last_check_time = HAL_GetTick();
-  // forget what checked in during the startup
+  // Drop the check-ins of the startup
   (void)__atomic_exchange_n(&checked_in_sources, 0u, __ATOMIC_RELAXED);
   supervising = true;
 }
@@ -127,7 +115,6 @@ void watchdog_checkin(watchdog_source_t source) {
 }
 
 void watchdog_task(void) {
-  // startup : waiting is normal, feed every time
   if (!supervising) {
     feed();
     return;
@@ -139,12 +126,12 @@ void watchdog_task(void) {
   }
   last_check_time = current_time;
 
-  // read the sources and clear them for the next check in one step
+  // Read the sources and clear them for the next check, in one step
   uint32_t sources = __atomic_exchange_n(&checked_in_sources, 0u,
   __ATOMIC_RELAXED);
   if ((sources & WATCHDOG_REQUIRED_SOURCES) == WATCHDOG_REQUIRED_SOURCES) {
     feed();
   }
-  // otherwise the watchdog isn't fed : if a source stays silent until the
-  // timeout, the board resets and the bootloader takes over
+  // Not fed otherwise: if a source stays silent until the timeout, the board
+  // resets and the bootloader takes over
 }

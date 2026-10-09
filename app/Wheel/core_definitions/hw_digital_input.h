@@ -54,14 +54,12 @@ typedef struct _DigitalInput_HandleTypeDef {
   Wheel_Status (*DeINIT)(struct _DigitalInput_HandleTypeDef *buttons);
   Wheel_Status (*ReadState)(struct _DigitalInput_HandleTypeDef *buttons);
 
-  // Shouldn't be filled manually but instead by calling INIT
   DigitalInput_ConfigHandleTypeDef Config;
-  // the raw state of the read buttons
-  // written and read by the TIM3 interrupt only (ReadState, then the buttons' TIM_POLL_CB)
+  // One bit per button, not debounced. TIM3 interrupt only: written by
+  // ReadState, read by the TIM_POLL_CB of sw_buttons
   uint32_t buttons_state;
 } DigitalInput_HandleTypeDef;
 
-// the instance of this module, defined in hw_digital_input.c
 extern DigitalInput_HandleTypeDef hG29Buttons;
 
 #ifdef __cplusplus

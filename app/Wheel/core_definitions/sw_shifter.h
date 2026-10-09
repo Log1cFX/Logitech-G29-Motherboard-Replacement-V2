@@ -39,17 +39,18 @@ extern "C" {
 #include "common_types.h"
 #include "hw_analog_input.h"
 
-/* Default calibration (raw ADC values), set by INIT. */
+// Default calibration: two opposite corners of the travel, in raw ADC values.
+// y decreases from min to max
 #define SHIFTER_DEFAULT_MIN_X 10000
 #define SHIFTER_DEFAULT_MIN_Y 60000
 #define SHIFTER_DEFAULT_MAX_X 52000
 #define SHIFTER_DEFAULT_MAX_Y 0
 
-/* The shifter's travel is split into a grid, every cell is a gear or neutral */
+// The travel is split into a grid, each cell is a gear or neutral
 #define SHIFTER_GRID_COLS 3
 #define SHIFTER_GRID_ROWS 4
-// when the modifier is pressed the column is moved by this much,
-// to reach the extra columns of the gear table
+// Column shift applied while the modifier is pressed, to reach the extra
+// columns of the gear table
 #define SHIFTER_MODIFIER_COL_OFFSET 2
 
 typedef struct {
@@ -67,23 +68,20 @@ typedef struct _Shifter_HandleTypeDef {
   Wheel_Status (*INIT)(struct _Shifter_HandleTypeDef *shifter,
                        Shifter_ConfigHandleTypeDef *config);
   Wheel_Status (*DeINIT)(struct _Shifter_HandleTypeDef *shifter);
-  Wheel_Status (*GetState)(struct _Shifter_HandleTypeDef *shifter); // call this before reading gear
+  Wheel_Status (*GetState)(struct _Shifter_HandleTypeDef *shifter); // refreshes gear
 
-  // Shouldn't be filled manually but instead by calling INIT
   Shifter_ConfigHandleTypeDef Config;
-  // value indicating current gear from 0 to 7 where 0 is no gear
-  // written by: SysTick (GetState) | read by: main thread (wheel_get_input)
+  // 0 (no gear) to 7. Written in SysTick (GetState), read in main (wheel_get_input)
   volatile uint8_t gear;
-  // values used for calibration, can be filled manually after calling INIT
-  // written by: INIT (main thread, before SysTick uses the shifter) | read by: SysTick (GetState)
+  // Calibration, set to the defaults by INIT and free to change afterwards.
+  // Written in main before SysTick uses the shifter, read in SysTick (GetState)
   Point min;
   Point max;
 
-  /* THIS IS IMPLEMENTATION SPECIFIC AND ONLY USED INSIDE THE SOURCE FILE */
+  /* PRIVATE */
   Point current_pos; // SysTick only
 } Shifter_HandleTypeDef;
 
-// the instance of this module, defined in sw_shifter.c
 extern Shifter_HandleTypeDef hShifter;
 
 #ifdef __cplusplus

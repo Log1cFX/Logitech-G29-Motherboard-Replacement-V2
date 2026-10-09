@@ -30,25 +30,21 @@
 extern "C" {
 #endif
 
-//--------------------------------------------------------------------+
-// Board Specific Configuration
-//--------------------------------------------------------------------+
+/* BOARD */
 
+// Input report without its report id, see HIDDESC_G29_TEMPLATE (ffb_descriptor.h)
 #define REPORT_SIZE (10 - 1)
 
-// RHPort number used for device can be defined by board.mk, default to port 0
+// Root hub port used by the device stack
 #ifndef BOARD_TUD_RHPORT
 #define BOARD_TUD_RHPORT      0
 #endif
 
-// RHPort max operational speed can defined by board.mk
 #ifndef BOARD_TUD_MAX_SPEED
 #define BOARD_TUD_MAX_SPEED   OPT_MODE_FULL_SPEED
 #endif
 
-//--------------------------------------------------------------------
-// COMMON CONFIGURATION
-//--------------------------------------------------------------------
+/* COMMON */
 
 #define CFG_TUSB_MCU OPT_MCU_STM32F1
 
@@ -60,19 +56,13 @@ extern "C" {
 #define CFG_TUSB_DEBUG        0
 #endif
 
-// Enable Device stack
-#define CFG_TUD_ENABLED       1
+#define CFG_TUD_ENABLED       1 // device stack
 
-// Default is max speed that hardware controller could support with on-chip PHY
 #define CFG_TUD_MAX_SPEED     BOARD_TUD_MAX_SPEED
 
-/* USB DMA on some MCUs can only access a specific SRAM region with restriction on alignment.
- * Tinyusb use follows macros to declare transferring memory so that they can be put
- * into those specific section.
- * e.g
- * - CFG_TUSB_MEM SECTION : __attribute__ (( section(".usb_ram") ))
- * - CFG_TUSB_MEM_ALIGN   : __attribute__ ((aligned(4)))
- */
+// Section and alignment of the transfer buffers of TinyUSB: on some MCUs the
+// USB DMA only reaches a specific SRAM region, with an alignment constraint.
+// e.g. CFG_TUSB_MEM_SECTION: __attribute__ (( section(".usb_ram") ))
 #ifndef CFG_TUSB_MEM_SECTION
 #define CFG_TUSB_MEM_SECTION
 #endif
@@ -81,22 +71,20 @@ extern "C" {
 #define CFG_TUSB_MEM_ALIGN        __attribute__ ((aligned(4)))
 #endif
 
-//--------------------------------------------------------------------
-// DEVICE CONFIGURATION
-//--------------------------------------------------------------------
+/* DEVICE */
 
 #ifndef CFG_TUD_ENDPOINT0_SIZE
 #define CFG_TUD_ENDPOINT0_SIZE    64
 #endif
 
-//------------- CLASS -------------//
+// Classes
 #define CFG_TUD_HID               1
 #define CFG_TUD_CDC               0
 #define CFG_TUD_MSC               0
 #define CFG_TUD_MIDI              0
 #define CFG_TUD_VENDOR            0
 
-// HID buffer size Should be sufficient to hold ID (if any) + Data
+// Has to hold the biggest report, with its id
 #define CFG_TUD_HID_EP_BUFSIZE    64
 
 #ifdef __cplusplus

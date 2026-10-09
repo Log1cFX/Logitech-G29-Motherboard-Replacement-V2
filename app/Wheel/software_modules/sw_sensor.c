@@ -1,5 +1,5 @@
 /*
- * sw_magnetometer.c
+ * sw_sensor.c
  *
  *  Created on: Aug 4, 2025
  *      Author: raffi
@@ -7,13 +7,12 @@
 
 #include "sw_sensor.h"
 
-/* The capture is a 16 bit value that wraps around once per revolution of the magnet */
-#define SENSOR_CAPTURE_MAX 65535.0f // highest capture value
-#define SENSOR_COUNTS_PER_REV 65536 // number of capture values in one revolution
-// a jump bigger than this between two captures means that the capture wrapped around
+// The capture is 16 bits and wraps once per turn of the magnet
+#define SENSOR_CAPTURE_MAX 65535.0f
+#define SENSOR_COUNTS_PER_REV 65536
+// A bigger jump between two captures means that the capture wrapped
 #define SENSOR_HALF_REV 32767
-// number of captures ignored at startup before counting revolutions,
-// because the previous capture isn't valid yet
+// Captures ignored at startup, while the previous capture is not valid yet
 #define SENSOR_SETTLING_SAMPLES 2
 
 static Wheel_Status Sensor_INIT(Sensor_HandleTypeDef *sensor,
@@ -38,22 +37,20 @@ static Wheel_Status Sensor_INIT(Sensor_HandleTypeDef *sensor,
     return WHEEL_ERROR;
   }
   memcpy(&sensor->Config, config, sizeof(Sensor_ConfigHandleTypeDef));
-  // the calibration of a previous use must not be kept : it starts from
-  // min and max to find the new ends
+  // A calibration starts from min and max: those of a previous use must go
   reset_state(sensor);
   sensor->start_settling_cnt = SENSOR_SETTLING_SAMPLES;
   sensor->axis_scale = 1.0f;
   return WHEEL_OK;
 }
 
-// Deinitializes the magnetometer (this module is the only one that uses it),
-// which stops the poll, and forgets everything, the calibration included.
-// Can be called on a module that is not initialized, it does nothing then
+// Also deinitializes the magnetometer, which stops the poll: this module is
+// its only user. Safe on a module that is not initialized
 static Wheel_Status Sensor_DeINIT(Sensor_HandleTypeDef *sensor) {
   Magnetometer_HandleTypeDef *hw_magnetometer = sensor->Config.hw_magnetometer;
   Wheel_Status ret = WHEEL_OK;
-  // the magnetometer goes first : once it is stopped, Update() isn't called
-  // anymore and the values below can be cleared
+  // Magnetometer first: once it is stopped, Update() no longer runs and the
+  // values below can be cleared
   if (hw_magnetometer != NULL) {
     ret |= hw_magnetometer->DeINIT(hw_magnetometer);
   }
@@ -62,8 +59,7 @@ static Wheel_Status Sensor_DeINIT(Sensor_HandleTypeDef *sensor) {
   return ret;
 }
 
-// puts back everything the module computes, like after a power on.
-// Only to call when the magnetometer isn't polled
+// Only call when the magnetometer is not polled
 static void reset_state(Sensor_HandleTypeDef *sensor) {
   sensor->virtual_axis = 0;
   sensor->steering_pos = 0;
@@ -89,6 +85,7 @@ static Wheel_Status Sensor_Update(Sensor_HandleTypeDef *sensor) {
   return WHEEL_OK;
 }
 
+// Maps steering_pos from [min, max] to the full int16 range, clamped at both ends
 static Wheel_Status Sensor_GetAxis(Sensor_HandleTypeDef *sensor) {
   get_steering_pos(sensor);
   uint16_t distance = sensor->max - sensor->min;
@@ -117,11 +114,11 @@ static Wheel_Status Sensor_GetAxis(Sensor_HandleTypeDef *sensor) {
   return WHEEL_OK;
 }
 
-/* Conversion coefficient: one full magnetic revolution -> roll_to_axis units */
+// steering_pos units per turn of the magnet
 static const float roll_to_axis_coef = 1560.3571f;
 
-// Calculate full revolutions by comparing current vs previous 16-bit capture,
-// using half-range threshold (SENSOR_HALF_REV) for unwrap logic.
+// Counts the turns of the magnet: a jump of more than half a turn between two
+// captures is a wrap
 static inline void calculate_magnet_rotations(Sensor_HandleTypeDef *sensor) {
   uint16_t cur = sensor->current_sensor_capture;
   uint16_t prev = sensor->previous_sensor_capture;
