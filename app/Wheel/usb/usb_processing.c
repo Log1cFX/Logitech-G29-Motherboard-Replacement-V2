@@ -6,7 +6,9 @@
  *
  *  The core of the USB module: the state machine, the two mailboxes, and the
  *  only place of the firmware that sends reports to the host.
- *  See usb_processing.h for the interface and the states
+ *  See usb_processing.h for the interface and the states.
+ *  The file link has its own buffer and rules in usb_msg.c: here its blocks
+ *  are only handed to TinyUSB
  */
 
 #include "usb_internal.h"
@@ -92,7 +94,7 @@ static uint8_t hat_switch_from_msb(uint8_t byte) {
     {6, 8, 2},
     {5, 4, 3}
   };
-    // @formatter:on
+      // @formatter:on
   return hat_table[dpadY + 1][dpadX + 1];
 }
 
@@ -122,6 +124,8 @@ static bool send_input_report(void) {
 // them is called when the bus is reset (the host enumerating again, or the
 // cable plugged back in)
 static void update_state(void) {
+  usb_state_t previous = usb.state;
+
   if (!tud_mounted()) {
     usb.state = USB_DETACHED;
   } else if (tud_suspended()) {
@@ -131,32 +135,16 @@ static void update_state(void) {
     // report before it is counted on
     usb.state = USB_WAIT_HOST;
   }
-}
 
-void usb_init(ffb_lib_t *ffb, void (*custom_task)(usb_state_t *state)) {
-  memset(&usb, 0, sizeof(usb));
-  usb.state = USB_DETACHED;
-  usb.ffb = ffb;
-  usb.custom_task = custom_task;
-  ffb_set_send_report_callback(ffb, queue_ffb_report);
-
-  init_peripheral();
-  tusb_rhport_init_t dev_init = {.role = TUSB_ROLE_DEVICE};
-  tusb_init(BOARD_TUD_RHPORT, &dev_init);
-}
-
-void usb_task(void) {
-  // Handles what the host sent since the last call. The callbacks of
-  // usb_callbacks.c all run inside this call
-  tud_task();
-
-  update_state();
-
-  void (*custom_task)(usb_state_t *state) = usb.custom_task;
-  if (custom_task != NULL) {
-    custom_task(&usb.state);
+  // The bus left the configured state: the file link has nobody to talk to
+  if (usb.state != previous && (usb.state == USB_DETACHED
+      || usb.state == USB_SUSPENDED)) {
+    usb_msg_link_down();
   }
+}
 
+// One report of the wheel per call, when its endpoint is free
+static void send_wheel_report(void) {
   // Not configured, suspended, or the last report is not read yet
   if (!tud_hid_ready()) {
     return;
@@ -185,6 +173,49 @@ void usb_task(void) {
   default:
     break;
   }
+}
+
+// One block of the file link per call, when its endpoint is free. The link
+// does not wait for USB_READY: it has its own handshake (usb_msg.c)
+static void send_file_block(void) {
+  uint32_t now = HAL_GetTick();
+  usb_msg_task(now);
+
+  uint8_t block[USB_MSG_BLOCK_SIZE];
+  // Id 0: the interface has no report id
+  if (tud_hid_n_ready(USB_HID_FILES) && usb_msg_next_block(block)
+      && tud_hid_n_report(USB_HID_FILES, 0, block, sizeof(block))) {
+    usb_msg_block_sent(now);
+  }
+}
+
+void usb_init(ffb_lib_t *ffb, void (*custom_task)(usb_state_t *state)) {
+  memset(&usb, 0, sizeof(usb));
+  usb.state = USB_DETACHED;
+  usb.ffb = ffb;
+  usb.custom_task = custom_task;
+  ffb_set_send_report_callback(ffb, queue_ffb_report);
+  usb_msg_init();
+
+  init_peripheral();
+  tusb_rhport_init_t dev_init = {.role = TUSB_ROLE_DEVICE};
+  tusb_init(BOARD_TUD_RHPORT, &dev_init);
+}
+
+void usb_task(void) {
+  // Handles what the host sent since the last call. The callbacks of
+  // usb_callbacks.c all run inside this call
+  tud_task();
+
+  update_state();
+
+  void (*custom_task)(usb_state_t *state) = usb.custom_task;
+  if (custom_task != NULL) {
+    custom_task(&usb.state);
+  }
+
+  send_wheel_report();
+  send_file_block();
 }
 
 usb_state_t usb_state(void) {

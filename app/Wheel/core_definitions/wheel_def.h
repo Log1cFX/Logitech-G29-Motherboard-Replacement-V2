@@ -56,8 +56,9 @@
  *   6       | TIM3                  | buttons TIM_POLL_CB
  *   6       | SysTick               | wheel_get_all_component_states
  *   10      | DMA1 ch1 (ADC)        | nothing: the ADC fills hAnalog.axis by itself
- *   -       | main                  | usb_task (USB, and the ffb library on host
- *           |                       | reports), calibration, control loop
+ *   -       | main                  | usb_task (USB, the ffb library on host
+ *           |                       | reports, the file link of usb_msg.h),
+ *           |                       | calibration, control loop
  *
  * The priorities are set in main.c, stm32f1xx_hal_msp.c, stm32f1xx_hal_conf.h
  * (TICK_INT_PRIORITY) and usb_processing.c. Update this table when they change.
@@ -86,12 +87,19 @@ extern "C" {
 #define CONSTRAINED_ROTATION_DEG (MAX_ROTATION_DEG - (ENDSTOP_DEG_OFFSET * 2))
 
 /* CALIBRATION */
+// 1: for a board on the bench, without its motor and its sensor. The startup
+// skips the calibration and the recentering, which never succeed there, and
+// the watchdog stays in its startup phase: no sensor frame would ever check in
+// (see watchdog.h). The steering axis stays at 0.
+// 0 on a wheel: without the calibration it does not know where its ends are
+#define WHEEL_SKIP_CALIBRATION 1
+
 #define CALIBRATION_FORCE 135 // out of MOTOR_MAX_FORCE
 
 #ifdef DEBUG
 #define CALIBRATION_MAX_TRIES 3
 #else
-	#define CALIBRATION_MAX_TRIES 250
+#define CALIBRATION_MAX_TRIES 250
 #endif
 
 #define CALIBRATION_RETRY_DELAY_MS 2000
@@ -148,7 +156,7 @@ typedef struct {
   Shifter_HandleTypeDef *hShifter;
   MotorDriver_HandleTypeDef *hMotorDriver;
   Actuator_HandleTypeDef *hActuator;
-} Wheel_HandleTypeDef;
+}Wheel_HandleTypeDef;
 
 extern Wheel_HandleTypeDef wheel;
 

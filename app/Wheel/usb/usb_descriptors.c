@@ -23,8 +23,9 @@
  *
  */
 
-#include "tusb.h"
+#include "usb_internal.h"
 #include "usb_hid_desc.h"
+#include <assert.h>
 #include <string.h>
 
 // The descriptors of the device and the TinyUSB callbacks that return them.
@@ -50,7 +51,7 @@ static tusb_desc_device_t const desc_device = {
 
     .idVendor =  USB_VID,
     .idProduct = USB_PID,
-    .bcdDevice = 0x0100,
+    .bcdDevice = 0x0101,
 
     .iManufacturer = 0x01,
     .iProduct =      0x02,
@@ -64,40 +65,55 @@ tud_descriptor_device_cb(void) {
   return (uint8_t const*)&desc_device;
 }
 
-/* HID REPORT DESCRIPTOR */
+/* HID REPORT DESCRIPTORS */
+
+static_assert(USB_MSG_BLOCK_SIZE == CFG_TUD_HID_EP_BUFSIZE,
+    "a block of the file link has to fill its endpoint");
+
+// The file link: USB_MSG_BLOCK_SIZE bytes each way, no report id, on the
+// vendor usage page 0xFF00. The application of the PC finds the interface by
+// this usage page
+static uint8_t const desc_files_report[] = {TUD_HID_REPORT_DESC_GENERIC_INOUT(
+    USB_MSG_BLOCK_SIZE)};
 
 uint8_t const*
 tud_hid_descriptor_report_cb(uint8_t instance) {
-  (void)instance;
-  return hid_g29_desc_bytes;
+  return (instance == USB_HID_FILES) ? desc_files_report : hid_g29_desc_bytes;
 }
 
 /* CONFIGURATION DESCRIPTOR */
 
+// The order gives the HID instances: USB_HID_WHEEL, then USB_HID_FILES
 enum {
-  ITF_NUM_HID = 0, ITF_NUM_TOTAL
+  ITF_NUM_HID = 0, ITF_NUM_FILES, ITF_NUM_TOTAL
 };
 
 // FFB needs both endpoints, hence TUD_HID_INOUT_DESCRIPTOR below and not the
 // IN-only TUD_HID_DESCRIPTOR
 #define EPNUM_HID_OUT   0x01 // host -> device: effects
 #define EPNUM_HID_IN    0x81 // device -> host: input and PID state reports
+#define EPNUM_FILES_OUT 0x02 // host -> device: blocks of the file link
+#define EPNUM_FILES_IN  0x82 // device -> host: blocks of the file link
 
 #define FFB_HID_REPORT_DESC_LEN   HID_G29_DESC_LEN
 
-#define CONFIG_TOTAL_LEN   (TUD_CONFIG_DESC_LEN + TUD_HID_INOUT_DESC_LEN)
+#define CONFIG_TOTAL_LEN   (TUD_CONFIG_DESC_LEN + 2 * TUD_HID_INOUT_DESC_LEN)
 
 uint8_t const desc_configuration[] = {
 // Config number, interface count, string index, total length, attributes,
 // power in mA
-    TUD_CONFIG_DESCRIPTOR(1, 1, 0, CONFIG_TOTAL_LEN,
+    TUD_CONFIG_DESCRIPTOR(1, ITF_NUM_TOTAL, 0, CONFIG_TOTAL_LEN,
                           TUSB_DESC_CONFIG_ATT_REMOTE_WAKEUP, 100),
 
     // Interface number, string index, boot protocol, report descriptor length,
     // EP OUT address, EP IN address, EP size, polling interval (1 ms = 1000 Hz)
     TUD_HID_INOUT_DESCRIPTOR(ITF_NUM_HID, 0, HID_ITF_PROTOCOL_NONE,
                              FFB_HID_REPORT_DESC_LEN, EPNUM_HID_OUT, EPNUM_HID_IN,
-                             CFG_TUD_HID_EP_BUFSIZE, 1)};
+                             CFG_TUD_HID_EP_BUFSIZE, 1),
+
+    TUD_HID_INOUT_DESCRIPTOR(ITF_NUM_FILES, 0, HID_ITF_PROTOCOL_NONE,
+                             sizeof(desc_files_report), EPNUM_FILES_OUT,
+                             EPNUM_FILES_IN, CFG_TUD_HID_EP_BUFSIZE, 1)};
 
 uint8_t const*
 tud_descriptor_configuration_cb(uint8_t index) {

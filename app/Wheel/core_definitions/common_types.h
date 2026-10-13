@@ -46,7 +46,7 @@ extern "C" {
 #ifdef DEBUG
 #define DBG(...)  printf(__VA_ARGS__)
 #else
-  #define DBG(...)  ((void)0)
+#define DBG(...)  ((void)0)
 #endif
 
 typedef enum {

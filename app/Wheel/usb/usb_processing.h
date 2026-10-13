@@ -12,6 +12,9 @@
  *
  *  It knows nothing of the wheel modules: it gets a copy of the controls to
  *  send (wheel_input_t) and the ffb library to hand the host's reports to.
+ *
+ *  A second HID interface exchanges files with an application of the host:
+ *  see usb_msg.h. It also runs inside usb_task().
  */
 
 #ifndef USB_USB_PROCESSING_H_
@@ -35,7 +38,7 @@ typedef enum {
   // The bus is suspended: the host sleeps. An unplugged cable also ends up
   // here, the board cannot tell the difference
   USB_SUSPENDED
-} usb_state_t;
+}usb_state_t;
 
 // Sets up the USB peripheral and starts TinyUSB. Call once, with the ffb
 // library already created. custom_task is optional: every usb_task() calls it

@@ -10,6 +10,7 @@
 
 #include "wheel_def.h"
 #include "usb_processing.h"
+#include "usb_msg.h"
 #include "watchdog.h"
 #include "ffb/ffb_c.h"
 #include "ffb/ffb_metrics_c.h"
@@ -18,6 +19,10 @@
 #include <stdlib.h>
 
 #define MICROS_PER_MS 1000
+
+#if WHEEL_SKIP_CALIBRATION
+#warning "WHEEL_SKIP_CALIBRATION is 1: build for the bench, not for a wheel"
+#endif
 
 Wheel_HandleTypeDef wheel; // who uses what: see wheel_def.h
 // Main only: the control loop, and the USB module when the host sends something
@@ -34,6 +39,7 @@ static void wheel_delay(uint32_t ms);
 static void wheel_get_input(wheel_input_t *input);
 static bool tick();
 static void control_loop_step();
+static void echo_files();
 #ifndef DEBUG
 static void usb_custom_task(usb_state_t *state);
 #endif
@@ -74,8 +80,8 @@ void wheel_startup() {
 #ifdef DEBUG
   usb_init(hFFB, NULL);
 #else
-	watchdog_init();
-	usb_init(hFFB, usb_custom_task);
+  watchdog_init();
+  usb_init(hFFB, usb_custom_task);
 #endif
   while (usb_state() != USB_READY) {
     usb_task();
@@ -84,15 +90,17 @@ void wheel_startup() {
   /* CALIBRATION */
   // Retried until it succeeds. Errors are reported once CALIBRATION_MAX_TRIES
   // is reached
-  uint8_t calibration_tries = 0;
-  while (wheel_axis_calibration() == WHEEL_ERROR) {
-    wheel_delay(CALIBRATION_RETRY_DELAY_MS);
-    calibration_tries++;
-    if (calibration_tries >= CALIBRATION_MAX_TRIES) {
-      register_initialization_error();
+  if (!WHEEL_SKIP_CALIBRATION) {
+    uint8_t calibration_tries = 0;
+    while (wheel_axis_calibration() == WHEEL_ERROR) {
+      wheel_delay(CALIBRATION_RETRY_DELAY_MS);
+      calibration_tries++;
+      if (calibration_tries >= CALIBRATION_MAX_TRIES) {
+        register_initialization_error();
+      }
     }
+    wheel_recenter();
   }
-  wheel_recenter();
 
   /* FORCE FEEDBACK */
   metrics = create_metrics_helper();
@@ -100,7 +108,10 @@ void wheel_startup() {
   init_filter_preset();
 
 #ifndef DEBUG
-	watchdog_start_supervision();
+  // Not on a board without its sensor: see WHEEL_SKIP_CALIBRATION
+  if (!WHEEL_SKIP_CALIBRATION) {
+    watchdog_start_supervision();
+  }
 #endif
   last_control_time = HAL_GetTick();
 }
@@ -109,8 +120,27 @@ void wheel_startup() {
 
 void wheel_task() {
   usb_task();
+  echo_files();
   if (tick()) {
     control_loop_step();
+  }
+}
+
+// TEMPORARY, to test the file link until a real user of it exists: sends each
+// file of the PC back. A file is only removed once its copy is stored
+static void echo_files() {
+  const wheel_file_t *file = usb_msg_peek();
+  if (file == NULL) {
+    return;
+  }
+  const wheel_file_header_t *header = &file->header;
+  // A file and its copy are both in the buffer for a moment: one that takes
+  // more than half of it can never be sent back
+  bool too_big = WHEEL_FILE_TOTAL_SIZE(header->size) + 4 > USB_MSG_BUFFER_SIZE / 2;
+  if (too_big || usb_msg_send(header->type, header->version, file->content,
+                              header->size)
+                 == USB_MSG_OK) {
+    usb_msg_pop();
   }
 }
 
@@ -217,8 +247,8 @@ static bool tick() {
 #ifndef DEBUG
 // Called by every usb_task(). The only place that feeds the watchdog
 static void usb_custom_task(usb_state_t *state) {
-	UNUSED(state);
-	watchdog_task();
+  UNUSED(state);
+  watchdog_task();
 }
 #endif
 
@@ -226,7 +256,7 @@ static void register_initialization_error() {
 #ifdef DEBUG
   Error_Handler();
 #else
-	wheel.wheel_error_count++;
+  wheel.wheel_error_count++;
 #endif
 }
 

@@ -23,7 +23,7 @@ extern "C" {
 // Stored in one byte. 0x00 and 0xFF are never a type: cleared and erased memory
 typedef enum {
   WHEEL_FILE_SETTINGS = 1, // wheel_file_settings_t
-  WHEEL_FILE_DUMP = 2
+  WHEEL_FILE_DUMP = 2 // not defined yet
 } wheel_file_type_t;
 
 /*
@@ -37,23 +37,48 @@ typedef struct {
   uint8_t type; // wheel_file_type_t
   uint8_t version; // of the layout of the content, one numbering per type
   uint16_t size; // of the content in bytes, without its padding
-  uint32_t crc;
+  uint32_t crc; // see CRC above
 } wheel_file_header_t;
 
 // The content follows the header: it has to start on a multiple of 4 bytes
 static_assert(sizeof(wheel_file_header_t) == 8, "wheel_file_header_t is not 8 bytes");
 
-// A file in RAM. content is not stored: it points to the bytes that follow the
-// header (in flash, in a message of the host) or to the struct of the caller
+// A file where it lies: a flash page, the buffer of the USB module. The
+// address of its first byte, a multiple of 4, is cast to a wheel_file_t*.
+// content holds header.size bytes, then zeros up to a multiple of 4 bytes
 typedef struct {
   wheel_file_header_t header;
-  const void *content;
+  uint8_t content[];
 } wheel_file_t;
 
 // Size of a content with its padding, then of the whole file
 #define WHEEL_FILE_PADDED_SIZE(size) (((size) + 3u) & ~3u)
 #define WHEEL_FILE_TOTAL_SIZE(size) \
   (sizeof(wheel_file_header_t) + WHEEL_FILE_PADDED_SIZE(size))
+
+/* HELPERS */
+// In wheel_file.c. Main only: they share the CRC unit of the MCU
+// What wheel_file_check() found
+typedef enum {
+  WHEEL_FILE_OK,
+  WHEEL_FILE_BAD_CRC,
+  WHEEL_FILE_UNKNOWN_TYPE,
+  WHEEL_FILE_BAD_VERSION,
+  WHEEL_FILE_BAD_SIZE // not the size of the struct of its type
+} wheel_file_status_t;
+
+// CRC of a file, computed as described above. Reads header.size bytes of
+// content: the caller makes sure they are there (a flash page, a buffer)
+uint32_t wheel_file_crc(const wheel_file_t *file);
+
+// Builds a file at file, which needs WHEEL_FILE_TOTAL_SIZE(size) bytes: the
+// header with its CRC, a copy of the content, the padding
+void wheel_file_make(wheel_file_t *file, uint8_t type, uint8_t version,
+                     const void *content, uint16_t size);
+
+// The one place that knows what a valid file is: its CRC, then the rules of
+// its type. A content can be cast to its struct once this returns WHEEL_FILE_OK
+wheel_file_status_t wheel_file_check(const wheel_file_t *file);
 
 #ifdef __cplusplus
 }
