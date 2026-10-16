@@ -27,6 +27,9 @@
  *
  *  Created on: Aug 1, 2025
  *      Author: raffi
+ *
+ *  Interface of a set of buttons read in series. The one of the wheel:
+ *  hw_g29_buttons.h
  */
 
 #ifndef CORE_DEFINITIONS_HW_DIGITAL_INPUT_H_
@@ -59,8 +62,6 @@ typedef struct _DigitalInput_HandleTypeDef {
   // ReadState, read by the TIM_POLL_CB of sw_buttons
   uint32_t buttons_state;
 } DigitalInput_HandleTypeDef;
-
-extern DigitalInput_HandleTypeDef hG29Buttons;
 
 #ifdef __cplusplus
 }

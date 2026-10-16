@@ -1,22 +1,22 @@
 /*
- * hw_digital_input.c
+ * hw_g29_buttons.c
  *
  *  Created on: Aug 1, 2025
  *      Author: raffi
  */
 
-#include "hw_digital_input.h"
+#include "hw_g29_buttons.h"
 
-static Wheel_Status DigitalInput_INIT(DigitalInput_HandleTypeDef *buttons,
-                                      DigitalInput_ConfigHandleTypeDef *config);
-static Wheel_Status DigitalInput_DeINIT(DigitalInput_HandleTypeDef *buttons);
-static Wheel_Status DigitalInput_ReadState(DigitalInput_HandleTypeDef *buttons);
+static Wheel_Status G29Buttons_INIT(DigitalInput_HandleTypeDef *buttons,
+                                    DigitalInput_ConfigHandleTypeDef *config);
+static Wheel_Status G29Buttons_DeINIT(DigitalInput_HandleTypeDef *buttons);
+static Wheel_Status G29Buttons_ReadState(DigitalInput_HandleTypeDef *buttons);
 
-DigitalInput_HandleTypeDef hG29Buttons = {DigitalInput_INIT, DigitalInput_DeINIT,
-    DigitalInput_ReadState};
+DigitalInput_HandleTypeDef hG29Buttons = {G29Buttons_INIT, G29Buttons_DeINIT,
+    G29Buttons_ReadState};
 
-static Wheel_Status DigitalInput_INIT(DigitalInput_HandleTypeDef *buttons,
-                                      DigitalInput_ConfigHandleTypeDef *config) {
+static Wheel_Status G29Buttons_INIT(DigitalInput_HandleTypeDef *buttons,
+                                    DigitalInput_ConfigHandleTypeDef *config) {
   if (config == NULL) {
     return WHEEL_ERROR;
   }
@@ -31,16 +31,16 @@ static Wheel_Status DigitalInput_INIT(DigitalInput_HandleTypeDef *buttons,
 
 // Nothing to stop here. ReadState() must not be called afterwards: sw_buttons
 // stops its poll timer before it calls this
-static Wheel_Status DigitalInput_DeINIT(DigitalInput_HandleTypeDef *buttons) {
+static Wheel_Status G29Buttons_DeINIT(DigitalInput_HandleTypeDef *buttons) {
   buttons->buttons_state = 0;
   memset(&buttons->Config, 0, sizeof(DigitalInput_ConfigHandleTypeDef));
   return WHEEL_OK;
 }
 
 // Locks the state of the buttons, then reads one button per clock pulse
-static Wheel_Status DigitalInput_ReadState(DigitalInput_HandleTypeDef *buttons) {
+static Wheel_Status G29Buttons_ReadState(DigitalInput_HandleTypeDef *buttons) {
   buttons->buttons_state = 0;
-  DigitalInput_ConfigHandleTypeDef *config = &buttons->Config;
+DigitalInput_ConfigHandleTypeDef *config = &buttons->Config;
   HAL_GPIO_WritePin(config->buttons_port, config->clk_pin, 0);
   HAL_GPIO_WritePin(config->buttons_port, config->lock_pin, 1);
   for (uint8_t i = 0; i < BUTTONS_NUM; i++) {

@@ -27,6 +27,8 @@
  *
  *  Created on: Sep 22, 2024
  *      Author: raffi
+ *
+ *  Interface of a magnetometer. The one of the wheel: hw_mlx90363.h
  */
 
 #ifndef CORE_DEFINITIONS_HW_MAGNETOMETER_H_
@@ -80,8 +82,6 @@ typedef struct _Magnetometer_HandleTypeDef {
   uint8_t diagnostic_bits;
   uint8_t roll_cnt;
 } Magnetometer_HandleTypeDef;
-
-extern Magnetometer_HandleTypeDef hmlx90363;
 
 #ifdef __cplusplus
 }

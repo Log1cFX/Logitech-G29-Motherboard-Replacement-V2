@@ -27,6 +27,8 @@
  *
  *  Created on: Dec 28, 2025
  *      Author: raffi
+ *
+ *  Interface of a motor driver. The one of the wheel: hw_bts7960.h
  */
 
 #ifndef CORE_DEFINITIONS_HW_MOTOR_DRIVER_H_
@@ -65,7 +67,5 @@ typedef struct _MotorDriver_HandleTypeDef {
   uint8_t motors_enabled; // main only, like the whole module
 
 } MotorDriver_HandleTypeDef;
-
-extern MotorDriver_HandleTypeDef hMotorDriver;
 
 #endif /* CORE_DEFINITIONS_HW_MOTOR_DRIVER_H_ */

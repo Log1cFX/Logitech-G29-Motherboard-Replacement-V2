@@ -1,5 +1,5 @@
 /*
- * hw_magnetometer.c
+ * hw_mlx90363.c
  *
  *  Created on: Sep 22, 2024
  *      Author: raffi
@@ -12,7 +12,7 @@
  *  NTT messages from the sensor may come from a timing issue
  */
 
-#include "hw_magnetometer.h"
+#include "hw_mlx90363.h"
 
 // The datasheet gives the NOP opcode twice: 0x10 in the opcode table and
 // 1101 0000 (0xD0) in Table 23. NOP_OPCODE uses the second

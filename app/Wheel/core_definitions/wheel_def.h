@@ -40,6 +40,11 @@
  * hw_* modules deal with the hardware, sw_* modules turn their output into the
  * values the wheel uses. Calls go through the function pointers, so that an
  * implementation can be swapped without touching its users.
+ * A header of hw_* is an interface. A part that implements it is named after
+ * itself: its file, its functions and its handle, declared in its own header
+ * (hw_mlx90363.c, MLX90363_INIT, hmlx90363 in hw_mlx90363.h). Only
+ * wheel_init.h names the parts. hw_analog_input, the ADC of the MCU, is no
+ * part of its own: its handles stay in its header.
  * Config is copied by INIT and cleared by DeINIT, never written directly.
  * The peripherals themselves are set up by the CubeMX code of main.c.
  *

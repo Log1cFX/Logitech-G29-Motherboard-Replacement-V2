@@ -1,27 +1,27 @@
 /*
- * hw_motor_driver.c
+ * hw_bts7960.c
  *
  *  Created on: Dec 28, 2025
  *      Author: raffi
  */
 
-#include "hw_motor_driver.h"
+#include "hw_bts7960.h"
 
-static Wheel_Status MotorDriver_INIT(MotorDriver_HandleTypeDef *hMotorDriver,
-                                     MotorDriver_ConfigHandleTypeDef *config);
-static Wheel_Status MotorDriver_DeINIT(MotorDriver_HandleTypeDef *hMotorDriver);
-static Wheel_Status MotorDriver_Drive_Right(MotorDriver_HandleTypeDef *hMotorDriver,
-                                            uint8_t force);
-static Wheel_Status MotorDriver_Drive_Left(MotorDriver_HandleTypeDef *hMotorDriver,
-                                           uint8_t force);
-static Wheel_Status MotorDriver_Coast(MotorDriver_HandleTypeDef *hMotorDriver);
+static Wheel_Status BTS7960_INIT(MotorDriver_HandleTypeDef *hMotorDriver,
+                                 MotorDriver_ConfigHandleTypeDef *config);
+static Wheel_Status BTS7960_DeINIT(MotorDriver_HandleTypeDef *hMotorDriver);
+static Wheel_Status BTS7960_Drive_Right(MotorDriver_HandleTypeDef *hMotorDriver,
+                                        uint8_t force);
+static Wheel_Status BTS7960_Drive_Left(MotorDriver_HandleTypeDef *hMotorDriver,
+                                       uint8_t force);
+static Wheel_Status BTS7960_Coast(MotorDriver_HandleTypeDef *hMotorDriver);
 static void release_motors(MotorDriver_HandleTypeDef *hMotorDriver);
 
-MotorDriver_HandleTypeDef hMotorDriver = {MotorDriver_INIT, MotorDriver_DeINIT,
-    MotorDriver_Drive_Left, MotorDriver_Drive_Right, MotorDriver_Coast};
+MotorDriver_HandleTypeDef hbts7960 = {BTS7960_INIT, BTS7960_DeINIT,
+    BTS7960_Drive_Left, BTS7960_Drive_Right, BTS7960_Coast};
 
-static Wheel_Status MotorDriver_INIT(MotorDriver_HandleTypeDef *hMotorDriver,
-                                     MotorDriver_ConfigHandleTypeDef *config) {
+static Wheel_Status BTS7960_INIT(MotorDriver_HandleTypeDef *hMotorDriver,
+                                 MotorDriver_ConfigHandleTypeDef *config) {
   if (config == NULL) {
     return WHEEL_ERROR;
   }
@@ -43,7 +43,7 @@ static Wheel_Status MotorDriver_INIT(MotorDriver_HandleTypeDef *hMotorDriver,
   ret |= HAL_TIM_PWM_Start(config->pwm_timer, config->left_channel);
   if (ret != HAL_OK) {
     // Do not stay half started
-    MotorDriver_DeINIT(hMotorDriver);
+    BTS7960_DeINIT(hMotorDriver);
     return WHEEL_ERROR;
   }
   return WHEEL_OK;
@@ -72,7 +72,7 @@ static void release_motors(MotorDriver_HandleTypeDef *hMotorDriver) {
 }
 
 // Releases the motor and stops the PWM. Safe on a module that is not initialized
-static Wheel_Status MotorDriver_DeINIT(MotorDriver_HandleTypeDef *hMotorDriver) {
+static Wheel_Status BTS7960_DeINIT(MotorDriver_HandleTypeDef *hMotorDriver) {
   MotorDriver_ConfigHandleTypeDef *config = &hMotorDriver->Config;
   uint8_t ret = 0;
   if (config->pwm_timer != NULL) {
@@ -90,8 +90,8 @@ static Wheel_Status MotorDriver_DeINIT(MotorDriver_HandleTypeDef *hMotorDriver) 
   return (ret == HAL_OK) ? WHEEL_OK : WHEEL_ERROR;
 }
 
-static Wheel_Status MotorDriver_Drive_Right(MotorDriver_HandleTypeDef *hMotorDriver,
-                                            uint8_t force) {
+static Wheel_Status BTS7960_Drive_Right(MotorDriver_HandleTypeDef *hMotorDriver,
+                                        uint8_t force) {
   MotorDriver_ConfigHandleTypeDef *config = &hMotorDriver->Config;
   *(config->left_compareRegister) = 0;
   *(config->right_compareRegister) = force;
@@ -101,8 +101,8 @@ static Wheel_Status MotorDriver_Drive_Right(MotorDriver_HandleTypeDef *hMotorDri
   return WHEEL_OK;
 }
 
-static Wheel_Status MotorDriver_Drive_Left(MotorDriver_HandleTypeDef *hMotorDriver,
-                                           uint8_t force) {
+static Wheel_Status BTS7960_Drive_Left(MotorDriver_HandleTypeDef *hMotorDriver,
+                                       uint8_t force) {
   MotorDriver_ConfigHandleTypeDef *config = &hMotorDriver->Config;
   *(config->right_compareRegister) = 0;
   *(config->left_compareRegister) = force;
@@ -112,7 +112,7 @@ static Wheel_Status MotorDriver_Drive_Left(MotorDriver_HandleTypeDef *hMotorDriv
   return WHEEL_OK;
 }
 
-static Wheel_Status MotorDriver_Coast(MotorDriver_HandleTypeDef *hMotorDriver) {
+static Wheel_Status BTS7960_Coast(MotorDriver_HandleTypeDef *hMotorDriver) {
   if (hMotorDriver->motors_enabled) {
     disable_motors(hMotorDriver);
   }

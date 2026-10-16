@@ -14,6 +14,12 @@
 #ifndef WHEEL_INIT_H_
 #define WHEEL_INIT_H_
 
+// The parts of the wheel: the only place that names them (see MODULES in
+// wheel_def.h)
+#include "hw_g29_buttons.h"
+#include "hw_mlx90363.h"
+#include "hw_bts7960.h"
+
 static void init_wheel_handle();
 static void init_buttons();
 static void init_sensor();
@@ -32,7 +38,7 @@ static void init_wheel_handle() {
   wheel.hAnalog = &hAnalog;
   wheel.hPedals = &hPedals;
   wheel.hShifter = &hShifter;
-  wheel.hMotorDriver = &hMotorDriver;
+  wheel.hMotorDriver = &hbts7960;
   wheel.hActuator = &hActuator;
 }
 
@@ -104,12 +110,12 @@ static void init_motor_driver() {
   config1.right_channel = TIM_CHANNEL_2;
   config1.left_compareRegister = &TIM1->CCR1;
   config1.right_compareRegister = &TIM1->CCR2;
-  if (hMotorDriver.INIT(&hMotorDriver, &config1) == WHEEL_ERROR) {
+  if (hbts7960.INIT(&hbts7960, &config1) == WHEEL_ERROR) {
     WHEEL_LOG_ERROR (WHEEL_ERR_INIT);
   }
 
   Actuator_ConfigHandleTypeDef config2 = {0};
-  config2.hMotorDriver = &hMotorDriver;
+  config2.hMotorDriver = &hbts7960;
   if (hActuator.INIT(&hActuator, &config2) == WHEEL_ERROR) {
     WHEEL_LOG_ERROR (WHEEL_ERR_INIT);
   }
