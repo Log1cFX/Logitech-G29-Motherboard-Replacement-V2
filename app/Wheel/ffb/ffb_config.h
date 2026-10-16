@@ -37,7 +37,7 @@
 #ifndef FFB_CONFIG_H_
 #define FFB_CONFIG_H_
 
-#include "common_types.h" // DBG
+#include "wheel_log.h" // WHEEL_LOG
 
 #ifndef FFB_MAX_AXIS
 #  define FFB_MAX_AXIS 1
@@ -64,7 +64,7 @@
 #  define FFB_ID_OFFSET 0
 #endif
 
-// The logs of the library go to the debug console
-#define FFB_LOG(...)  DBG(__VA_ARGS__)
+// The logs of the library are text logs of the wheel: see wheel_log.h
+#define FFB_LOG(...)  WHEEL_LOG(__VA_ARGS__)
 
 #endif /* FFB_CONFIG_H_ */

@@ -30,32 +30,32 @@
  * Told apart by their length:
  *   8 bytes or more   a file: wheel_file_header_t, then the content without
  *                     its padding
- *   HANDSHAKE_SIZE    MAGIC, sent by the PC to connect
- *   ACK_SIZE          ACK_CODE, then the crc field of the answered file
+ *   SYNC_SIZE         MAGIC, sent by the PC to connect
+ *   ACK_SIZE          ACK_CODE, then the crc field of the acknowledged file
  *   NACK_SIZE         NACK_CODE, a nack_reason_t, then the same crc field
  *
- * ANSWERS
- * The receiver of a file answers ACK once the file is stored, and NACK when
- * the message is complete but its content is refused. It answers nothing, and
- * drops the message, when the blocks break the rules above or when it has no
- * room for the file.
- * A handshake is answered the same way, with MAGIC in place of the crc field.
- * An answer is a message of its own: it goes between two files, never between
- * two blocks of one. It is sent once and is never answered.
+ * HANDSHAKES
+ * An ACK or a NACK, like the handshake packet of USB. The receiver of a file
+ * sends ACK once the file is stored, and NACK when the message is complete
+ * but its content is refused. It sends no handshake, and drops the message,
+ * when the blocks break the rules above or when it has no room for the file.
+ * A sync gets its handshake the same way, with MAGIC in place of the crc field.
+ * A handshake is a message of its own: it goes between two files, never between
+ * two blocks of one. It is sent once and gets no handshake itself.
  *
  * SENDING A FILE
  * One file at a time: the file in flight. Once its last block is sent, the
- * sender waits for the answer that carries the crc field of the file, and
+ * sender waits for the handshake that carries the crc field of the file, and
  * ignores any other.
  * ACK: the file is delivered. NACK: the file is dropped. Nothing for
  * TIMEOUT_MS: the file is sent again from its first block, MAX_TRIES in total.
  *
  * CONNECTION
- * Files only travel while connected: from a handshake until a file went
- * MAX_TRIES without an answer, or until the bus leaves the configured state.
- * Not connected, the outgoing files wait in the buffer, the unanswered one
- * included, and a file of the PC is answered NACK_NOT_CONNECTED.
- * A handshake while connected starts the file in flight again.
+ * Files only travel while connected: from a sync until a file went MAX_TRIES
+ * without a handshake, or until the bus leaves the configured state.
+ * Not connected, the outgoing files wait in the buffer, the one without a
+ * handshake included, and a file of the PC gets NACK_NOT_CONNECTED.
+ * A sync while connected starts the file in flight again.
  */
 
 // First byte of a block
@@ -64,7 +64,7 @@
 #define BLOCK_COUNT_MASK 0x3Fu // data bytes of the block
 #define BLOCK_MAX_DATA (USB_MSG_BLOCK_SIZE - 1u)
 
-#define HANDSHAKE_SIZE 4u
+#define SYNC_SIZE 4u
 #define ACK_SIZE 5u
 #define NACK_SIZE 6u
 #define ACK_CODE 0x06u // ASCII ACK
@@ -76,18 +76,18 @@
 // Sent in a NACK: the values are part of the protocol
 typedef enum {
   NACK_NONE, // never sent: no NACK is owed
-  NACK_NOT_CONNECTED, // a file before the handshake
-  NACK_BAD_MAGIC, // a handshake that is not MAGIC
+  NACK_NOT_CONNECTED, // a file before the sync
+  NACK_BAD_MAGIC, // a sync that is not MAGIC
   NACK_MALFORMED, // the size of the file header is not the size received
   NACK_TOO_BIG, // content over USB_MSG_MAX_CONTENT_SIZE
   // What wheel_file_check() found, see reason_of()
   NACK_BAD_CRC,
   NACK_UNKNOWN_TYPE,
   NACK_BAD_VERSION,
-  NACK_BAD_SIZE // content not the size of the struct of its type
+  NACK_BAD_SIZE // a content size its type does not allow
 } nack_reason_t;
 
-#define TIMEOUT_MS 250u // for an answer, and between two blocks of a message
+#define TIMEOUT_MS 250u // for a handshake, and between two blocks of a message
 #define MAX_TRIES 4u // sends of a file before the connection is given up
 
 #define FILE_HEADER_SIZE sizeof(wheel_file_header_t)
@@ -137,33 +137,33 @@ static struct {
   bool connected; // see CONNECTION above
 
   // Outgoing. The file in flight is always the oldest of its chain
-  bool tx_in_flight; // from its first block given to TinyUSB until its answer
+  bool tx_in_flight; // from its first block given to TinyUSB until its handshake
   uint16_t tx_offset; // bytes given to TinyUSB in this try
-  uint8_t tx_tries; // tries that got no answer
+  uint8_t tx_tries; // tries that got no handshake
   uint32_t tx_time; // of the last block given, or of the start of this try
   // What usb_msg_next_block() built last, for usb_msg_block_sent()
-  bool built_answer;
-  uint8_t built_count; // data bytes of the file, when it is not an answer
+  bool built_handshake;
+  uint8_t built_count; // data bytes of the file, when it is not a handshake
 
   // Incoming. The message being received
   rx_state_t rx_state;
   uint16_t rx_piece; // RX_FILLING: taken, not in a chain yet
   uint16_t rx_size; // of the file, from its header
   uint16_t rx_received;
-  uint32_t rx_crc; // crc field of its header, for the answer
-  nack_reason_t rx_reason; // RX_SKIPPING: what to answer at the end
+  uint32_t rx_crc; // crc field of its header, for the handshake
+  nack_reason_t rx_reason; // RX_SKIPPING: the NACK to send at the end
   uint32_t rx_time; // of the last block
 
-  // Answer owed to the PC: 0, ACK_CODE or NACK_CODE
-  uint8_t answer;
-  uint8_t answer_reason;
-  uint32_t answer_crc;
+  // Handshake owed to the PC: 0, ACK_CODE or NACK_CODE
+  uint8_t handshake;
+  uint8_t handshake_reason;
+  uint32_t handshake_crc;
 
   // For the debugger
-  uint32_t tx_refused; // outgoing files answered by a NACK
+  uint32_t tx_refused; // outgoing files that got a NACK
   uint8_t tx_last_reason; // nack_reason_t of the last one
-  uint32_t rx_refused; // incoming messages answered by a NACK
-  uint32_t rx_dropped; // incoming blocks and messages left unanswered
+  uint32_t rx_refused; // incoming messages that got a NACK
+  uint32_t rx_dropped; // incoming blocks and messages left without a handshake
 } msg;
 
 // The piece that starts offset bytes after the start of the buffer
@@ -266,25 +266,25 @@ static uint16_t stored_size(uint16_t offset) {
 }
 
 // Nothing is in flight anymore: the oldest outgoing file starts from its first
-// block, with all its tries. Called when the file in flight is answered, and
-// when the connection opens or closes
+// block, with all its tries. Called when the file in flight gets its
+// handshake, and when the connection opens or closes
 static void tx_reset(void) {
   msg.tx_in_flight = false;
   msg.tx_offset = 0;
   msg.tx_tries = 0;
 }
 
-// ACK or NACK of the PC. Removes the file in flight, if it is the one answered.
+// Handshake of the PC. Removes the file in flight, if the handshake is for it.
 // code is ACK_CODE or NACK_CODE, reason only counts for a NACK, crc is the crc
-// field the answer carries
-static void on_answer(uint8_t code, uint8_t reason, uint32_t crc) {
-  // No file is being sent: the answer is for one that is already gone
+// field the handshake carries
+static void on_handshake(uint8_t code, uint8_t reason, uint32_t crc) {
+  // No file is being sent: the handshake is for one that is already gone
   if (!msg.tx_in_flight) {
     return;
   }
   uint16_t offset = msg.outgoing.oldest;
-  // Only a file that was sent to its end can be answered, and only by its crc:
-  // an answer that comes twice is not taken for the next file
+  // Only a file sent to its end takes a handshake, and only the one with its
+  // crc: a handshake that comes twice is not taken for the next file
   bool sent_once = msg.tx_tries > 0 || msg.tx_offset == stored_size(offset);
   if (!sent_once || crc != file_at(offset)->header.crc) {
     return;
@@ -310,18 +310,18 @@ static void rx_forget(void) {
   msg.rx_state = RX_IDLE;
 }
 
-// The answer usb_msg_next_block() sends next. One at a time: a new one
-// replaces the one that did not leave yet
-static void answer(uint8_t code, nack_reason_t reason, uint32_t crc) {
-  msg.answer = code;
-  msg.answer_reason = reason;
-  msg.answer_crc = crc;
+// Queues the handshake that usb_msg_next_block() sends next. One at a time: a
+// new one replaces the one that did not leave yet
+static void send_handshake(uint8_t code, nack_reason_t reason, uint32_t crc) {
+  msg.handshake = code;
+  msg.handshake_reason = reason;
+  msg.handshake_crc = crc;
 }
 
-// Answers NACK to a message of the PC, and counts it
+// Sends NACK for a message of the PC, and counts it
 static void refuse(nack_reason_t reason, uint32_t crc) {
   msg.rx_refused++;
-  answer(NACK_CODE, reason, crc);
+  send_handshake(NACK_CODE, reason, crc);
 }
 
 // Reason sent for a file that wheel_file_check() refused
@@ -338,8 +338,8 @@ static nack_reason_t reason_of(wheel_file_status_t status) {
   }
 }
 
-// The connection ends: after MAX_TRIES without an answer, or when the bus is
-// lost. The files stay: the outgoing ones are sent after the next handshake
+// The connection ends: after MAX_TRIES without a handshake, or when the bus is
+// lost. The files stay: the outgoing ones are sent after the next sync
 static void link_close(void) {
   msg.connected = false;
   // The file in flight keeps its place, and will start from its first block
@@ -348,47 +348,47 @@ static void link_close(void) {
   rx_forget();
 }
 
-// A complete message shorter than a file header: a handshake, an ACK or a
-// NACK (see MESSAGES). Anything else is dropped
+// A complete message shorter than a file header: a sync, an ACK or a NACK
+// (see MESSAGES). Anything else is dropped
 static void on_short_message(const uint8_t *data, uint8_t count) {
   // The 4 bytes each of the three carries: MAGIC, or a crc field. Copied out:
   // data is not aligned
   uint32_t word;
 
-  if (count == HANDSHAKE_SIZE) {
-    // Handshake: the 4 bytes are the whole message
+  if (count == SYNC_SIZE) {
+    // Sync: the 4 bytes are the whole message
     memcpy(&word, data, sizeof(word));
     if (word == MAGIC) {
       // Also when already connected: the application of the PC started again
       msg.connected = true;
       tx_reset();
-      answer(ACK_CODE, NACK_NONE, word);
+      send_handshake(ACK_CODE, NACK_NONE, word);
     } else {
       refuse(NACK_BAD_MAGIC, word);
     }
   } else if (count == ACK_SIZE && data[0] == ACK_CODE) {
     // ACK: the code, then the crc field
     memcpy(&word, &data[1], sizeof(word));
-    on_answer(ACK_CODE, NACK_NONE, word);
+    on_handshake(ACK_CODE, NACK_NONE, word);
   } else if (count == NACK_SIZE && data[0] == NACK_CODE) {
     // NACK: the code, the reason, then the crc field
     memcpy(&word, &data[2], sizeof(word));
-    on_answer(NACK_CODE, data[1], word);
+    on_handshake(NACK_CODE, data[1], word);
   } else {
-    // None of the three: not answered
+    // None of the three: no handshake
     msg.rx_dropped++;
   }
 }
 
 // First block of a file. Its data starts with the file header, which gives the
 // size of the piece to take. Without a piece the blocks are skipped up to the
-// end of the message, and rx_reason is what rx_end() answers
+// end of the message, and rx_reason is the NACK that rx_end() sends
 static void rx_begin(const uint8_t *data) {
   // Copied out: data is not aligned, the fields cannot be read in place
   wheel_file_header_t header;
   memcpy(&header, data, sizeof(header));
 
-  // Skipped with nothing to answer, unless one of the cases below changes it
+  // Skipped without a handshake, unless one of the cases below changes it
   msg.rx_crc = header.crc;
   msg.rx_received = 0;
   msg.rx_state = RX_SKIPPING;
@@ -407,7 +407,7 @@ static void rx_begin(const uint8_t *data) {
   msg.rx_size = FILE_HEADER_SIZE + header.size;
   msg.rx_piece = piece_take(msg.rx_size);
   if (msg.rx_piece == NO_PIECE) {
-    // No room: nothing is answered, the PC sends the file again later
+    // No room: no handshake, the PC sends the file again later
     return;
   }
   // The padding of the content, which no block brings
@@ -435,15 +435,15 @@ static void rx_add(const uint8_t *data, uint8_t count) {
   msg.rx_received += count;
 }
 
-// The last block of the open message arrived: the message is answered, and
-// its file is kept if it is a valid one
+// The last block of the open message arrived: the message gets its handshake,
+// and its file is kept if it is a valid one
 static void rx_end(void) {
   // Whatever happens below, no message is open after this
   rx_state_t state = msg.rx_state;
   msg.rx_state = RX_IDLE;
 
   // A skipped message: refused with the reason found on the way, or left
-  // unanswered when there was no room for it
+  // without a handshake when there was no room for it
   if (state == RX_SKIPPING) {
     if (msg.rx_reason != NACK_NONE) {
       refuse(msg.rx_reason, msg.rx_crc);
@@ -474,7 +474,7 @@ static void rx_end(void) {
   }
   // From here usb_msg_peek() sees the file
   chain_add(&msg.incoming, offset);
-  answer(ACK_CODE, NACK_NONE, msg.rx_crc);
+  send_handshake(ACK_CODE, NACK_NONE, msg.rx_crc);
 }
 
 /* FOR THE USB MODULE (usb_internal.h) */
@@ -501,7 +501,7 @@ void usb_msg_task(uint32_t now_ms) {
     msg.rx_dropped++;
   }
 
-  // The file in flight got no answer, or the PC stopped collecting its
+  // The file in flight got no handshake, or the PC stopped collecting its
   // blocks: one try is spent. After the last one the connection is given up,
   // and the file stays the oldest of its chain
   if (msg.tx_in_flight && now_ms - msg.tx_time >= TIMEOUT_MS) {
@@ -516,7 +516,7 @@ void usb_msg_task(uint32_t now_ms) {
   }
 }
 
-// Builds the block to send next: an answer first, else the next bytes of the
+// Builds the block to send next: a handshake first, else the next bytes of the
 // file in flight. False when there is nothing to send.
 // It only builds. Nothing counts as sent before usb_msg_block_sent(): a block
 // that TinyUSB did not take is simply built again at the next call
@@ -527,33 +527,36 @@ bool usb_msg_next_block(uint8_t block[USB_MSG_BLOCK_SIZE]) {
   // Where the data of the block goes: after its first byte
   uint8_t *data = &block[1];
 
-  // An answer goes between two files, never between two blocks of one
+  // A handshake goes between two files, never between two blocks of one.
   bool mid_file = msg.tx_offset > 0 && msg.tx_offset < size;
-  if (msg.answer != 0 && !mid_file) {
+
+  /* A handshake has been queued */
+  if (msg.handshake != 0 && !mid_file) {
     uint8_t count;
     memset(block, 0, USB_MSG_BLOCK_SIZE);
     // ACK: the code, then the crc field. NACK: the code, the reason, then the
     // crc field
-    data[0] = msg.answer;
-    if (msg.answer == ACK_CODE) {
-      memcpy(&data[1], &msg.answer_crc, sizeof(msg.answer_crc));
+    data[0] = msg.handshake;
+    if (msg.handshake == ACK_CODE) {
+      memcpy(&data[1], &msg.handshake_crc, sizeof(msg.handshake_crc));
       count = ACK_SIZE;
     } else {
-      data[1] = msg.answer_reason;
-      memcpy(&data[2], &msg.answer_crc, sizeof(msg.answer_crc));
+      data[1] = msg.handshake_reason;
+      memcpy(&data[2], &msg.handshake_crc, sizeof(msg.handshake_crc));
       count = NACK_SIZE;
     }
     // The whole message is in this block: both flags
     block[0] = BLOCK_START | BLOCK_END | count;
-    msg.built_answer = true;
+    msg.built_handshake = true;
     return true;
   }
 
-  // Not connected, no file, or the file in flight waits for its answer
+  /* Not connected, no file, or the file in flight waits for its handshake */
   if (!msg.connected || msg.tx_offset >= size) {
     return false;
   }
 
+  /* Continue sending the next block of the file */
   // A full block, or what is left of the file
   uint16_t left = size - msg.tx_offset;
   uint8_t count = (left < BLOCK_MAX_DATA) ? left : BLOCK_MAX_DATA;
@@ -569,7 +572,7 @@ bool usb_msg_next_block(uint8_t block[USB_MSG_BLOCK_SIZE]) {
   }
   memcpy(data, bytes_at(offset) + msg.tx_offset, count);
   // For usb_msg_block_sent()
-  msg.built_answer = false;
+  msg.built_handshake = false;
   msg.built_count = count;
   return true;
 }
@@ -577,9 +580,10 @@ bool usb_msg_next_block(uint8_t block[USB_MSG_BLOCK_SIZE]) {
 // TinyUSB took the block of the last usb_msg_next_block(): what it carried
 // now counts as sent
 void usb_msg_block_sent(uint32_t now_ms) {
-  // An answer is sent once: it is not kept until the PC reacts
-  if (msg.built_answer) {
-    msg.answer = 0;
+  // The handshake was queued and sent; we can now clear the queue
+  if (msg.built_handshake) {
+    // Built_handshake is cleared when the next block of a file is sent
+    msg.handshake = 0;
     return;
   }
   // A block of the file. The file is in flight from its first block on, and
@@ -604,7 +608,7 @@ void usb_msg_on_block(const uint8_t *block, uint16_t len, uint32_t now_ms) {
 
   // The rules of BLOCKS: the data fits in what was received, only the last
   // block is short, and only a BLOCK_START opens a message. A block that
-  // breaks them is not answered, and neither is its message
+  // breaks them gets no handshake, and neither does its message
   bool valid = count > 0 && count < len && (end || count == BLOCK_MAX_DATA)
                && (start || msg.rx_state != RX_IDLE);
   if (!valid) {
@@ -616,7 +620,7 @@ void usb_msg_on_block(const uint8_t *block, uint16_t len, uint32_t now_ms) {
   if (start) {
     // A message left open is forgotten
     rx_forget();
-    // A whole message, too short to be a file: a handshake, an ACK or a NACK
+    // A whole message, too short to be a file: a sync, an ACK or a NACK
     if (end && count < FILE_HEADER_SIZE) {
       on_short_message(data, count);
       return;
@@ -637,8 +641,8 @@ void usb_msg_on_block(const uint8_t *block, uint16_t len, uint32_t now_ms) {
 // The bus left the configured state: the connection closes
 void usb_msg_link_down(void) {
   link_close();
-  // Nobody is left to read the answer that was owed
-  msg.answer = 0;
+  // Nobody is left to read the handshake that was owed
+  msg.handshake = 0;
 }
 
 /* INTERFACE (usb_msg.h) */
@@ -679,4 +683,15 @@ void usb_msg_pop(void) {
 // See CONNECTION above
 bool usb_msg_connected(void) {
   return msg.connected;
+}
+
+// Walks the outgoing chain, from the oldest file to the newest
+bool usb_msg_pending(uint32_t crc) {
+  for (uint16_t offset = msg.outgoing.oldest; offset != NO_PIECE;
+      offset = piece_at(offset)->next) {
+    if (file_at(offset)->header.crc == crc) {
+      return true;
+    }
+  }
+  return false;
 }

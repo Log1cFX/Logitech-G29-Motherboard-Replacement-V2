@@ -12,6 +12,7 @@
 #include "usb_processing.h"
 #include "usb_msg.h"
 #include "watchdog.h"
+#include "wheel_log.h"
 #include "ffb/ffb_c.h"
 #include "ffb/ffb_metrics_c.h"
 #include "ffb/ffb_axis_local_c.h"
@@ -31,8 +32,6 @@ static ffb_metrics_t *metrics; // control loop only
 static ffb_axis_local_t *local_effects; // control loop only
 static uint32_t last_control_time; // HAL_GetTick() of the last control loop step
 
-static void register_initialization_error();
-
 static Wheel_Status wheel_axis_calibration();
 static void wheel_recenter();
 static void wheel_delay(uint32_t ms);
@@ -40,9 +39,7 @@ static void wheel_get_input(wheel_input_t *input);
 static bool tick();
 static void control_loop_step();
 static void echo_files();
-#ifndef DEBUG
 static void usb_custom_task(usb_state_t *state);
-#endif
 
 // The init_* and create_* functions of wheel_startup(): a part of this file
 // kept in its own header
@@ -51,6 +48,8 @@ static void usb_custom_task(usb_state_t *state);
 /* STARTUP */
 
 void wheel_startup() {
+  // First: the errors of the inits below already go to the log
+  wheel_log_init();
 
   /* INIT */
   init_analog();
@@ -65,46 +64,51 @@ void wheel_startup() {
   Analog_HandleTypeDef *analog = wheel.hAnalog;
   Buttons_HandleTypeDef *buttons = wheel.hButtons;
   if (analog->Start_CONTINUOUS_SCAN_DMA(analog) == WHEEL_ERROR) {
-    register_initialization_error();
+    WHEEL_LOG_ERROR(WHEEL_ERR_INIT);
   }
   if (buttons->Start_TIM_POLL(buttons) == WHEEL_ERROR) {
-    register_initialization_error();
+    WHEEL_LOG_ERROR(WHEEL_ERR_INIT);
   }
   if (magnetometer->Start_TIM_POLL(magnetometer) == WHEEL_ERROR) {
-    register_initialization_error();
+    WHEEL_LOG_ERROR(WHEEL_ERR_INIT);
   }
 
   /* USB */
   // Before the calibration, so that the host does not time out meanwhile.
   // DEBUG builds leave the watchdog alone
-#ifdef DEBUG
-  usb_init(hFFB, NULL);
-#else
+#ifndef DEBUG
   watchdog_init();
-  usb_init(hFFB, usb_custom_task);
 #endif
+  usb_init(hFFB, usb_custom_task);
   while (usb_state() != USB_READY) {
     usb_task();
   }
 
   /* CALIBRATION */
-  // Retried until it succeeds. Errors are reported once CALIBRATION_MAX_TRIES
-  // is reached
+  // Retried until it succeeds. Each failure is logged from the
+  // CALIBRATION_MAX_TRIES-th on
   if (!WHEEL_SKIP_CALIBRATION) {
     uint8_t calibration_tries = 0;
     while (wheel_axis_calibration() == WHEEL_ERROR) {
       wheel_delay(CALIBRATION_RETRY_DELAY_MS);
-      calibration_tries++;
+      // Stops counting there
+      if (calibration_tries < CALIBRATION_MAX_TRIES) {
+        calibration_tries++;
+      }
       if (calibration_tries >= CALIBRATION_MAX_TRIES) {
-        register_initialization_error();
+        WHEEL_LOG_ERROR(WHEEL_ERR_CALIBRATION);
       }
     }
     wheel_recenter();
   }
 
   /* FORCE FEEDBACK */
+  // The control loop cannot run without them
   metrics = create_metrics_helper();
   local_effects = create_local_effects();
+  if (metrics == NULL || local_effects == NULL) {
+    WHEEL_FATAL_ERROR(WHEEL_ERR_FFB);
+  }
   init_filter_preset();
 
 #ifndef DEBUG
@@ -167,15 +171,18 @@ static void control_loop_step() {
   local_force = ffb_axis_local_compute(local_effects, &st, ffb_is_active(hFFB));
   total_force = host_force + local_force;
 
-  // From the int16 range to the range of the motor
-  end_force = remapf(INT16_MIN, INT16_MAX, total_force,
-  MOTOR_MIN_FORCE,
-                     MOTOR_MAX_FORCE);
-  end_force = clamp(end_force, MOTOR_MIN_FORCE, MOTOR_MAX_FORCE);
-
-  if (wheel.hActuator->Apply_Force(wheel.hActuator, (int16_t)end_force) == WHEEL_ERROR) {
-    wheel.wheel_error_count++;
+  // From the int16 range to the range of the motor. total_force can exceed
+  // the int16 range (two forces added): the clamp catches it
+  int32_t force = total_force * MOTOR_MAX_FORCE / INT16_MAX;
+  if (force > MOTOR_MAX_FORCE) {
+    force = MOTOR_MAX_FORCE;
+  } else if (force < MOTOR_MIN_FORCE) {
+    force = MOTOR_MIN_FORCE;
   }
+  end_force = (int16_t)force;
+
+  // A refused force is logged by the actuator
+  wheel.hActuator->Apply_Force(wheel.hActuator, (int16_t)end_force);
 
   watchdog_checkin(WATCHDOG_SOURCE_CONTROL_LOOP);
 }
@@ -244,20 +251,14 @@ static bool tick() {
   return true;
 }
 
-#ifndef DEBUG
-// Called by every usb_task(). The only place that feeds the watchdog
+// Called by every usb_task(): the only place that feeds the watchdog (Release),
+// and the one that sends the logs
 static void usb_custom_task(usb_state_t *state) {
   UNUSED(state);
+#ifndef DEBUG
   watchdog_task();
-}
 #endif
-
-static void register_initialization_error() {
-#ifdef DEBUG
-  Error_Handler();
-#else
-  wheel.wheel_error_count++;
-#endif
+  wheel_log_task();
 }
 
 /* CONTROLS */
@@ -325,4 +326,22 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
   if (hButtons->Config.htim->Instance == htim->Instance) {
     hButtons->TIM_POLL_CB(hButtons);
   }
+}
+
+// The magnetometer transfer failed: TxRxDone_CB() will not run for it. Runs in
+// the SPI2 DMA interrupt (priority 3)
+void HAL_SPI_ErrorCallback(SPI_HandleTypeDef *hspi) {
+  Magnetometer_ConfigHandleTypeDef *config = &wheel.hMagnetometer->Config;
+  if (config->hspi->Instance == hspi->Instance) {
+    // Ends the frame, as TxRxDone_CB() would: the next one starts clean
+    HAL_GPIO_WritePin(config->SS_port, config->SS_pin, 1);
+    WHEEL_LOG_ERROR(WHEEL_ERR_SENSOR_SPI);
+  }
+}
+
+// The DMA of the ADC failed: the pedals and the shifter may keep old values.
+// Runs in the DMA1 channel 1 interrupt (priority 10)
+void HAL_ADC_ErrorCallback(ADC_HandleTypeDef *hadc) {
+  UNUSED(hadc);
+  WHEEL_LOG_ERROR(WHEEL_ERR_ANALOG);
 }

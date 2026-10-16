@@ -41,11 +41,11 @@ extern "C" {
 
 typedef struct {
   Magnetometer_HandleTypeDef *hw_magnetometer;
-}Sensor_ConfigHandleTypeDef;
+} Sensor_ConfigHandleTypeDef;
 
 typedef struct _Sensor_HandleTypeDef {
   Wheel_Status (*INIT)(struct _Sensor_HandleTypeDef *sensor,
-      Sensor_ConfigHandleTypeDef *config);
+                       Sensor_ConfigHandleTypeDef *config);
   Wheel_Status (*DeINIT)(struct _Sensor_HandleTypeDef *sensor);
   // Follows the turns of the magnet. Call after every magnetometer transfer
   Wheel_Status (*Update)(struct _Sensor_HandleTypeDef *sensor);
@@ -61,27 +61,27 @@ typedef struct _Sensor_HandleTypeDef {
    */
 
   // Written in SysTick (GetAxis), read in main
-  volatile int16_t virtual_axis;// steering over the full int16 range, 0 = center
-  volatile int32_t steering_pos;// relative to the position of the wheel at startup
+  volatile int16_t virtual_axis; // steering over the full int16 range, 0 = center
+  volatile int32_t steering_pos; // relative to the position of the wheel at startup
   // Ends of the travel, in steering_pos units.
   // Written in main (calibration), read in SysTick (GetAxis)
-  volatile int32_t min;// counterclockwise
-  volatile int32_t max;// clockwise
+  volatile int32_t min;  // counterclockwise
+  volatile int32_t max;  // clockwise
 
   /* PRIVATE */
   uint16_t physical_axis; // SysTick only
-  uint16_t previous_sensor_capture;// SPI DMA interrupt only
+  uint16_t previous_sensor_capture; // SPI DMA interrupt only
   // Written in the SPI DMA interrupt (Update), read in SysTick (GetAxis).
   // NOT PROTECTED: the position is turns + capture, but SysTick reads the two
   // one after the other and the SPI DMA interrupt can change both in between
   volatile uint16_t current_sensor_capture;
   volatile int8_t magnet_full_rotation_cnt;
-  uint8_t start_settling_cnt;// set by INIT, then SPI DMA interrupt only
+  uint8_t start_settling_cnt;  // set by INIT, then SPI DMA interrupt only
   // max - min. Written in SysTick (GetAxis), read in main (calibration)
   volatile uint16_t distance;
   // Written in main (calibration), read in SysTick (GetAxis)
   volatile float axis_scale;
-}Sensor_HandleTypeDef;
+} Sensor_HandleTypeDef;
 
 extern Sensor_HandleTypeDef hSensor;
 

@@ -88,7 +88,6 @@ static Wheel_Status MLX90363_DeINIT(Magnetometer_HandleTypeDef *sensor) {
 // Only call with the poll timer stopped and no transfer running
 static void reset_state(Magnetometer_HandleTypeDef *sensor) {
   sensor->reading = 0;
-  sensor->err_packets_cnt = 0;
   memset(sensor->SPI_Rx_buffer, 0, sizeof(sensor->SPI_Rx_buffer));
   memset(sensor->SPI_Tx_buffer, 0, sizeof(sensor->SPI_Tx_buffer));
   sensor->transfer_is_done = 0;
@@ -129,7 +128,12 @@ static Wheel_Status MLX90363_TransmitRecieve_DMA(Magnetometer_HandleTypeDef *sen
   ret = HAL_SPI_TransmitReceive_DMA(config->hspi, sensor->SPI_Tx_buffer,
                                     sensor->SPI_Rx_buffer,
                                     MAGNETOMETER_FRAME_SIZE);
-  return (ret == HAL_OK) ? WHEEL_OK : WHEEL_ERROR;
+  // Refused, the last transfer still running for instance: this frame is lost
+  if (ret != HAL_OK) {
+    WHEEL_LOG_ERROR(WHEEL_ERR_SENSOR_SPI);
+    return WHEEL_ERROR;
+  }
+  return WHEEL_OK;
 }
 
 static Wheel_Status MLX90363_TxRxDone_CB(Magnetometer_HandleTypeDef *sensor) {
@@ -231,33 +235,34 @@ static Wheel_Status getData(Magnetometer_HandleTypeDef *sensor) {
 
   // Only Alpha results are expected
   if ((RxBuffer[6] >> MARKER_SHIFT) != 0) {
-    sensor->err_packets_cnt++;
+    WHEEL_LOG_ERROR(WHEEL_ERR_SENSOR_MARKER);
     return WHEEL_ERROR;
   }
 
   // Bytes 2, 3 and 5 other than 0: probably wrong data
   if (RxBuffer[2] != 0x00 || RxBuffer[3] != 0x00 || RxBuffer[5] != 0x00) {
-    sensor->err_packets_cnt++;
+    WHEEL_LOG_ERROR(WHEEL_ERR_SENSOR_DATA);
     return WHEEL_ERROR;
   }
 
   // A virtual gain (byte 4) of 0: probably wrong data
   if (RxBuffer[4] == 0x00) {
-    sensor->err_packets_cnt++;
+    WHEEL_LOG_ERROR(WHEEL_ERR_SENSOR_DATA);
     return WHEEL_ERROR;
   }
 
-  // The rolling counter grows by 1 per frame: a bigger step is missed frames
+  // The rolling counter grows by 1 per frame: a bigger step is missed frames.
+  // The frame itself is still good
   uint8_t rollcnt = RxBuffer[6] & ROLL_CNT_MASK;
   uint8_t last_rollcnt = sensor->roll_cnt;
   uint8_t diff = (rollcnt - last_rollcnt + ROLL_CNT_MODULO) % ROLL_CNT_MODULO;
   if (diff > 1) {
-    sensor->err_packets_cnt += diff - 1;
+    WHEEL_LOG_ERROR(WHEEL_ERR_SENSOR_MISSED);
   }
   sensor->roll_cnt = rollcnt;
 
   if (RxBuffer[7] != calculate_crc(RxBuffer)) {
-    sensor->err_packets_cnt++;
+    WHEEL_LOG_ERROR(WHEEL_ERR_SENSOR_CRC);
     return WHEEL_ERROR;
   }
 

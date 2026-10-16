@@ -50,6 +50,9 @@
  *
  *  priority | context               | what runs there
  *  ---------+-----------------------+---------------------------------------------
+ *   -2 / -1 | NMI / HardFault       | the fatal path (wheel_fatal.c)
+ *   0       | MemManage, BusFault,  | the fatal path (wheel_fatal.c)
+ *           | UsageFault            |
  *   0 / 1   | USB_HP / USB_LP       | usb_irq_handler (TinyUSB records the event)
  *   3       | TIM4                  | magnetometer TransmitRecieve_DMA
  *   3       | DMA1 ch4 / ch5 (SPI2) | magnetometer TxRxDone_CB, then sensor Update
@@ -57,8 +60,9 @@
  *   6       | SysTick               | wheel_get_all_component_states
  *   10      | DMA1 ch1 (ADC)        | nothing: the ADC fills hAnalog.axis by itself
  *   -       | main                  | usb_task (USB, the ffb library on host
- *           |                       | reports, the file link of usb_msg.h),
- *           |                       | calibration, control loop
+ *           |                       | reports, the file link of usb_msg.h, the
+ *           |                       | logs of wheel_log.h), calibration,
+ *           |                       | control loop
  *
  * The priorities are set in main.c, stm32f1xx_hal_msp.c, stm32f1xx_hal_conf.h
  * (TICK_INT_PRIORITY) and usb_processing.c. Update this table when they change.
@@ -93,6 +97,8 @@ extern "C" {
 // (see watchdog.h). The steering axis stays at 0.
 // 0 on a wheel: without the calibration it does not know where its ends are
 #define WHEEL_SKIP_CALIBRATION 1
+
+// What the firmware logs: see WHEEL_LOG_LEVEL in wheel_log.h
 
 #define CALIBRATION_FORCE 135 // out of MOTOR_MAX_FORCE
 
@@ -143,7 +149,6 @@ extern "C" {
 #define FFB_INERTIA_FILTER_FREQ_HZ 5 // 15
 
 typedef struct {
-  uint32_t wheel_error_count; // main only
   // Set once by init_wheel_handle() (main), then read by every context.
   // SysTick already runs before that: wheel_get_all_component_states() checks
   // them for NULL

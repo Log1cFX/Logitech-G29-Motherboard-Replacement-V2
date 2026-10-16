@@ -7,8 +7,8 @@
  *  Initialization of the modules of the wheel and of the ffb library.
  *
  *  Not a regular header: it is a part of steeringwheel.c, included only there.
- *  It uses wheel, hFFB and register_initialization_error(), defined above the
- *  include
+ *  It uses wheel and hFFB, defined above the include. A module that refuses
+ *  its config is logged as WHEEL_ERR_INIT, at the line of its call
  */
 
 #ifndef WHEEL_INIT_H_
@@ -25,7 +25,6 @@ static ffb_metrics_t* create_metrics_helper();
 static void init_filter_preset();
 
 static void init_wheel_handle() {
-  wheel.wheel_error_count = 0;
   wheel.hDigitalInput = &hG29Buttons;
   wheel.hButtons = &hButtons;
   wheel.hMagnetometer = &hmlx90363;
@@ -44,14 +43,14 @@ static void init_buttons() {
   config1.lock_pin = BUTTON_LOCK_Pin;
   config1.in_pin = BUTTON_IN_Pin;
   if (hG29Buttons.INIT(&hG29Buttons, &config1) == WHEEL_ERROR) {
-    register_initialization_error();
+    WHEEL_LOG_ERROR (WHEEL_ERR_INIT);
   }
 
   Buttons_ConfigHandleTypeDef config2 = {0};
   config2.htim = &htim3;
   config2.hw_buttons = &hG29Buttons;
   if (hButtons.INIT(&hButtons, &config2) == WHEEL_ERROR) {
-    register_initialization_error();
+    WHEEL_LOG_ERROR (WHEEL_ERR_INIT);
   }
 }
 
@@ -62,13 +61,13 @@ static void init_sensor() {
   config1.SS_port = SPI2_SS_GPIO_Port;
   config1.SS_pin = SPI2_SS_Pin;
   if (hmlx90363.INIT(&hmlx90363, &config1) == WHEEL_ERROR) {
-    register_initialization_error();
+    WHEEL_LOG_ERROR (WHEEL_ERR_INIT);
   }
 
   Sensor_ConfigHandleTypeDef config2 = {0};
   config2.hw_magnetometer = &hmlx90363;
   if (hSensor.INIT(&hSensor, &config2) == WHEEL_ERROR) {
-    register_initialization_error();
+    WHEEL_LOG_ERROR (WHEEL_ERR_INIT);
   }
 }
 
@@ -76,13 +75,13 @@ static void init_analog() {
   Analog_ConfigHandleTypeDef config1 = {0};
   config1.hadc = &hadc1;
   if (hAnalog.INIT(&hAnalog, &config1) == WHEEL_ERROR) {
-    register_initialization_error();
+    WHEEL_LOG_ERROR (WHEEL_ERR_INIT);
   }
 
   Pedals_ConfigHandleTypeDef config2 = {0};
   config2.hw_analog = &hAnalog;
   if (hPedals.INIT(&hPedals, &config2) == WHEEL_ERROR) {
-    register_initialization_error();
+    WHEEL_LOG_ERROR (WHEEL_ERR_INIT);
   }
 
   Shifter_ConfigHandleTypeDef config3 = {0};
@@ -90,7 +89,7 @@ static void init_analog() {
   config3.modifier_port = SHIFTER_MODIFIER_GPIO_Port;
   config3.modifier_pin = SHIFTER_MODIFIER_Pin;
   if (hShifter.INIT(&hShifter, &config3) == WHEEL_ERROR) {
-    register_initialization_error();
+    WHEEL_LOG_ERROR (WHEEL_ERR_INIT);
   }
 }
 
@@ -106,13 +105,13 @@ static void init_motor_driver() {
   config1.left_compareRegister = &TIM1->CCR1;
   config1.right_compareRegister = &TIM1->CCR2;
   if (hMotorDriver.INIT(&hMotorDriver, &config1) == WHEEL_ERROR) {
-    register_initialization_error();
+    WHEEL_LOG_ERROR (WHEEL_ERR_INIT);
   }
 
   Actuator_ConfigHandleTypeDef config2 = {0};
   config2.hMotorDriver = &hMotorDriver;
   if (hActuator.INIT(&hActuator, &config2) == WHEEL_ERROR) {
-    register_initialization_error();
+    WHEEL_LOG_ERROR (WHEEL_ERR_INIT);
   }
 }
 
@@ -120,6 +119,10 @@ static void init_motor_driver() {
 // Its send callback is registered later, by usb_init()
 static void init_ffb_library() {
   hFFB = ffb_create(FFB_AXIS_COUNT, HAL_GetTick, NULL);
+  // USB and the control loop cannot run without it
+  if (hFFB == NULL) {
+    WHEEL_FATAL_ERROR (WHEEL_ERR_FFB);
+  }
 }
 
 static ffb_axis_local_t* create_local_effects() {

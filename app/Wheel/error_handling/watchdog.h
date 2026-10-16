@@ -18,7 +18,8 @@
  *                 watchdog_source_t checked in since the last check
  *
  *  Only watchdog_task() feeds, and only from main: an interrupt keeps running
- *  when main is stuck, feeding from one would hide it.
+ *  when main is stuck, feeding from one would hide it. The one exception is
+ *  the fatal path (wheel_fatal.c), which feeds once and then always resets.
  *
  *  DEBUG builds do not use this module, see wheel_startup()
  */
@@ -51,6 +52,10 @@ void watchdog_checkin(watchdog_source_t source);
 // Feeds when the current phase allows it. Call from main as often as possible,
 // including inside every wait
 void watchdog_task(void);
+
+// Feeds once, whatever the phase, so that the dump is written and the board
+// resets before the timeout. The fatal path only, any context
+void watchdog_feed_fatal(void);
 
 #ifdef __cplusplus
 }

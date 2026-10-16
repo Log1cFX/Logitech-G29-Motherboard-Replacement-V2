@@ -56,17 +56,17 @@ extern "C" {
 typedef struct {
   uint16_t x;
   uint16_t y;
-}Point;
+} Point;
 
 typedef struct {
   Analog_HandleTypeDef *hw_analog;
   uint16_t modifier_pin;
   GPIO_TypeDef *modifier_port;
-}Shifter_ConfigHandleTypeDef;
+} Shifter_ConfigHandleTypeDef;
 
 typedef struct _Shifter_HandleTypeDef {
   Wheel_Status (*INIT)(struct _Shifter_HandleTypeDef *shifter,
-      Shifter_ConfigHandleTypeDef *config);
+                       Shifter_ConfigHandleTypeDef *config);
   Wheel_Status (*DeINIT)(struct _Shifter_HandleTypeDef *shifter);
   Wheel_Status (*GetState)(struct _Shifter_HandleTypeDef *shifter); // refreshes gear
 
@@ -80,7 +80,7 @@ typedef struct _Shifter_HandleTypeDef {
 
   /* PRIVATE */
   Point current_pos; // SysTick only
-}Shifter_HandleTypeDef;
+} Shifter_HandleTypeDef;
 
 extern Shifter_HandleTypeDef hShifter;
 

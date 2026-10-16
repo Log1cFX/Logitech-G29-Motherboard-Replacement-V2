@@ -18,6 +18,7 @@ extern "C" {
 
 #include "main.h"
 #include "wheel_file.h"
+#include <stdbool.h>
 
 // Counted from the end of the flash: 0 is its last page.
 // The settings use their two pages in turn: a save writes the file to the
@@ -39,6 +40,31 @@ typedef enum {
 // Biggest content a page can hold
 #define WHEEL_FILE_MAX_CONTENT_SIZE \
   (WHEEL_FILE_PAGE_SIZE - sizeof(wheel_file_header_t))
+
+// First byte of a page that holds no file: never a type (see wheel_file.h)
+#define WHEEL_FILE_PAGE_ERASED 0xFFu
+#define WHEEL_FILE_PAGE_CLEARED 0x00u // see wheel_file_page_clear()
+
+/* ACCESS */
+// In wheel_file_pages.c. The flash controller is driven through its registers,
+// without HAL nor tick: the fatal path (wheel_fatal.c) uses them with the
+// interrupts off. Main only otherwise. The code runs from the same flash: it
+// stalls until each erase (20 to 40 ms) or program (about 50 us) ends
+// The type byte of the page as it is, without any check
+uint8_t wheel_file_page_type(wheel_file_page_t page);
+
+// The valid file of the page, read in place. NULL when the page holds none, or
+// one that wheel_file_check() refuses. Main only: it uses the CRC unit
+const wheel_file_t* wheel_file_page_read(wheel_file_page_t page);
+
+// Erases the page, then programs file into it, the type byte last: a write cut
+// by a power loss leaves no file. False if the flash reported an error
+bool wheel_file_page_write(wheel_file_page_t page, const wheel_file_t *file);
+
+// Writes 0x0000 over the type and the version of the file of the page, which
+// then holds no file. The flash accepts 0x0000 over any value: no erase.
+// False if the flash reported an error
+bool wheel_file_page_clear(wheel_file_page_t page);
 
 #ifdef __cplusplus
 }

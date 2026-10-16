@@ -16,7 +16,7 @@
  *
  *    to the PC    a file waits in the buffer until the PC acknowledges it. So
  *                 it can be sent with no application connected: it leaves
- *                 after the next handshake
+ *                 after the next sync
  *    from the PC  a file is only seen once it is complete and passed
  *                 wheel_file_check(). Until then the PC gets no acknowledgment
  *
@@ -63,9 +63,13 @@ const wheel_file_t* usb_msg_peek(void);
 // Removes the file of usb_msg_peek(), which then returns the next one
 void usb_msg_pop(void);
 
-// True from the handshake of an application of the PC until it stops
-// answering, or until the bus is lost
+// True from the sync of an application of the PC until it stops
+// acknowledging, or until the bus is lost
 bool usb_msg_connected(void);
+
+// True while a file for the PC with this crc field waits in the buffer: the PC
+// has neither acknowledged nor refused it yet
+bool usb_msg_pending(uint32_t crc);
 
 #ifdef __cplusplus
 }

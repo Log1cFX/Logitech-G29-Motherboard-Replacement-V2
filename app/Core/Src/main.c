@@ -22,6 +22,7 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "wheel_def.h"
+#include "wheel_log.h"
 #include <stdio.h>
 /* USER CODE END Includes */
 
@@ -591,9 +592,8 @@ static void MX_GPIO_Init(void)
 void Error_Handler(void)
 {
   /* USER CODE BEGIN Error_Handler_Debug */
-  /* User can add his own implementation to report the HAL error return state */
-  __disable_irq();
-  while (1) {}
+  // Dump and reset (wheel_fatal.c): its trace names the init that failed
+  WHEEL_FATAL_ERROR(WHEEL_ERR_HAL);
   /* USER CODE END Error_Handler_Debug */
 }
 #ifdef USE_FULL_ASSERT

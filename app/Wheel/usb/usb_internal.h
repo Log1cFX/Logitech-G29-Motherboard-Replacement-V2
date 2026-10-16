@@ -38,7 +38,7 @@ ffb_lib_t* usb_ffb(void);
 void usb_msg_init(void);
 // Runs the timeouts of the protocol. Call at every usb_task()
 void usb_msg_task(uint32_t now_ms);
-// Builds the next block for the PC: an answer, or the next bytes of the file
+// Builds the next block for the PC: a handshake, or the next bytes of the file
 // in flight. False when there is nothing to send. Changes nothing: calling it
 // again builds the same block
 bool usb_msg_next_block(uint8_t block[USB_MSG_BLOCK_SIZE]);

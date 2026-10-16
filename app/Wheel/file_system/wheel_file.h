@@ -23,7 +23,9 @@ extern "C" {
 // Stored in one byte. 0x00 and 0xFF are never a type: cleared and erased memory
 typedef enum {
   WHEEL_FILE_SETTINGS = 1, // wheel_file_settings_t
-  WHEEL_FILE_DUMP = 2 // not defined yet
+  WHEEL_FILE_DUMP = 2, // wheel_file_dump_t
+  WHEEL_FILE_ERROR = 3, // wheel_file_error_t
+  WHEEL_FILE_LOG = 4 // wheel_file_log_t
 } wheel_file_type_t;
 
 /*
@@ -64,7 +66,7 @@ typedef enum {
   WHEEL_FILE_BAD_CRC,
   WHEEL_FILE_UNKNOWN_TYPE,
   WHEEL_FILE_BAD_VERSION,
-  WHEEL_FILE_BAD_SIZE // not the size of the struct of its type
+  WHEEL_FILE_BAD_SIZE // not a size its type allows
 } wheel_file_status_t;
 
 // CRC of a file, computed as described above. Reads header.size bytes of

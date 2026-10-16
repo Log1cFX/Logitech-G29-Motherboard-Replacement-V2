@@ -135,3 +135,9 @@ void watchdog_task(void) {
   // Not fed otherwise: if a source stays silent until the timeout, the board
   // resets and the bootloader takes over
 }
+
+// See watchdog.h: the fatal path resets right after, a stuck main cannot hide
+// behind it
+void watchdog_feed_fatal(void) {
+  feed();
+}

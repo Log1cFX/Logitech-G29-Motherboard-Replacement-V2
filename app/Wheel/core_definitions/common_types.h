@@ -28,7 +28,8 @@
  *  Created on: Aug 1, 2025
  *      Author: raffi
  *
- *  HAL, the utilities and the types that every module uses
+ *  HAL, the utilities, the log (wheel_log.h) and the types that every module
+ *  uses
  */
 
 #ifndef CORE_DEFINITIONS_COMMON_TYPES_H_
@@ -40,14 +41,9 @@ extern "C" {
 
 #include "main.h"
 #include "util.h"
+#include "wheel_log.h"
 #include "string.h"
 #include <stdio.h>
-
-#ifdef DEBUG
-#define DBG(...)  printf(__VA_ARGS__)
-#else
-#define DBG(...)  ((void)0)
-#endif
 
 typedef enum {
   WHEEL_OK, // must stay 0: statuses are combined with |=

@@ -69,9 +69,9 @@ typedef struct _Magnetometer_HandleTypeDef {
    */
 
   // Angle of the magnet over the 16-bit range. Read by the Update() of
-  // sw_sensor, in the same SPI DMA interrupt
+  // sw_sensor, in the same SPI DMA interrupt. Frames missed or rejected are
+  // logged as WHEEL_ERR_SENSOR_* (wheel_log.h)
   uint16_t reading;
-  uint16_t err_packets_cnt; // frames missed or rejected
 
   /* PRIVATE */
   uint8_t SPI_Rx_buffer[MAGNETOMETER_FRAME_SIZE];

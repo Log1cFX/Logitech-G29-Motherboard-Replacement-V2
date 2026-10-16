@@ -94,7 +94,7 @@ static uint8_t hat_switch_from_msb(uint8_t byte) {
     {6, 8, 2},
     {5, 4, 3}
   };
-      // @formatter:on
+          // @formatter:on
   return hat_table[dpadY + 1][dpadX + 1];
 }
 
@@ -175,9 +175,10 @@ static void send_wheel_report(void) {
   }
 }
 
-// One block of the file link per call, when its endpoint is free. The link
-// does not wait for USB_READY: it has its own handshake (usb_msg.c)
-static void send_file_block(void) {
+// One block of usb_msg per call, when its endpoint is free: a handshake or a
+// part of a file. The link does not wait for USB_READY: it has its own sync
+// (usb_msg.c)
+static void send_msg_block(void) {
   uint32_t now = HAL_GetTick();
   usb_msg_task(now);
 
@@ -185,6 +186,7 @@ static void send_file_block(void) {
   // Id 0: the interface has no report id
   if (tud_hid_n_ready(USB_HID_FILES) && usb_msg_next_block(block)
       && tud_hid_n_report(USB_HID_FILES, 0, block, sizeof(block))) {
+    // Confirm a block has been sent
     usb_msg_block_sent(now);
   }
 }
@@ -215,7 +217,7 @@ void usb_task(void) {
   }
 
   send_wheel_report();
-  send_file_block();
+  send_msg_block();
 }
 
 usb_state_t usb_state(void) {

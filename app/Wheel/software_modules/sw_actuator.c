@@ -66,10 +66,8 @@ static Wheel_Status Actuator_Apply_Force(Actuator_HandleTypeDef *hActuator,
   uint8_t corrected_force = 0;
   // Out of range means that something went badly wrong upstream: apply no
   // force rather than a wrong one
-  if (force > MOTOR_MAX_FORCE) {
-    force = 0;
-    ret = WHEEL_ERROR;
-  } else if (force < MOTOR_MIN_FORCE) {
+  if (force > MOTOR_MAX_FORCE || force < MOTOR_MIN_FORCE) {
+    WHEEL_LOG_ERROR(WHEEL_ERR_MOTOR);
     force = 0;
     ret = WHEEL_ERROR;
   }

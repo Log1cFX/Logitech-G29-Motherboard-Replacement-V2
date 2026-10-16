@@ -40,10 +40,6 @@ extern "C" {
 // instrument. Calls can be nested: the pin goes low at the last stop
 void debug_start_external_time_test();
 void debug_stop_external_time_test();
-// Maps old_value from [old_min, old_max] to [new_min, new_max], without clamping
-float remapf(float old_min, float old_max, float old_value, float new_min,
-             float new_max);
-float clamp(float x, float min, float max);
 
 #ifdef __cplusplus
 }

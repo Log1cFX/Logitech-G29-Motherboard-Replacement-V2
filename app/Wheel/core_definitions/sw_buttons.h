@@ -64,11 +64,11 @@ extern "C" {
 typedef struct {
   TIM_HandleTypeDef *htim; // one sample per period, see SAMPLE_TIME_US
   DigitalInput_HandleTypeDef *hw_buttons;
-}Buttons_ConfigHandleTypeDef;
+} Buttons_ConfigHandleTypeDef;
 
 typedef struct _Buttons_HandleTypeDef {
   Wheel_Status (*INIT)(struct _Buttons_HandleTypeDef *buttons,
-      Buttons_ConfigHandleTypeDef *config);
+                       Buttons_ConfigHandleTypeDef *config);
   Wheel_Status (*DeINIT)(struct _Buttons_HandleTypeDef *buttons);
   Wheel_Status (*Start_TIM_POLL)(struct _Buttons_HandleTypeDef *buttons);
   Wheel_Status (*Stop_TIM_POLL)(struct _Buttons_HandleTypeDef *buttons);
@@ -93,7 +93,7 @@ typedef struct _Buttons_HandleTypeDef {
   uint8_t knob_head;
   uint8_t knob_flags;
   uint16_t sample_head;
-}Buttons_HandleTypeDef;
+} Buttons_HandleTypeDef;
 
 extern Buttons_HandleTypeDef hButtons;
 

@@ -11,6 +11,8 @@
 
 #include "wheel_file.h"
 #include "wheel_file_settings.h"
+#include "wheel_file_dump.h"
+#include "wheel_file_log.h"
 #include "main.h"
 #include <stddef.h>
 #include <string.h>
@@ -56,6 +58,20 @@ void wheel_file_make(wheel_file_t *file, uint8_t type, uint8_t version,
   file->header.crc = wheel_file_crc(file);
 }
 
+// The version and the size rules of a type: the version of its struct, and a
+// content from min_size to max_size bytes
+static wheel_file_status_t check_layout(const wheel_file_header_t *header,
+                                        uint8_t version, uint16_t min_size,
+                                        uint16_t max_size) {
+  if (header->version != version) {
+    return WHEEL_FILE_BAD_VERSION;
+  }
+  if (header->size < min_size || header->size > max_size) {
+    return WHEEL_FILE_BAD_SIZE;
+  }
+  return WHEEL_FILE_OK;
+}
+
 // What is wrong with a file, WHEEL_FILE_OK when nothing is
 wheel_file_status_t wheel_file_check(const wheel_file_t *file) {
   const wheel_file_header_t *header = &file->header;
@@ -67,16 +83,18 @@ wheel_file_status_t wheel_file_check(const wheel_file_t *file) {
   // Then the rules of its type
   switch (header->type) {
   case WHEEL_FILE_SETTINGS:
-    if (header->version != WHEEL_FILE_SETTINGS_VERSION) {
-      return WHEEL_FILE_BAD_VERSION;
-    }
-    if (header->size != sizeof(wheel_file_settings_t)) {
-      return WHEEL_FILE_BAD_SIZE;
-    }
-    return WHEEL_FILE_OK;
+    return check_layout(header, WHEEL_FILE_SETTINGS_VERSION,
+                        sizeof(wheel_file_settings_t), sizeof(wheel_file_settings_t));
   case WHEEL_FILE_DUMP:
-    // Its content is not defined yet: nothing more to check
-    return WHEEL_FILE_OK;
+    return check_layout(header, WHEEL_FILE_DUMP_VERSION, sizeof(wheel_file_dump_t),
+                        sizeof(wheel_file_dump_t));
+  case WHEEL_FILE_ERROR:
+    return check_layout(header, WHEEL_FILE_ERROR_VERSION, sizeof(wheel_file_error_t),
+                        sizeof(wheel_file_error_t));
+  case WHEEL_FILE_LOG:
+    // The time, then from 0 to WHEEL_FILE_LOG_MAX_TEXT characters
+    return check_layout(header, WHEEL_FILE_LOG_VERSION, sizeof(wheel_file_log_t),
+                        sizeof(wheel_file_log_t) + WHEEL_FILE_LOG_MAX_TEXT);
   default:
     return WHEEL_FILE_UNKNOWN_TYPE;
   }
