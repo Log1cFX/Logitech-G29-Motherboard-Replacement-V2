@@ -69,8 +69,9 @@
 #define NACK_SIZE 6u
 #define ACK_CODE 0x06u // ASCII ACK
 #define NACK_CODE 0x15u // ASCII NAK
-// On the cable: 'G' '2' '9', then the version of this protocol. The version
-// changes with the rules above, and the PC side with it
+// On the cable: 'G' '2' '9' 0x01, in this order. The word is these 4 bytes
+// read little-endian: 'G' is its low byte. It never changes, the version is
+// the one of every file (wheel_version.h)
 #define MAGIC 0x01393247u
 
 // Sent in a NACK: the values are part of the protocol
@@ -649,8 +650,7 @@ void usb_msg_link_down(void) {
 
 // Stores a file for the PC: takes a piece, builds the file in it and adds it
 // to the outgoing chain. usb_msg_next_block() sends it when its turn comes
-usb_msg_status_t usb_msg_send(uint8_t type, uint8_t version, const void *content,
-                              uint16_t size) {
+usb_msg_status_t usb_msg_send(uint8_t type, const void *content, uint16_t size) {
   if (size > USB_MSG_MAX_CONTENT_SIZE) {
     return USB_MSG_INVALID;
   }
@@ -660,7 +660,7 @@ usb_msg_status_t usb_msg_send(uint8_t type, uint8_t version, const void *content
   }
   // The header with its CRC, the copy of the content and the padding, written
   // straight in the piece
-  wheel_file_make(file_at(offset), type, version, content, size);
+  wheel_file_make(file_at(offset), type, content, size);
   chain_add(&msg.outgoing, offset);
   return USB_MSG_OK;
 }

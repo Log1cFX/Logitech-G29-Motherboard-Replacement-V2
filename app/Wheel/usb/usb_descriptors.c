@@ -25,6 +25,7 @@
 
 #include "usb_internal.h"
 #include "usb_hid_desc.h"
+#include "wheel_version.h"
 #include <assert.h>
 #include <string.h>
 
@@ -51,7 +52,7 @@ static tusb_desc_device_t const desc_device = {
 
     .idVendor =  USB_VID,
     .idProduct = USB_PID,
-    .bcdDevice = 0x0101,
+    .bcdDevice = WHEEL_VERSION_BCD, // see wheel_version.h
 
     .iManufacturer = 0x01,
     .iProduct =      0x02,

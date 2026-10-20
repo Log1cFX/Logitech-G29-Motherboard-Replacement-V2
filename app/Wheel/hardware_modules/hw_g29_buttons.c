@@ -40,7 +40,7 @@ static Wheel_Status G29Buttons_DeINIT(DigitalInput_HandleTypeDef *buttons) {
 // Locks the state of the buttons, then reads one button per clock pulse
 static Wheel_Status G29Buttons_ReadState(DigitalInput_HandleTypeDef *buttons) {
   buttons->buttons_state = 0;
-DigitalInput_ConfigHandleTypeDef *config = &buttons->Config;
+  DigitalInput_ConfigHandleTypeDef *config = &buttons->Config;
   HAL_GPIO_WritePin(config->buttons_port, config->clk_pin, 0);
   HAL_GPIO_WritePin(config->buttons_port, config->lock_pin, 1);
   for (uint8_t i = 0; i < BUTTONS_NUM; i++) {

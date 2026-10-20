@@ -141,8 +141,7 @@ static void echo_files() {
   // A file and its copy are both in the buffer for a moment: one that takes
   // more than half of it can never be sent back
   bool too_big = WHEEL_FILE_TOTAL_SIZE(header->size) + 4 > USB_MSG_BUFFER_SIZE / 2;
-  if (too_big || usb_msg_send(header->type, header->version, file->content,
-                              header->size)
+  if (too_big || usb_msg_send(header->type, file->content, header->size)
                  == USB_MSG_OK) {
     usb_msg_pop();
   }

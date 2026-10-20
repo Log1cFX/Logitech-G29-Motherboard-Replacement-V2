@@ -180,7 +180,7 @@ static void save_dump(void) {
   // 208 bytes, a multiple of 4: no padding
   wheel_file_t *file = (wheel_file_t*)dump_file;
   file->header.type = WHEEL_FILE_DUMP;
-  file->header.version = WHEEL_FILE_DUMP_VERSION;
+  file->header.version = WHEEL_VERSION;
   file->header.size = sizeof(wheel_file_dump_t);
   // A fatal error before MX_CRC_Init() finds the CRC unit without its clock
   RCC->AHBENR |= RCC_AHBENR_CRCEN;

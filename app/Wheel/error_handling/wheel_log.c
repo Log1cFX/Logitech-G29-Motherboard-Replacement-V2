@@ -132,8 +132,8 @@ static void send_dump(void) {
 #else
   if (!logs.dump_queued) {
     // usb_msg keeps a copy: the page stays as it is until the handshake
-    logs.dump_queued = usb_msg_send(dump->header.type, dump->header.version,
-                                    dump->content, dump->header.size)
+    logs.dump_queued = usb_msg_send(dump->header.type, dump->content,
+                                    dump->header.size)
                        == USB_MSG_OK;
     return;
   }
@@ -167,9 +167,7 @@ static void send_error(void) {
   wheel_log_print_error(&record);
 #else
   // No room in usb_msg: the record waits, and keeps counting
-  if (usb_msg_send(WHEEL_FILE_ERROR, WHEEL_FILE_ERROR_VERSION, &record,
-                   sizeof(record))
-      != USB_MSG_OK) {
+  if (usb_msg_send(WHEEL_FILE_ERROR, &record, sizeof(record)) != USB_MSG_OK) {
     return;
   }
 #endif
@@ -245,7 +243,7 @@ void wheel_log(const char *format, ...) {
       length = WHEEL_FILE_LOG_MAX_TEXT;
     }
     // The zero is not sent
-    if (usb_msg_send(WHEEL_FILE_LOG, WHEEL_FILE_LOG_VERSION, entry,
+    if (usb_msg_send(WHEEL_FILE_LOG, entry,
                      sizeof(wheel_file_log_t) + (uint16_t)length)
         != USB_MSG_OK) {
       __atomic_fetch_add(&logs.dropped_text, 1u, __ATOMIC_RELAXED);

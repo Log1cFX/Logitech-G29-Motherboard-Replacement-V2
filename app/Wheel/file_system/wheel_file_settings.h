@@ -16,10 +16,6 @@ extern "C" {
 
 #include <stdint.h>
 
-// Version of wheel_file_settings_t, for the header of the file. Changes with
-// the layout of the struct
-#define WHEEL_FILE_SETTINGS_VERSION 1
-
 typedef struct {
   // Incremented at each save. When both settings pages hold a valid file, the
   // one with the highest count is the current one (see wheel_file_pages.h)

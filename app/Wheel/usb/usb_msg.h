@@ -52,8 +52,7 @@ typedef enum {
 // wheel_file_make(). The content is no longer needed once this returns.
 // USB_MSG_OK means stored, not delivered: the file leaves the buffer when the
 // PC acknowledges it, or refuses it
-usb_msg_status_t usb_msg_send(uint8_t type, uint8_t version, const void *content,
-                              uint16_t size);
+usb_msg_status_t usb_msg_send(uint8_t type, const void *content, uint16_t size);
 
 // Oldest file of the PC, NULL when none waits. It lies in the buffer of the
 // module, on a multiple of 4 bytes: its content can be cast to the struct of

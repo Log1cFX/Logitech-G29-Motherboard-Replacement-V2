@@ -46,10 +46,10 @@ uint32_t wheel_file_crc(const wheel_file_t *file) {
 
 // Builds a file at file: the header, a copy of the content, then zeros up to a
 // multiple of 4 bytes. The CRC comes last: it covers what was just written
-void wheel_file_make(wheel_file_t *file, uint8_t type, uint8_t version,
-                     const void *content, uint16_t size) {
+void wheel_file_make(wheel_file_t *file, uint8_t type, const void *content,
+                     uint16_t size) {
   file->header.type = type;
-  file->header.version = version;
+  file->header.version = WHEEL_VERSION;
   file->header.size = size;
   if (size > 0) {
     memcpy(file->content, content, size);
@@ -58,14 +58,9 @@ void wheel_file_make(wheel_file_t *file, uint8_t type, uint8_t version,
   file->header.crc = wheel_file_crc(file);
 }
 
-// The version and the size rules of a type: the version of its struct, and a
-// content from min_size to max_size bytes
-static wheel_file_status_t check_layout(const wheel_file_header_t *header,
-                                        uint8_t version, uint16_t min_size,
-                                        uint16_t max_size) {
-  if (header->version != version) {
-    return WHEEL_FILE_BAD_VERSION;
-  }
+// The size rule of a type: a content from min_size to max_size bytes
+static wheel_file_status_t check_size(const wheel_file_header_t *header,
+                                      uint16_t min_size, uint16_t max_size) {
   if (header->size < min_size || header->size > max_size) {
     return WHEEL_FILE_BAD_SIZE;
   }
@@ -79,22 +74,25 @@ wheel_file_status_t wheel_file_check(const wheel_file_t *file) {
   if (wheel_file_crc(file) != header->crc) {
     return WHEEL_FILE_BAD_CRC;
   }
+  // Written by another firmware: its layouts may differ (wheel_version.h)
+  if (header->version != WHEEL_VERSION) {
+    return WHEEL_FILE_BAD_VERSION;
+  }
 
   // Then the rules of its type
   switch (header->type) {
   case WHEEL_FILE_SETTINGS:
-    return check_layout(header, WHEEL_FILE_SETTINGS_VERSION,
-                        sizeof(wheel_file_settings_t), sizeof(wheel_file_settings_t));
+    return check_size(header, sizeof(wheel_file_settings_t),
+                      sizeof(wheel_file_settings_t));
   case WHEEL_FILE_DUMP:
-    return check_layout(header, WHEEL_FILE_DUMP_VERSION, sizeof(wheel_file_dump_t),
-                        sizeof(wheel_file_dump_t));
+    return check_size(header, sizeof(wheel_file_dump_t), sizeof(wheel_file_dump_t));
   case WHEEL_FILE_ERROR:
-    return check_layout(header, WHEEL_FILE_ERROR_VERSION, sizeof(wheel_file_error_t),
-                        sizeof(wheel_file_error_t));
+    return check_size(header, sizeof(wheel_file_error_t),
+                      sizeof(wheel_file_error_t));
   case WHEEL_FILE_LOG:
     // The time, then from 0 to WHEEL_FILE_LOG_MAX_TEXT characters
-    return check_layout(header, WHEEL_FILE_LOG_VERSION, sizeof(wheel_file_log_t),
-                        sizeof(wheel_file_log_t) + WHEEL_FILE_LOG_MAX_TEXT);
+    return check_size(header, sizeof(wheel_file_log_t),
+                      sizeof(wheel_file_log_t) + WHEEL_FILE_LOG_MAX_TEXT);
   default:
     return WHEEL_FILE_UNKNOWN_TYPE;
   }

@@ -16,6 +16,7 @@
 extern "C" {
 #endif
 
+#include "wheel_version.h"
 #include <assert.h>
 #include <stdint.h>
 
@@ -37,7 +38,7 @@ typedef enum {
  */
 typedef struct {
   uint8_t type; // wheel_file_type_t
-  uint8_t version; // of the layout of the content, one numbering per type
+  uint8_t version; // WHEEL_VERSION of the firmware that wrote it
   uint16_t size; // of the content in bytes, without its padding
   uint32_t crc; // see CRC above
 } wheel_file_header_t;
@@ -74,12 +75,13 @@ typedef enum {
 uint32_t wheel_file_crc(const wheel_file_t *file);
 
 // Builds a file at file, which needs WHEEL_FILE_TOTAL_SIZE(size) bytes: the
-// header with its CRC, a copy of the content, the padding
-void wheel_file_make(wheel_file_t *file, uint8_t type, uint8_t version,
-                     const void *content, uint16_t size);
+// header with WHEEL_VERSION and its CRC, a copy of the content, the padding
+void wheel_file_make(wheel_file_t *file, uint8_t type, const void *content,
+                     uint16_t size);
 
-// The one place that knows what a valid file is: its CRC, then the rules of
-// its type. A content can be cast to its struct once this returns WHEEL_FILE_OK
+// The one place that knows what a valid file is: its CRC, WHEEL_VERSION, then
+// the rules of its type. A content can be cast to its struct once this returns
+// WHEEL_FILE_OK
 wheel_file_status_t wheel_file_check(const wheel_file_t *file);
 
 #ifdef __cplusplus

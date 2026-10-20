@@ -17,10 +17,6 @@ extern "C" {
 
 #include <stdint.h>
 
-// Version of wheel_file_log_t, for the header of the file. Changes with the
-// layout of the struct
-#define WHEEL_FILE_LOG_VERSION 1
-
 // Longest text: a longer one is cut
 #define WHEEL_FILE_LOG_MAX_TEXT 120
 

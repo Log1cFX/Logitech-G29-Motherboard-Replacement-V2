@@ -19,10 +19,6 @@ extern "C" {
 #include <stddef.h>
 #include <stdint.h>
 
-// Version of wheel_file_error_t, for the header of the file. Changes with the
-// layout of the struct
-#define WHEEL_FILE_ERROR_VERSION 1
-
 // What went wrong. The values are part of the file: a code keeps its value, a
 // new one goes at the end of the list
 typedef enum {
