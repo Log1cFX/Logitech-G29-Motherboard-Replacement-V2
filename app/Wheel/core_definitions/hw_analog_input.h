@@ -37,6 +37,7 @@ extern "C" {
 #endif
 
 #include "common_types.h"
+#include "wheel_file_settings.h"
 
 // Layout of Analog_HandleTypeDef.axis: the scan order of the ADC, set in main.c
 #define ANALOG_INPUT_NUM 5
@@ -64,6 +65,9 @@ typedef struct _Analog_HandleTypeDef {
 
 typedef struct _Pedals_ConfigHandleTypeDef {
   Analog_HandleTypeDef *hw_analog;
+  // The range of each pedal, in the settings image (wheel_settings.h). Read at
+  // every GetState: a change applies at once
+  const wheel_file_settings_pedals_t *settings;
 } Pedals_ConfigHandleTypeDef;
 
 typedef struct _Pedals_HandleTypeDef {

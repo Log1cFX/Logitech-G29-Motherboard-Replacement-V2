@@ -45,8 +45,8 @@ extern "C" {
 
 typedef enum {
   USB_MSG_OK, USB_MSG_FULL, // no free place of the buffer is big enough: nothing is stored
-  USB_MSG_INVALID // content over USB_MSG_MAX_CONTENT_SIZE
-} usb_msg_status_t;
+  USB_MSG_INVALID// content over USB_MSG_MAX_CONTENT_SIZE
+}usb_msg_status_t;
 
 // Builds a file for the PC in the buffer, around a copy of the content: see
 // wheel_file_make(). The content is no longer needed once this returns.

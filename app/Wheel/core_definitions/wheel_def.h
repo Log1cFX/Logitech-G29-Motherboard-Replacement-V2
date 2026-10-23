@@ -91,9 +91,9 @@ extern "C" {
 #include "hw_motor_driver.h"
 #include "sw_actuator.h"
 
+// The values that can be tuned are settings, not defines: see wheel_settings.h
+
 #define MAX_ROTATION_DEG 900 // between the two mechanical ends
-#define ENDSTOP_DEG_OFFSET 15 // margin kept before each end
-#define CONSTRAINED_ROTATION_DEG (MAX_ROTATION_DEG - (ENDSTOP_DEG_OFFSET * 2))
 
 /* CALIBRATION */
 // 1: for a board on the bench, without its motor and its sensor. The startup
@@ -105,8 +105,6 @@ extern "C" {
 
 // What the firmware logs: see WHEEL_LOG_LEVEL in wheel_log.h
 
-#define CALIBRATION_FORCE 135 // out of MOTOR_MAX_FORCE
-
 #ifdef DEBUG
 #define CALIBRATION_MAX_TRIES 3
 #else
@@ -116,12 +114,6 @@ extern "C" {
 #define CALIBRATION_RETRY_DELAY_MS 2000
 #define CALIBRATION_MOTOR_START_DELAY_MS 40 // lets the wheel start moving
 #define CALIBRATION_SAMPLE_PERIOD_MS 10 // between two position samples of a sweep
-// An end is reached when steering_pos moves less than this between two samples
-#define CALIBRATION_STALL_THRESHOLD 150
-// Smallest end-to-end range accepted, in steering_pos units. About 64069 was
-// measured in testing
-#define CALIBRATION_MIN_RANGE 63750
-#define RECENTER_TOLERANCE 150 // centered when |virtual_axis| is under this
 
 /* CONTROL LOOP */
 #define CONTROL_LOOP_PERIOD_MS 1
@@ -130,28 +122,8 @@ extern "C" {
 /* FORCE FEEDBACK */
 #define FFB_AXIS_COUNT 1
 #define FFB_STEERING_AXIS 0 // index of the steering axis in the ffb library
+// Filter profile of the library edited with the filters of the settings
 #define FFB_FILTER_PROFILE 0 // 0 = default profile, 1 = custom
-
-// Low-pass filters of the speed and the acceleration (Hz, q = Q * 100).
-// A lower cutoff smooths the derivatives of the position more, for more lag.
-// Library defaults: {70, 55} for the speed, {55, 30} for the acceleration
-#define METRICS_SPEED_FREQ_HZ 40
-#define METRICS_SPEED_Q 55
-#define METRICS_ACCEL_FREQ_HZ 25
-#define METRICS_ACCEL_Q 30
-
-// Effects computed by the wheel itself, 0 to 255
-#define LOCAL_ENDSTOP_STRENGTH 250
-#define LOCAL_IDLE_SPRING_STRENGTH 255
-#define LOCAL_DAMPER_INTENSITY 0
-
-// Low-pass filters of the host effects (Hz, q = Q * 100), each followed by the
-// library default
-#define FFB_CONSTANT_FILTER_FREQ_HZ 50 // 500, which filters nothing at 1 kHz
-#define FFB_CONSTANT_FILTER_Q 60 // 70
-#define FFB_DAMPER_FILTER_FREQ_HZ 15 // 30
-#define FFB_FRICTION_FILTER_FREQ_HZ 15 // 50
-#define FFB_INERTIA_FILTER_FREQ_HZ 5 // 15
 
 typedef struct {
   // Set once by init_wheel_handle() (main), then read by every context.
@@ -166,7 +138,7 @@ typedef struct {
   Shifter_HandleTypeDef *hShifter;
   MotorDriver_HandleTypeDef *hMotorDriver;
   Actuator_HandleTypeDef *hActuator;
-}Wheel_HandleTypeDef;
+} Wheel_HandleTypeDef;
 
 extern Wheel_HandleTypeDef wheel;
 

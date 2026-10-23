@@ -30,11 +30,14 @@ extern "C" {
 #endif
 
 #include "wheel_file_error.h"
+#include "wheel_file_settings.h"
 #include <stdint.h>
 
 /* SETTINGS */
 // 0: nothing is logged, the errors are only counted. 1: errors and dumps.
-// 2: also the text of WHEEL_LOG(). 1 on a wheel in use
+// 2: also the text of WHEEL_LOG(). 1 on a wheel in use.
+// The ceiling of the build: what is above it is not even compiled. The level
+// in use is the one of the settings (log_level), which cannot exceed it
 #define WHEEL_LOG_LEVEL 2
 
 /* USE */
@@ -62,6 +65,11 @@ extern "C" {
 // Takes the dump left by the last run, and gives their own handlers to the
 // configurable faults of the processor. First call of wheel_startup()
 void wheel_log_init(void);
+
+// The settings that hold the level in use, in the settings image
+// (wheel_settings.h), read at each log. Until this call, WHEEL_LOG_LEVEL is
+// used. Main, once the settings are loaded
+void wheel_log_set_settings(const wheel_file_settings_system_t *settings);
 
 // Sends the dump of the last run, then the errors recorded since. Main only,
 // from every usb_task() (see usb_custom_task() in steeringwheel.c)

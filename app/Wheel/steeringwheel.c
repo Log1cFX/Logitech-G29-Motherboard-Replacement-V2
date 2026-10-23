@@ -13,6 +13,7 @@
 #include "usb_msg.h"
 #include "watchdog.h"
 #include "wheel_log.h"
+#include "wheel_settings.h"
 #include "ffb/ffb_c.h"
 #include "ffb/ffb_metrics_c.h"
 #include "ffb/ffb_axis_local_c.h"
@@ -24,6 +25,12 @@
 #if WHEEL_SKIP_CALIBRATION
 #warning "WHEEL_SKIP_CALIBRATION is 1: build for the bench, not for a wheel"
 #endif
+
+// The limits of the settings hold for this wheel
+static_assert(WHEEL_FILE_SETTINGS_MAX_CALIBRATION_FORCE == MOTOR_MAX_FORCE,
+    "the calibration force is out of MOTOR_MAX_FORCE");
+static_assert(2 * WHEEL_FILE_SETTINGS_MAX_ENDSTOP_MARGIN_DEG < MAX_ROTATION_DEG,
+    "the endstop margins leave no travel");
 
 Wheel_HandleTypeDef wheel; // who uses what: see wheel_def.h
 // Main only: the control loop, and the USB module when the host sends something
@@ -50,6 +57,9 @@ static void usb_custom_task(usb_state_t *state);
 void wheel_startup() {
   // First: the errors of the inits below already go to the log
   wheel_log_init();
+  // Then the settings, which every init below points to
+  wheel_settings_init();
+  wheel_log_set_settings(&wheel_settings->system.content);
 
   /* INIT */
   init_analog();
@@ -109,7 +119,7 @@ void wheel_startup() {
   if (metrics == NULL || local_effects == NULL) {
     WHEEL_FATAL_ERROR(WHEEL_ERR_FFB);
   }
-  init_filter_preset();
+  apply_settings();
 
 #ifndef DEBUG
   // Not on a board without its sensor: see WHEEL_SKIP_CALIBRATION
@@ -142,7 +152,7 @@ static void echo_files() {
   // more than half of it can never be sent back
   bool too_big = WHEEL_FILE_TOTAL_SIZE(header->size) + 4 > USB_MSG_BUFFER_SIZE / 2;
   if (too_big || usb_msg_send(header->type, file->content, header->size)
-                 == USB_MSG_OK) {
+      == USB_MSG_OK) {
     usb_msg_pop();
   }
 }
@@ -170,9 +180,11 @@ static void control_loop_step() {
   local_force = ffb_axis_local_compute(local_effects, &st, ffb_is_active(hFFB));
   total_force = host_force + local_force;
 
-  // From the int16 range to the range of the motor. total_force can exceed
-  // the int16 range (two forces added): the clamp catches it
-  int32_t force = total_force * MOTOR_MAX_FORCE / INT16_MAX;
+  // From the int16 range to the range of the motor, at the strength of the
+  // settings. total_force can exceed the int16 range (two forces added): the
+  // clamp catches it. At most 2 * INT16_MAX * 255 * 100: fits in 32 bits
+  int32_t strength_pct = wheel_settings->ffb.content.strength_pct;
+  int32_t force = total_force * MOTOR_MAX_FORCE * strength_pct / (INT16_MAX * 100);
   if (force > MOTOR_MAX_FORCE) {
     force = MOTOR_MAX_FORCE;
   } else if (force < MOTOR_MIN_FORCE) {
@@ -194,11 +206,12 @@ static void control_loop_step() {
 // minimum
 static void wheel_calib_sweep(Sensor_HandleTypeDef *sensor, int16_t force,
                               volatile int32_t *extremum, int dir) {
+  uint16_t stall_threshold = wheel_settings->calibration.content.stall_threshold;
   int32_t previous = sensor->steering_pos;
   wheel.hActuator->Apply_Force(wheel.hActuator, force);
   wheel_delay(CALIBRATION_MOTOR_START_DELAY_MS);
   int16_t acceleration = sensor->steering_pos - previous;
-  while (abs(acceleration) > CALIBRATION_STALL_THRESHOLD) {
+  while (abs(acceleration) > stall_threshold) {
     if (dir * sensor->steering_pos > dir * *extremum) {
       *extremum = sensor->steering_pos;
     }
@@ -208,22 +221,30 @@ static void wheel_calib_sweep(Sensor_HandleTypeDef *sensor, int16_t force,
   }
 }
 
+// Both sweeps with the force of the settings, then the scale of the axis. The
+// range found must reach min_range
 static Wheel_Status wheel_axis_calibration() {
   Sensor_HandleTypeDef *sensor = wheel.hSensor;
+  const wheel_file_settings_calibration_t *calibration =
+      &wheel_settings->calibration.content;
+  int16_t force = (int16_t)calibration->force;
 
-  wheel_calib_sweep(sensor, -CALIBRATION_FORCE, &sensor->min, -1);
-  wheel_calib_sweep(sensor, CALIBRATION_FORCE, &sensor->max, +1);
+  wheel_calib_sweep(sensor, -force, &sensor->min, -1);
+  wheel_calib_sweep(sensor, force, &sensor->max, +1);
   wheel.hActuator->Apply_Force(wheel.hActuator, 0);
 
   sensor->axis_scale = (float)(INT16_MAX) / (sensor->distance / 2);
-  return (sensor->distance < CALIBRATION_MIN_RANGE) ? WHEEL_ERROR : WHEEL_OK;
+  return (sensor->distance < calibration->min_range) ? WHEEL_ERROR : WHEEL_OK;
 }
 
+// Pushes towards the center until the axis is within recenter_tolerance
 static void wheel_recenter() {
+  const wheel_file_settings_calibration_t *calibration =
+      &wheel_settings->calibration.content;
+  int16_t force = (int16_t)calibration->force;
   int8_t sign = (wheel.hSensor->virtual_axis > 0) ? 1 : -1;
-  while (abs(wheel.hSensor->virtual_axis) > RECENTER_TOLERANCE) {
-    wheel.hActuator->Apply_Force(wheel.hActuator,
-    CALIBRATION_FORCE * -sign);
+  while (abs(wheel.hSensor->virtual_axis) > calibration->recenter_tolerance) {
+    wheel.hActuator->Apply_Force(wheel.hActuator, force * -sign);
     usb_task();
   }
   wheel.hActuator->Apply_Force(wheel.hActuator, 0);

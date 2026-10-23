@@ -77,16 +77,26 @@ const wheel_file_t* wheel_file_page_read(wheel_file_page_t page) {
   return (wheel_file_check(file) == WHEEL_FILE_OK) ? file : NULL;
 }
 
-// Erase, then the half-words of the file from its content back to its first
-// one. The first half-word holds the type: until it is written, the page
-// reads as erased
+// The whole file, padding included: see wheel_file_page_write_bytes()
 bool wheel_file_page_write(wheel_file_page_t page, const wheel_file_t *file) {
   if (file->header.size > WHEEL_FILE_MAX_CONTENT_SIZE) {
     return false;
   }
+  return wheel_file_page_write_bytes(page, file,
+                                     WHEEL_FILE_TOTAL_SIZE(file->header.size));
+}
+
+// Erase, then the half-words from the last one back to the first. The first
+// half-word holds the type of the first file: until it is written, the page
+// reads as erased
+bool wheel_file_page_write_bytes(wheel_file_page_t page, const void *data,
+                                 uint32_t size) {
+  if (size > WHEEL_FILE_PAGE_SIZE || (size % 2u) != 0u) {
+    return false;
+  }
   uint32_t address = WHEEL_FILE_PAGE_ADDRESS(page);
-  const uint16_t *halfwords = (const uint16_t*)file;
-  uint32_t count = WHEEL_FILE_TOTAL_SIZE(file->header.size) / 2u;
+  const uint16_t *halfwords = data;
+  uint32_t count = size / 2u;
 
   unlock();
   bool ok = erase_page(address);

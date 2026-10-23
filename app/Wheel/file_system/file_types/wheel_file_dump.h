@@ -9,8 +9,8 @@
  *  (wheel_file_pages.h) before the reset, sent after it
  */
 
-#ifndef FILE_SYSTEM_WHEEL_FILE_DUMP_H_
-#define FILE_SYSTEM_WHEEL_FILE_DUMP_H_
+#ifndef FILE_SYSTEM_FILE_TYPES_WHEEL_FILE_DUMP_H_
+#define FILE_SYSTEM_FILE_TYPES_WHEEL_FILE_DUMP_H_
 
 #ifdef __cplusplus
 extern "C" {
@@ -52,4 +52,4 @@ static_assert(sizeof(wheel_file_dump_t) == 208, "not 208 bytes");
 }
 #endif
 
-#endif /* FILE_SYSTEM_WHEEL_FILE_DUMP_H_ */
+#endif /* FILE_SYSTEM_FILE_TYPES_WHEEL_FILE_DUMP_H_ */

@@ -8,8 +8,8 @@
  *  it carries. The host decodes both
  */
 
-#ifndef FILE_SYSTEM_WHEEL_FILE_ERROR_H_
-#define FILE_SYSTEM_WHEEL_FILE_ERROR_H_
+#ifndef FILE_SYSTEM_FILE_TYPES_WHEEL_FILE_ERROR_H_
+#define FILE_SYSTEM_FILE_TYPES_WHEEL_FILE_ERROR_H_
 
 #ifdef __cplusplus
 extern "C" {
@@ -44,6 +44,9 @@ typedef enum {
   // Others
   WHEEL_ERR_ANALOG = 15, // a DMA error of the ADC
   WHEEL_ERR_MOTOR = 16, // Apply_Force() refused the force
+  // A settings page could not be written, or neither page is valid at the start
+  // (wheel_settings.c)
+  WHEEL_ERR_SETTINGS = 17,
   WHEEL_ERR_COUNT // not a code: the number of them
 } wheel_error_t;
 
@@ -80,4 +83,4 @@ static_assert(sizeof(wheel_file_error_t) == 100, "not 100 bytes");
 }
 #endif
 
-#endif /* FILE_SYSTEM_WHEEL_FILE_ERROR_H_ */
+#endif /* FILE_SYSTEM_FILE_TYPES_WHEEL_FILE_ERROR_H_ */

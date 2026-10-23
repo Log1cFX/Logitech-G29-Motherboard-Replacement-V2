@@ -31,7 +31,7 @@ static Wheel_Status Buttons_INIT(Buttons_HandleTypeDef *buttons,
   if (config == NULL) {
     return WHEEL_ERROR;
   }
-  if (config->htim == 0 || config->hw_buttons == 0) {
+  if (config->htim == 0 || config->hw_buttons == 0 || config->settings == NULL) {
     return WHEEL_ERROR;
   }
   memcpy(&buttons->Config, config, sizeof(Buttons_ConfigHandleTypeDef));
@@ -106,20 +106,18 @@ static Wheel_Status Buttons_GetState(Buttons_HandleTypeDef *buttons) {
 }
 
 // Majority vote: a button is pressed when it is set in more than half of the
-// last MAX_SAMPLES samples
+// last vote_samples samples, the newest at sample_head. The settings keep the
+// vote odd and within BUTTONS_BUFFER_SIZE
 static void get_debounced_state(Buttons_HandleTypeDef *buttons) {
   uint16_t buttonSum[BUTTONS_NUM] = {0};
   uint32_t *buffer = buttons->sample_buffer;
-  uint16_t head = buttons->sample_head;
-  uint16_t sample_idx = head;
+  uint16_t vote = buttons->Config.settings->vote_samples;
+  uint16_t sample_idx = buttons->sample_head;
 
-  for (uint16_t offset = 0; offset < MAX_SAMPLES; offset++) {
-    if (sample_idx == 0) {
-      sample_idx = BUTTONS_BUFFER_SIZE - 1;
-    } else {
-      sample_idx--;
-    }
+  for (uint16_t offset = 0; offset < vote; offset++) {
     uint32_t sample = buffer[sample_idx];
+    // One step back, around the buffer
+    sample_idx = (sample_idx == 0u) ? BUTTONS_BUFFER_SIZE - 1u : sample_idx - 1u;
     buttonSum[0] += (sample >> 0) & 1;
     buttonSum[1] += (sample >> 1) & 1;
     buttonSum[2] += (sample >> 2) & 1;
@@ -148,7 +146,7 @@ static void get_debounced_state(Buttons_HandleTypeDef *buttons) {
 
   uint32_t result = 0;
   for (uint8_t button = 0; button < BUTTONS_NUM; button++) {
-    if (buttonSum[button] > HALF_SAMPLES) {
+    if (buttonSum[button] > vote / 2) {
       result |= (1UL << button);
     }
   }
@@ -214,9 +212,10 @@ static void read_knob_button_state(Buttons_HandleTypeDef *buttons) {
   }
 }
 
-// Ends the report of a detent after KNOB_LOCK_TIME_MS
+// Ends the report of a detent after knob_lock_ms (settings)
 static void update_knob_button_state(Buttons_HandleTypeDef *buttons) {
-  if (HAL_GetTick() - buttons->knob_lock_init_time_ms > KNOB_LOCK_TIME_MS) {
+  uint32_t lock_ms = buttons->Config.settings->knob_lock_ms;
+  if (HAL_GetTick() - buttons->knob_lock_init_time_ms > lock_ms) {
     CLEAR_BIT(buttons->knob_flags, KNOB_LOCK_FLAG);
     CLEAR_BIT(buttons->knob_flags, KNOB_DIRECTION_FLAG);
     memset(buttons->knob_rotation_sequence_buffer, 0,

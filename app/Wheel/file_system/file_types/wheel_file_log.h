@@ -8,8 +8,8 @@
  *  WHEEL_LOG()
  */
 
-#ifndef FILE_SYSTEM_WHEEL_FILE_LOG_H_
-#define FILE_SYSTEM_WHEEL_FILE_LOG_H_
+#ifndef FILE_SYSTEM_FILE_TYPES_WHEEL_FILE_LOG_H_
+#define FILE_SYSTEM_FILE_TYPES_WHEEL_FILE_LOG_H_
 
 #ifdef __cplusplus
 extern "C" {
@@ -30,4 +30,4 @@ typedef struct {
 }
 #endif
 
-#endif /* FILE_SYSTEM_WHEEL_FILE_LOG_H_ */
+#endif /* FILE_SYSTEM_FILE_TYPES_WHEEL_FILE_LOG_H_ */

@@ -57,9 +57,20 @@ static struct {
   // For the debugger. Any context: atomic additions
   uint32_t dropped_errors; // the ring was full
   uint32_t dropped_text; // usb_msg was full, or WHEEL_LOG() in an interrupt
+
+  // Holds the level in use, in the settings image. NULL until
+  // wheel_log_set_settings(). Written once by main, read in any context
+  const wheel_file_settings_system_t *settings;
 } logs;
 
 #if WHEEL_LOG_LEVEL >= 1
+
+// The level of the settings, WHEEL_LOG_LEVEL before they are loaded. The
+// settings keep it at or below WHEEL_LOG_LEVEL
+static uint8_t level(void) {
+  const wheel_file_settings_system_t *settings = logs.settings;
+  return (settings != NULL) ? settings->log_level : WHEEL_LOG_LEVEL;
+}
 
 /* PENDING ERRORS */
 
@@ -209,11 +220,19 @@ void wheel_log_init(void) {
   }
 }
 
+// The settings are only pointed to: see wheel_settings.h
+void wheel_log_set_settings(const wheel_file_settings_system_t *settings) {
+  logs.settings = settings;
+}
+
 // The dump first: it happened before anything of this run. At level 0 it stays
-// in its page, for a build that sends it
+// in its page, for a level or a build that sends it. The errors recorded
+// before a change to level 0 still leave
 void wheel_log_task(void) {
 #if WHEEL_LOG_LEVEL >= 1
-  send_dump();
+  if (level() >= 1u) {
+    send_dump();
+  }
   send_error();
 #endif
 }
@@ -221,6 +240,9 @@ void wheel_log_task(void) {
 // Formatted on the stack, then printed (DEBUG) or sent as a WHEEL_FILE_LOG
 void wheel_log(const char *format, ...) {
 #if WHEEL_LOG_LEVEL >= 2
+  if (level() < 2u) {
+    return;
+  }
   // An interrupt could cut into usb_msg, or into a printf of main
   if (__get_IPSR() != 0u) {
     __atomic_fetch_add(&logs.dropped_text, 1u, __ATOMIC_RELAXED);
@@ -263,6 +285,9 @@ void wheel_log_error(wheel_error_t code, const char *file, uint16_t line) {
     __atomic_fetch_add(&logs.counts[code], 1u, __ATOMIC_RELAXED);
   }
 #if WHEEL_LOG_LEVEL >= 1
+  if (level() < 1u) {
+    return;
+  }
   // The same call already waits: no new record, no trace
   if (merge(code, file, line)) {
     return;

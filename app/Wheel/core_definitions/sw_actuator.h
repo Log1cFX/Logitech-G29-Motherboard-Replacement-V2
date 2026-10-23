@@ -34,12 +34,16 @@
 
 #include "hw_motor_driver.h"
 #include "common_types.h"
+#include "wheel_file_settings.h"
 
 #define MOTOR_MAX_FORCE 255
 #define MOTOR_MIN_FORCE (-255)
 
 typedef struct _Actuator_ConfigHandleTypeDef {
   MotorDriver_HandleTypeDef *hMotorDriver;
+  // The force correction table, in the settings image (wheel_settings.h). Read
+  // at every Apply_Force: a change applies at once
+  const wheel_file_settings_force_t *settings;
 } Actuator_ConfigHandleTypeDef;
 
 typedef struct _Actuator_HandleTypeDef {

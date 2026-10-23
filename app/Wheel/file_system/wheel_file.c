@@ -10,9 +10,6 @@
  */
 
 #include "wheel_file.h"
-#include "wheel_file_settings.h"
-#include "wheel_file_dump.h"
-#include "wheel_file_log.h"
 #include "main.h"
 #include <stddef.h>
 #include <string.h>
@@ -67,6 +64,18 @@ static wheel_file_status_t check_size(const wheel_file_header_t *header,
   return WHEEL_FILE_OK;
 }
 
+// The rules of a settings file: exactly the size of its struct, then the
+// ranges of its values. The content is on a multiple of 4 bytes (wheel_file_t)
+static wheel_file_status_t check_settings(const wheel_file_t *file, uint16_t size) {
+  if (file->header.size != size) {
+    return WHEEL_FILE_BAD_SIZE;
+  }
+  if (!wheel_file_settings_valid(file->header.type, file->content)) {
+    return WHEEL_FILE_BAD_VALUE;
+  }
+  return WHEEL_FILE_OK;
+}
+
 // What is wrong with a file, WHEEL_FILE_OK when nothing is
 wheel_file_status_t wheel_file_check(const wheel_file_t *file) {
   const wheel_file_header_t *header = &file->header;
@@ -81,14 +90,26 @@ wheel_file_status_t wheel_file_check(const wheel_file_t *file) {
 
   // Then the rules of its type
   switch (header->type) {
-  case WHEEL_FILE_SETTINGS:
-    return check_size(header, sizeof(wheel_file_settings_t),
-                      sizeof(wheel_file_settings_t));
+  case WHEEL_FILE_SETTINGS_FFB:
+    return check_settings(file, sizeof(wheel_file_settings_ffb_t));
+  case WHEEL_FILE_SETTINGS_STEERING:
+    return check_settings(file, sizeof(wheel_file_settings_steering_t));
+  case WHEEL_FILE_SETTINGS_CALIBRATION:
+    return check_settings(file, sizeof(wheel_file_settings_calibration_t));
+  case WHEEL_FILE_SETTINGS_SHIFTER:
+    return check_settings(file, sizeof(wheel_file_settings_shifter_t));
+  case WHEEL_FILE_SETTINGS_PEDALS:
+    return check_settings(file, sizeof(wheel_file_settings_pedals_t));
+  case WHEEL_FILE_SETTINGS_BUTTONS:
+    return check_settings(file, sizeof(wheel_file_settings_buttons_t));
+  case WHEEL_FILE_SETTINGS_SYSTEM:
+    return check_settings(file, sizeof(wheel_file_settings_system_t));
+  case WHEEL_FILE_SETTINGS_FORCE:
+    return check_settings(file, sizeof(wheel_file_settings_force_t));
   case WHEEL_FILE_DUMP:
     return check_size(header, sizeof(wheel_file_dump_t), sizeof(wheel_file_dump_t));
   case WHEEL_FILE_ERROR:
-    return check_size(header, sizeof(wheel_file_error_t),
-                      sizeof(wheel_file_error_t));
+    return check_size(header, sizeof(wheel_file_error_t), sizeof(wheel_file_error_t));
   case WHEEL_FILE_LOG:
     // The time, then from 0 to WHEEL_FILE_LOG_MAX_TEXT characters
     return check_size(header, sizeof(wheel_file_log_t),

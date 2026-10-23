@@ -38,22 +38,21 @@ extern "C" {
 
 #include "common_types.h"
 #include "hw_digital_input.h"
+#include "wheel_file_settings.h"
 
 /* DEBOUNCING */
 #define SAMPLE_TIME_US 1000U // period of the poll timer, applied in main.c
-#define MAX_SAMPLES 65U // majority vote over this many samples
-#define HALF_SAMPLES (MAX_SAMPLES / 2)
-#define BUTTONS_BUFFER_SIZE MAX_SAMPLES
+// The last samples, enough for the longest vote of the settings
+#define BUTTONS_BUFFER_SIZE WHEEL_FILE_SETTINGS_MAX_VOTE_SAMPLES
 
 /*
  * KNOB
  * A rotary encoder on buttons 23 and 24. One detent is a sequence of 5 states
  * (see right/left_sequence_backwards in sw_buttons.c). Once it is seen, the
- * matching button is reported pressed for KNOB_LOCK_TIME_MS and the knob is
- * ignored meanwhile.
+ * matching button is reported pressed for knob_lock_ms (settings) and the knob
+ * is ignored meanwhile.
  */
 #define GET_BIT(var, mask) ((mask) & (var))
-#define	KNOB_LOCK_TIME_MS 30U
 #define R_KNOB_BIT_MASK (1U << (23-1))
 #define	L_KNOB_BIT_MASK (1U << (24-1))
 #define RL_KNOB_BIT_MASK (R_KNOB_BIT_MASK | L_KNOB_BIT_MASK)
@@ -64,6 +63,9 @@ extern "C" {
 typedef struct {
   TIM_HandleTypeDef *htim; // one sample per period, see SAMPLE_TIME_US
   DigitalInput_HandleTypeDef *hw_buttons;
+  // The vote and the knob lock, in the settings image (wheel_settings.h). Read
+  // at each use: a change applies at once
+  const wheel_file_settings_buttons_t *settings;
 } Buttons_ConfigHandleTypeDef;
 
 typedef struct _Buttons_HandleTypeDef {

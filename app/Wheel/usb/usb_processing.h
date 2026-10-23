@@ -38,7 +38,7 @@ typedef enum {
   // The bus is suspended: the host sleeps. An unplugged cable also ends up
   // here, the board cannot tell the difference
   USB_SUSPENDED
-}usb_state_t;
+} usb_state_t;
 
 // Sets up the USB peripheral and starts TinyUSB. Call once, with the ffb
 // library already created. custom_task is optional: every usb_task() calls it

@@ -85,7 +85,8 @@ typedef enum {
   NACK_BAD_CRC,
   NACK_UNKNOWN_TYPE,
   NACK_BAD_VERSION,
-  NACK_BAD_SIZE // a content size its type does not allow
+  NACK_BAD_SIZE, // a content size its type does not allow
+  NACK_BAD_VALUE // a settings value out of its range
 } nack_reason_t;
 
 #define TIMEOUT_MS 250u // for a handshake, and between two blocks of a message
@@ -334,6 +335,8 @@ static nack_reason_t reason_of(wheel_file_status_t status) {
     return NACK_UNKNOWN_TYPE;
   case WHEEL_FILE_BAD_VERSION:
     return NACK_BAD_VERSION;
+  case WHEEL_FILE_BAD_VALUE:
+    return NACK_BAD_VALUE;
   default:
     return NACK_BAD_SIZE;
   }

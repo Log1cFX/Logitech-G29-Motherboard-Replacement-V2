@@ -7,9 +7,7 @@
 
 #include "hw_analog_input.h"
 
-// The ADC values are 16 bits (12 bits left-aligned), the pedals are sent on 8
-#define PEDAL_ADC_TO_8BIT_SHIFT 8
-#define PEDAL_MAX 0xFF // the pedal axes are inverted: PEDAL_MAX - value
+#define PEDAL_MAX 255 // a pedal pressed to the end
 
 static Wheel_Status Analog_INIT(Analog_HandleTypeDef *analog,
                                 Analog_ConfigHandleTypeDef *config);
@@ -81,7 +79,7 @@ static Wheel_Status Pedals_INIT(Pedals_HandleTypeDef *pedals,
   if (config == NULL) {
     return WHEEL_ERROR;
   }
-  if (config->hw_analog == NULL) {
+  if (config->hw_analog == NULL || config->settings == NULL) {
     return WHEEL_ERROR;
   }
   memcpy(&pedals->Config, config, sizeof(Pedals_ConfigHandleTypeDef));
@@ -102,14 +100,26 @@ static void reset_pedals(Pedals_HandleTypeDef *pedals) {
   pedals->throtle = 0;
 }
 
+// A raw conversion of a pedal on 0 to PEDAL_MAX: 0 at released, PEDAL_MAX at
+// pressed, clamped outside. The settings keep released and pressed apart
+static uint8_t pedal_position(uint32_t raw, uint16_t released, uint16_t pressed) {
+  int32_t travel = (int32_t)pressed - (int32_t)released;
+  int32_t position = ((int32_t)raw - (int32_t)released) * PEDAL_MAX / travel;
+  if (position < 0) {
+    return 0;
+  }
+  return (position > PEDAL_MAX) ? PEDAL_MAX : (uint8_t)position;
+}
+
 static Wheel_Status Pedals_GetState(Pedals_HandleTypeDef *pedals) {
   Analog_HandleTypeDef *hw_analog = pedals->Config.hw_analog;
-  pedals->clutch = PEDAL_MAX
-      - (hw_analog->axis[PEDALS_IDX] >> PEDAL_ADC_TO_8BIT_SHIFT);
-  pedals->brake = PEDAL_MAX
-      - (hw_analog->axis[PEDALS_IDX + 1] >> PEDAL_ADC_TO_8BIT_SHIFT);
-  pedals->throtle = PEDAL_MAX
-      - (hw_analog->axis[PEDALS_IDX + 2] >> PEDAL_ADC_TO_8BIT_SHIFT);
+  const wheel_file_settings_pedals_t *range = pedals->Config.settings;
+  pedals->clutch = pedal_position(hw_analog->axis[PEDALS_IDX], range->released[0],
+                                  range->pressed[0]);
+  pedals->brake = pedal_position(hw_analog->axis[PEDALS_IDX + 1], range->released[1],
+                                 range->pressed[1]);
+  pedals->throtle = pedal_position(hw_analog->axis[PEDALS_IDX + 2],
+                                   range->released[2], range->pressed[2]);
   return WHEEL_OK;
 }
 

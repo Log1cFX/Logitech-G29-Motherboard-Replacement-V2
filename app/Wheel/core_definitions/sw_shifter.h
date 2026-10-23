@@ -38,13 +38,7 @@ extern "C" {
 
 #include "common_types.h"
 #include "hw_analog_input.h"
-
-// Default calibration: two opposite corners of the travel, in raw ADC values.
-// y decreases from min to max
-#define SHIFTER_DEFAULT_MIN_X 10000
-#define SHIFTER_DEFAULT_MIN_Y 60000
-#define SHIFTER_DEFAULT_MAX_X 52000
-#define SHIFTER_DEFAULT_MAX_Y 0
+#include "wheel_file_settings.h"
 
 // The travel is split into a grid, each cell is a gear or neutral
 #define SHIFTER_GRID_COLS 3
@@ -62,6 +56,9 @@ typedef struct {
   Analog_HandleTypeDef *hw_analog;
   uint16_t modifier_pin;
   GPIO_TypeDef *modifier_port;
+  // The corners of the travel, in the settings image (wheel_settings.h). Read
+  // at every GetState: a change applies at once
+  const wheel_file_settings_shifter_t *settings;
 } Shifter_ConfigHandleTypeDef;
 
 typedef struct _Shifter_HandleTypeDef {
@@ -73,10 +70,6 @@ typedef struct _Shifter_HandleTypeDef {
   Shifter_ConfigHandleTypeDef Config;
   // 0 (no gear) to 7. Written in SysTick (GetState), read in main (wheel_get_input)
   volatile uint8_t gear;
-  // Calibration, set to the defaults by INIT and free to change afterwards.
-  // Written in main before SysTick uses the shifter, read in SysTick (GetState)
-  Point min;
-  Point max;
 
   /* PRIVATE */
   Point current_pos; // SysTick only

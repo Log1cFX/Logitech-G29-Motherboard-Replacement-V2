@@ -17,17 +17,9 @@ extern "C" {
 #endif
 
 #include "wheel_version.h"
+#include "wheel_file_types.h"
 #include <assert.h>
 #include <stdint.h>
-
-// What a file contains: its content is cast to the struct of its type.
-// Stored in one byte. 0x00 and 0xFF are never a type: cleared and erased memory
-typedef enum {
-  WHEEL_FILE_SETTINGS = 1, // wheel_file_settings_t
-  WHEEL_FILE_DUMP = 2, // wheel_file_dump_t
-  WHEEL_FILE_ERROR = 3, // wheel_file_error_t
-  WHEEL_FILE_LOG = 4 // wheel_file_log_t
-} wheel_file_type_t;
 
 /*
  * CRC
@@ -37,11 +29,11 @@ typedef enum {
  * value 0xFFFFFFFF, each word from its most significant bit, no final XOR.
  */
 typedef struct {
-  uint8_t type; // wheel_file_type_t
-  uint8_t version; // WHEEL_VERSION of the firmware that wrote it
-  uint16_t size; // of the content in bytes, without its padding
-  uint32_t crc; // see CRC above
-} wheel_file_header_t;
+  uint8_t type; // wheel_file_type_t (wheel_file_types.h)
+  uint8_t version;// WHEEL_VERSION of the firmware that wrote it
+  uint16_t size;// of the content in bytes, without its padding
+  uint32_t crc;// see CRC above
+}wheel_file_header_t;
 
 // The content follows the header: it has to start on a multiple of 4 bytes
 static_assert(sizeof(wheel_file_header_t) == 8, "wheel_file_header_t is not 8 bytes");
@@ -52,7 +44,7 @@ static_assert(sizeof(wheel_file_header_t) == 8, "wheel_file_header_t is not 8 by
 typedef struct {
   wheel_file_header_t header;
   uint8_t content[];
-} wheel_file_t;
+}wheel_file_t;
 
 // Size of a content with its padding, then of the whole file
 #define WHEEL_FILE_PADDED_SIZE(size) (((size) + 3u) & ~3u)
@@ -67,8 +59,9 @@ typedef enum {
   WHEEL_FILE_BAD_CRC,
   WHEEL_FILE_UNKNOWN_TYPE,
   WHEEL_FILE_BAD_VERSION,
-  WHEEL_FILE_BAD_SIZE // not a size its type allows
-} wheel_file_status_t;
+  WHEEL_FILE_BAD_SIZE, // not a size its type allows
+  WHEEL_FILE_BAD_VALUE// a settings value out of its range
+}wheel_file_status_t;
 
 // CRC of a file, computed as described above. Reads header.size bytes of
 // content: the caller makes sure they are there (a flash page, a buffer)
@@ -77,11 +70,11 @@ uint32_t wheel_file_crc(const wheel_file_t *file);
 // Builds a file at file, which needs WHEEL_FILE_TOTAL_SIZE(size) bytes: the
 // header with WHEEL_VERSION and its CRC, a copy of the content, the padding
 void wheel_file_make(wheel_file_t *file, uint8_t type, const void *content,
-                     uint16_t size);
+    uint16_t size);
 
 // The one place that knows what a valid file is: its CRC, WHEEL_VERSION, then
-// the rules of its type. A content can be cast to its struct once this returns
-// WHEEL_FILE_OK
+// the rules of its type, the ranges of a settings file included. A content can
+// be cast to its struct once this returns WHEEL_FILE_OK
 wheel_file_status_t wheel_file_check(const wheel_file_t *file);
 
 #ifdef __cplusplus

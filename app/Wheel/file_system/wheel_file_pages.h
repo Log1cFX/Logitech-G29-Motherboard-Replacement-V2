@@ -4,9 +4,10 @@
  *  Created on: Oct 11, 2026
  *      Author: raffi
  *
- *  Where the files are stored: one file per flash page, at the start of the
- *  page. The pages are the last ones of the flash, so the application has to
- *  end before WHEEL_FILE_PAGES_START (see FLASH in the linker script)
+ *  Where the files are stored: the last pages of the flash, so the application
+ *  has to end before WHEEL_FILE_PAGES_START (see FLASH in the linker script).
+ *  A page holds its files back to back from its start: the dump page one file,
+ *  the settings pages one file per group of settings (wheel_settings.h)
  */
 
 #ifndef FILE_SYSTEM_WHEEL_FILE_PAGES_H_
@@ -21,16 +22,15 @@ extern "C" {
 #include <stdbool.h>
 
 // Counted from the end of the flash: 0 is its last page.
-// The settings use their two pages in turn: a save writes the file to the
-// erased page, then erases the page of the previous file. A power loss in
-// between leaves two valid files: save_count (wheel_file_settings.h) tells
-// which one is current
+// The settings page is linked at its address (SETTINGS in the linker script).
+// The backup page holds the same bytes: a save writes it first, so that a
+// power loss always leaves one of the two valid (wheel_settings.c)
 typedef enum {
-  WHEEL_FILE_PAGE_SETTINGS_1, // WHEEL_FILE_SETTINGS
-  WHEEL_FILE_PAGE_SETTINGS_2, // WHEEL_FILE_SETTINGS
-  WHEEL_FILE_PAGE_DUMP, // WHEEL_FILE_DUMP
+  WHEEL_FILE_PAGE_SETTINGS, // the WHEEL_FILE_SETTINGS_* files
+  WHEEL_FILE_PAGE_SETTINGS_BACKUP,// the same files
+  WHEEL_FILE_PAGE_DUMP,// WHEEL_FILE_DUMP
   WHEEL_FILE_PAGE_COUNT
-} wheel_file_page_t;
+}wheel_file_page_t;
 
 #define WHEEL_FILE_PAGE_SIZE FLASH_PAGE_SIZE
 #define WHEEL_FILE_PAGE_ADDRESS(page) \
@@ -60,6 +60,14 @@ const wheel_file_t* wheel_file_page_read(wheel_file_page_t page);
 // Erases the page, then programs file into it, the type byte last: a write cut
 // by a power loss leaves no file. False if the flash reported an error
 bool wheel_file_page_write(wheel_file_page_t page, const wheel_file_t *file);
+
+// Erases the page, then programs size bytes of data from the last half-word
+// to the first: the type byte of the first file comes last, and a write cut by
+// a power loss leaves no first file. data is aligned on 2 bytes, size even and
+// at most WHEEL_FILE_PAGE_SIZE. False if the flash reported an error, or if
+// size is not allowed
+bool wheel_file_page_write_bytes(wheel_file_page_t page, const void *data,
+    uint32_t size);
 
 // Writes 0x0000 over the type and the version of the file of the page, which
 // then holds no file. The flash accepts 0x0000 over any value: no erase.

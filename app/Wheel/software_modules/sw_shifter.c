@@ -21,15 +21,11 @@ static Wheel_Status Shifter_INIT(Shifter_HandleTypeDef *shifter,
     return WHEEL_ERROR;
   }
   if (config->hw_analog == NULL || config->modifier_port == NULL
-      || config->modifier_pin == 0) {
+      || config->modifier_pin == 0|| config->settings == NULL) {
     return WHEEL_ERROR;
   }
   memcpy(&shifter->Config, config, sizeof(Shifter_ConfigHandleTypeDef));
   reset_state(shifter);
-  shifter->min.x = SHIFTER_DEFAULT_MIN_X;
-  shifter->min.y = SHIFTER_DEFAULT_MIN_Y;
-  shifter->max.x = SHIFTER_DEFAULT_MAX_X;
-  shifter->max.y = SHIFTER_DEFAULT_MAX_Y;
   return WHEEL_OK;
 }
 
@@ -42,18 +38,17 @@ static Wheel_Status Shifter_DeINIT(Shifter_HandleTypeDef *shifter) {
 
 static void reset_state(Shifter_HandleTypeDef *shifter) {
   shifter->gear = 0;
-  memset(&shifter->min, 0, sizeof(Point));
-  memset(&shifter->max, 0, sizeof(Point));
   memset(&shifter->current_pos, 0, sizeof(Point));
 }
 
-// Finds the grid cell the lever is in and looks up its gear
+// Finds the grid cell the lever is in and looks up its gear. The corners come
+// from the settings, which keep min.x < max.x and min.y > max.y
 static Wheel_Status Shifter_getSpeed(Shifter_HandleTypeDef *shifter) {
   shifter->current_pos.x = shifter->Config.hw_analog->axis[SHIFTER_IDX];
   shifter->current_pos.y = shifter->Config.hw_analog->axis[SHIFTER_IDX + 1];
 
-  Point *min = &shifter->min;
-  Point *max = &shifter->max;
+  const wheel_file_settings_point_t *min = &shifter->Config.settings->min;
+  const wheel_file_settings_point_t *max = &shifter->Config.settings->max;
   Point *current_pos = &shifter->current_pos;
 
   // Clamp to the calibrated area (y decreases from min to max)
@@ -92,7 +87,7 @@ static Wheel_Status Shifter_getSpeed(Shifter_HandleTypeDef *shifter) {
     {0, 0, 0, 0, 0},
     {1, 3, 5, 0, 0}
   };
-          // @formatter:on
+              // @formatter:on
 
   if (HAL_GPIO_ReadPin(shifter->Config.modifier_port,
                        shifter->Config.modifier_pin)) {

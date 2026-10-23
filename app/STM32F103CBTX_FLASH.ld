@@ -46,6 +46,10 @@ MEMORY
 {
   RAM    (xrw)    : ORIGIN = 0x20000000,   LENGTH = 20480 - 8
   FLASH    (rx)    : ORIGIN = 0x8001000,   LENGTH = 121K
+  /* The settings page: WHEEL_FILE_PAGE_SETTINGS, the last page of the flash
+   * (wheel_file_pages.h). Below it, the backup and the dump pages stay out of
+   * the image */
+  SETTINGS    (r)    : ORIGIN = 0x801FC00,   LENGTH = 1K
 }
 
 /* Sections */
@@ -186,6 +190,23 @@ SECTIONS
     _ebss = .;         /* define a global symbol at bss end */
     __bss_end__ = _ebss;
   } >RAM
+
+  /* RAM image of the settings, just above .bss. Its bytes are linked in the
+   * settings page, and wheel_settings_init() copies them here like the startup
+   * copies .data (wheel_settings.h). Not in _eapp: the page changes at run
+   * time, so the checksum of the bootloader never covers it (checksum.py) */
+  .settings :
+  {
+    . = ALIGN(4);
+    _ssettings = .;    /* start of the image in RAM */
+    KEEP(*(.settings))
+    . = ALIGN(4);
+    _esettings = .;    /* end of the image in RAM */
+  } >RAM AT> SETTINGS
+
+  /* Where the image is loaded from: the settings page */
+  _sisettings = LOADADDR(.settings);
+  ASSERT(_esettings > _ssettings, "ERROR: the settings are missing")
 
   /* User_heap_stack section, used to check that there is enough "RAM" Ram  type memory left */
   ._user_heap_stack :
