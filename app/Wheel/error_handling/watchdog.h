@@ -21,7 +21,7 @@
  *  when main is stuck, feeding from one would hide it. The one exception is
  *  the fatal path (wheel_fatal.c), which feeds once and then always resets.
  *
- *  DEBUG builds do not use this module, see wheel_startup()
+ *  DEBUG builds do not use this module, see steeringwheel.c
  */
 
 #ifndef ERROR_HANDLING_WATCHDOG_H_

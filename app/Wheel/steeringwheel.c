@@ -39,6 +39,11 @@ static ffb_metrics_t *metrics; // control loop only
 static ffb_axis_local_t *local_effects; // control loop only
 static uint32_t last_control_time; // HAL_GetTick() of the last control loop step
 
+static void start_modules();
+static void start_usb();
+static void calibrate();
+static void init_control_loop();
+static void start_control_loop();
 static Wheel_Status wheel_axis_calibration();
 static void wheel_recenter();
 static void wheel_delay(uint32_t ms);
@@ -61,7 +66,6 @@ void wheel_startup() {
   wheel_settings_init();
   wheel_log_set_settings(&wheel_settings->system.content);
 
-  /* INIT */
   init_analog();
   init_buttons();
   init_sensor();
@@ -69,7 +73,19 @@ void wheel_startup() {
   init_ffb_library();
   init_wheel_handle();
 
-  /* START MODULES */
+  start_modules();
+  // Before the calibration, so that the host does not time out meanwhile
+  start_usb();
+  if (!WHEEL_SKIP_CALIBRATION) {
+    calibrate();
+  }
+  init_control_loop();
+  start_control_loop();
+}
+
+// Starts the scan of the ADC and the polling timers of the buttons and of the
+// magnetometer
+static void start_modules() {
   Magnetometer_HandleTypeDef *magnetometer = wheel.hMagnetometer;
   Analog_HandleTypeDef *analog = wheel.hAnalog;
   Buttons_HandleTypeDef *buttons = wheel.hButtons;
@@ -82,10 +98,11 @@ void wheel_startup() {
   if (magnetometer->Start_TIM_POLL(magnetometer) == WHEEL_ERROR) {
     WHEEL_LOG_ERROR(WHEEL_ERR_INIT);
   }
+}
 
-  /* USB */
-  // Before the calibration, so that the host does not time out meanwhile.
-  // DEBUG builds leave the watchdog alone
+// Starts USB and waits until the host reads the reports. The watchdog starts
+// first, fed by every usb_task() from there on. DEBUG builds leave it alone
+static void start_usb() {
 #ifndef DEBUG
   watchdog_init();
 #endif
@@ -93,34 +110,22 @@ void wheel_startup() {
   while (usb_state() != USB_READY) {
     usb_task();
   }
+}
 
-  /* CALIBRATION */
-  // Retried until it succeeds. Each failure is logged from the
-  // CALIBRATION_MAX_TRIES-th on
-  if (!WHEEL_SKIP_CALIBRATION) {
-    uint8_t calibration_tries = 0;
-    while (wheel_axis_calibration() == WHEEL_ERROR) {
-      wheel_delay(CALIBRATION_RETRY_DELAY_MS);
-      // Stops counting there
-      if (calibration_tries < CALIBRATION_MAX_TRIES) {
-        calibration_tries++;
-      }
-      if (calibration_tries >= CALIBRATION_MAX_TRIES) {
-        WHEEL_LOG_ERROR(WHEEL_ERR_CALIBRATION);
-      }
-    }
-    wheel_recenter();
-  }
-
-  /* FORCE FEEDBACK */
-  // The control loop cannot run without them
+// The ffb objects of the control loop, with the settings applied. It cannot
+// run without them
+static void init_control_loop() {
   metrics = create_metrics_helper();
   local_effects = create_local_effects();
   if (metrics == NULL || local_effects == NULL) {
     WHEEL_FATAL_ERROR(WHEEL_ERR_FFB);
   }
   apply_settings();
+}
 
+// Last step of the startup: the control loop runs from the first wheel_task(),
+// under the supervision of the watchdog
+static void start_control_loop() {
 #ifndef DEBUG
   // Not on a board without its sensor: see WHEEL_SKIP_CALIBRATION
   if (!WHEEL_SKIP_CALIBRATION) {
@@ -199,6 +204,23 @@ static void control_loop_step() {
 }
 
 /* CALIBRATION */
+
+// Calibrates the axis, then recenters the wheel. Retried until it succeeds,
+// each failure is logged from the CALIBRATION_MAX_TRIES-th on
+static void calibrate() {
+  uint8_t calibration_tries = 0;
+  while (wheel_axis_calibration() == WHEEL_ERROR) {
+    wheel_delay(CALIBRATION_RETRY_DELAY_MS);
+    // Stops counting there
+    if (calibration_tries < CALIBRATION_MAX_TRIES) {
+      calibration_tries++;
+    }
+    if (calibration_tries >= CALIBRATION_MAX_TRIES) {
+      WHEEL_LOG_ERROR(WHEEL_ERR_CALIBRATION);
+    }
+  }
+  wheel_recenter();
+}
 
 // One sweep: pushes with force until the wheel stalls, keeping the farthest
 // position in *extremum.
