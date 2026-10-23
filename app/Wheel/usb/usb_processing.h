@@ -13,8 +13,8 @@
  *  It knows nothing of the wheel modules: it gets a copy of the controls to
  *  send (wheel_input_t) and the ffb library to hand the host's reports to.
  *
- *  A second HID interface exchanges files with an application of the host:
- *  see usb_msg.h. It also runs inside usb_task().
+ *  A second interface, of the vendor class, exchanges files with an
+ *  application of the host: see usb_msg.h. It also runs inside usb_task().
  */
 
 #ifndef USB_USB_PROCESSING_H_

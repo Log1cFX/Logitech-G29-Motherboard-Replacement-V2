@@ -19,9 +19,13 @@
  * the PC that opened the interface.
  *
  * BLOCKS
- * A block is one report of USB_MSG_BLOCK_SIZE bytes. Its first byte holds
- * BLOCK_START, BLOCK_END and the number of data bytes that follow it. What is
- * left of the block is not used.
+ * A block is one packet of USB_MSG_BLOCK_SIZE bytes on the bulk endpoints. Its
+ * first byte holds BLOCK_START, BLOCK_END and the number of data bytes that
+ * follow it. What is left of the block is not used.
+ * Both sides send every block whole, all its USB_MSG_BLOCK_SIZE bytes. The PC
+ * reads USB_MSG_BLOCK_SIZE bytes at a time: a bulk read only ends at its
+ * length or at a short packet, so a bigger one would wait for further blocks.
+ * A shorter block of the PC is still taken when its data fits in it.
  * A message is the data of one or more blocks, from a BLOCK_START to a
  * BLOCK_END. Only its last block may hold less than BLOCK_MAX_DATA bytes, and
  * no more than TIMEOUT_MS pass between two of its blocks.
@@ -89,7 +93,7 @@ typedef enum {
   NACK_BAD_VALUE // a settings value out of its range
 } nack_reason_t;
 
-#define TIMEOUT_MS 250u // for a handshake, and between two blocks of a message
+#define TIMEOUT_MS 1000u // for a handshake, and between two blocks of a message
 #define MAX_TRIES 4u // sends of a file before the connection is given up
 
 #define FILE_HEADER_SIZE sizeof(wheel_file_header_t)

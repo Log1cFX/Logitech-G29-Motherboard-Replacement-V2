@@ -78,14 +78,22 @@ extern "C" {
 #endif
 
 // Classes
-#define CFG_TUD_HID               2 // the wheel and the file link
+#define CFG_TUD_HID               1 // the wheel
 #define CFG_TUD_CDC               0
 #define CFG_TUD_MSC               0
 #define CFG_TUD_MIDI              0
-#define CFG_TUD_VENDOR            0
+#define CFG_TUD_VENDOR            1 // the file link, see usb_msg.h
 
 // Has to hold the biggest report, with its id
 #define CFG_TUD_HID_EP_BUFSIZE    64
+
+// The bulk endpoints of the file link: one block of usb_msg per packet.
+// No FIFO: each packet reaches tud_vendor_rx_cb() as it came, and a block is
+// written straight to its endpoint. A FIFO would merge the packets into one
+// stream of bytes
+#define CFG_TUD_VENDOR_EPSIZE     64
+#define CFG_TUD_VENDOR_RX_BUFSIZE 0
+#define CFG_TUD_VENDOR_TX_BUFSIZE 0
 
 #ifdef __cplusplus
 }

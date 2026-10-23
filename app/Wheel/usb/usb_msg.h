@@ -5,8 +5,12 @@
  *      Author: raffi
  *
  *  The file link to the PC: files (wheel_file.h) exchanged with an application
- *  of the PC over the second HID interface, each one acknowledged by its
- *  receiver.
+ *  of the PC over interface 1 of the device, each one acknowledged by its
+ *  receiver. The interface is of the vendor class, with two bulk endpoints:
+ *  no input API of the PC sees it. Windows binds WinUSB to it by itself (see
+ *  MICROSOFT OS 2.0 in usb_descriptors.c). The PC opens it with libusb, or
+ *  finds it with the WinUSB API by its interface GUID. One application at a
+ *  time.
  *
  *    wheel --> usb_msg_send() --> buffer --> usb_task() --> PC
  *    PC --> usb_task() --> buffer --> usb_msg_peek(), usb_msg_pop() --> wheel

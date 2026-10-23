@@ -183,9 +183,10 @@ static void send_msg_block(void) {
   usb_msg_task(now);
 
   uint8_t block[USB_MSG_BLOCK_SIZE];
-  // Id 0: the interface has no report id
-  if (tud_hid_n_ready(USB_HID_FILES) && usb_msg_next_block(block)
-      && tud_hid_n_report(USB_HID_FILES, 0, block, sizeof(block))) {
+  // The bulk IN endpoint holds one packet: it is free once the host read the
+  // last one. TinyUSB copies the block, which can stay on the stack
+  if (tud_vendor_write_available() >= sizeof(block) && usb_msg_next_block(block)
+      && tud_vendor_write(block, sizeof(block)) == sizeof(block)) {
     // Confirm a block has been sent
     usb_msg_block_sent(now);
   }

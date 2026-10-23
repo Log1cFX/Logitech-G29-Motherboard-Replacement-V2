@@ -12,11 +12,6 @@
 #include "usb_processing.h"
 #include "usb_msg.h"
 
-// The two HID interfaces, as TinyUSB numbers them: in the order of the
-// configuration descriptor. Its calls that take no number use USB_HID_WHEEL
-#define USB_HID_WHEEL 0 // input reports and force feedback
-#define USB_HID_FILES 1 // the file link, see usb_msg.h
-
 // Report id of the input report (buttons, shifter, steering, pedals)
 #define JOYSTICK_REPORT_ID 1
 
@@ -29,9 +24,9 @@ ffb_lib_t* usb_ffb(void);
 
 /* FROM usb_msg.c */
 
-// The part of the file link that moves blocks, see PROTOCOL in usb_msg.c.
-// A block is one report of USB_HID_FILES, which has no report id.
-// now_ms is always HAL_GetTick()
+// The part of the file link that moves blocks, see the protocol in usb_msg.c.
+// A block is one packet of the bulk endpoints of the file link
+// (CFG_TUD_VENDOR_EPSIZE). now_ms is always HAL_GetTick()
 #define USB_MSG_BLOCK_SIZE 64
 
 // Empties the buffer and closes the connection. Before any other call

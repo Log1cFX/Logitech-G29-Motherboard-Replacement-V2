@@ -10,19 +10,28 @@
 #    words). The settings page is out of it: it changes at run time
 # 3. The .bin: every loadable segment at its load address, from _sapp to the
 #    end of the settings page, the gaps filled with 0xFF (erased flash)
+#
+# Before all that, the bytes of a loadable segment that no section holds (the
+# alignment of a section can leave a few between two of them) are set to
+# 0xFF. A loader that writes sections, like GDB in CubeIDE, leaves them erased;
+# one that writes segments writes what the ELF holds. With 0xFF in the ELF,
+# both give the flash the checksum is computed over
 
 import sys, struct
 
 ELF_MAGIC = b"\x7fELF"
 PT_LOAD = 1
 SHT_SYMTAB = 2
+SHT_NOBITS = 8
+SHF_ALLOC = 0x2
+ERASED = 0xFF
 SETTINGS_SECTION = b".settings"
 FILE_HEADER_SIZE = 8  # wheel_file_header_t
 CRC_POLY = 0x04C11DB7
 MAX_BIN_SIZE = 128 * 1024  # the whole flash
 
 def sections(data):
-	"""Name, file offset, size and type of each section"""
+	"""Name, type, flags, file offset and size of each section"""
 	shoff, = struct.unpack_from("<I", data, 0x20)
 	shentsize, shnum, shstrndx = struct.unpack_from("<HHH", data, 0x2E)
 	headers = [struct.unpack_from("<10I", data, shoff + i * shentsize) for i in range(shnum)]
@@ -30,8 +39,8 @@ def sections(data):
 	result = []
 	for h in headers:
 		name = data[names_offset + h[0]:data.index(b"\0", names_offset + h[0])]
-		result.append({"name": name, "type": h[1], "offset": h[4], "size": h[5],
-		               "link": h[6], "entsize": h[9]})
+		result.append({"name": name, "type": h[1], "flags": h[2], "offset": h[4],
+		               "size": h[5], "link": h[6], "entsize": h[9]})
 	return result
 
 def symbol(data, all_sections, wanted):
@@ -57,6 +66,25 @@ def load_segments(data):
 		if ptype == PT_LOAD and filesz:
 			segs.append((paddr, off, filesz))
 	return sorted(segs)
+
+def erase_padding(data, all_sections, segs):
+	"""Sets to 0xFF the bytes of the loadable segments that no loaded section
+	holds, returns how many there were"""
+	loaded = [(s["offset"], s["offset"] + s["size"]) for s in all_sections
+	          if s["flags"] & SHF_ALLOC and s["type"] != SHT_NOBITS and s["size"]]
+	count = 0
+	for paddr, off, filesz in segs:
+		# The bytes of the segment that a section covers
+		covered = bytearray(filesz)
+		for lo, hi in loaded:
+			lo, hi = max(lo, off), min(hi, off + filesz)
+			if lo < hi:
+				covered[lo - off:hi - off] = b"\x01" * (hi - lo)
+		for i in range(filesz):
+			if not covered[i]:
+				data[off + i] = ERASED
+				count += 1
+	return count
 
 def crc_stm32(words):
 	"""CRC unit of the STM32: each word from its most significant bit"""
@@ -107,6 +135,7 @@ patch_settings(data, settings[0])
 sapp = symbol(data, all_sections, b"_sapp")
 eapp = symbol(data, all_sections, b"_eapp")
 segs = load_segments(data)
+print("Padding between sections set to 0xFF: %d bytes" % erase_padding(data, all_sections, segs))
 fw = image(data, segs, sapp, eapp)
 print("Firmware size", len(fw))
 if len(fw) % 4 != 0:
