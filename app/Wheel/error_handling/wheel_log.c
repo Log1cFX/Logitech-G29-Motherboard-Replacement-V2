@@ -237,6 +237,17 @@ void wheel_log_task(void) {
 #endif
 }
 
+// The other contexts only add to these words, atomically: each one is read
+// whole, though not all of them at the same instant
+void wheel_log_counts(uint32_t counts[WHEEL_ERR_COUNT], uint32_t *dropped_errors,
+                      uint32_t *dropped_logs) {
+  for (uint32_t i = 0; i < WHEEL_ERR_COUNT; i++) {
+    counts[i] = __atomic_load_n(&logs.counts[i], __ATOMIC_RELAXED);
+  }
+  *dropped_errors = __atomic_load_n(&logs.dropped_errors, __ATOMIC_RELAXED);
+  *dropped_logs = __atomic_load_n(&logs.dropped_text, __ATOMIC_RELAXED);
+}
+
 // Formatted on the stack, then printed (DEBUG) or sent as a WHEEL_FILE_LOG
 void wheel_log(const char *format, ...) {
 #if WHEEL_LOG_LEVEL >= 2

@@ -8,8 +8,9 @@
  *  to back in a page of the flash and in its image in RAM.
  *
  *    settings page (flash) --> wheel_settings_init() --> RAM image --> users
- *    command module --> wheel_settings_receive() --> RAM image
+ *    wheel_command.c --> wheel_settings_receive() --> RAM image
  *    RAM image --> wheel_settings_save() --> backup page, then settings page
+ *    settings page --> wheel_settings_revert() --> RAM image
  *
  *  THE PAGE
  *  Linked at WHEEL_FILE_PAGE_SETTINGS (.settings in the linker script): its
@@ -24,9 +25,10 @@
  *  Loaded from the settings page at the start, like .data, just above .bss.
  *  Garbage before wheel_settings_init(). Then main reads it through
  *  wheel_settings, and the modules through the pointer their config holds:
- *  they see a change at their next read. Only main writes it, one whole file at
- *  a time with the interrupts off, and only with files that passed
- *  wheel_file_check(): a reader never checks a value again
+ *  they see a change at their next read. Only main writes it, with the
+ *  interrupts off: one whole file, or the whole page for a revert. And only
+ *  with files that passed wheel_file_check(): a reader never checks a value
+ *  again
  */
 
 #ifndef SETTINGS_WHEEL_SETTINGS_H_
@@ -65,7 +67,7 @@ typedef struct {
   system;
   WHEEL_SETTINGS_FILE(wheel_file_settings_force_t)
   force;
-}wheel_settings_page_t;
+} wheel_settings_page_t;
 
 // The settings in use: the RAM image, after wheel_settings_init(). Read-only
 // outside wheel_settings.c. Main, and the modules through their pointers
@@ -77,7 +79,7 @@ extern const wheel_settings_page_t *const wheel_settings;
 // wheel_startup(), right after wheel_log_init()
 void wheel_settings_init(void);
 
-/* FOR THE COMMAND MODULE */
+/* FOR THE COMMAND MODULE (wheel_command.h) */
 // The settings file of this type in the image, NULL for any other type. Its
 // content can be given to usb_msg_send()
 const wheel_file_t* wheel_settings_file(uint8_t type);
@@ -86,10 +88,18 @@ const wheel_file_t* wheel_settings_file(uint8_t type);
 // place in the image, interrupts off. Flash is untouched. Main only
 void wheel_settings_receive(const wheel_file_t *file);
 
-// Writes the image to the backup page, then to the settings page. False if the
-// flash failed before the settings page changed. Main only. Stalls up to about
-// 100 ms with the interrupts blocked: the caller sets the force to 0 first
+// Writes the image to the backup page, then to the settings page, or nothing
+// when both already hold it. False if the flash failed before the settings
+// page changed. Main only.
+// Each page erase stalls the firmware 20 to 40 ms, the interrupts with it: the
+// flash cannot be read meanwhile. They run between two half-words of the
+// writes. The caller sets the force to 0 first
 bool wheel_settings_save(void);
+
+// Copies the settings page over the image, interrupts off: the changes not
+// saved are gone. False, and the image unchanged, when the page is not valid.
+// Main only
+bool wheel_settings_revert(void);
 
 #ifdef __cplusplus
 }

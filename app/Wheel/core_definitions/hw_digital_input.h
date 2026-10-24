@@ -49,11 +49,11 @@ typedef struct {
   uint16_t lock_pin;
   uint16_t in_pin;
   GPIO_TypeDef *buttons_port;
-} DigitalInput_ConfigHandleTypeDef;
+}DigitalInput_ConfigHandleTypeDef;
 
 typedef struct _DigitalInput_HandleTypeDef {
   Wheel_Status (*INIT)(struct _DigitalInput_HandleTypeDef *buttons,
-                       DigitalInput_ConfigHandleTypeDef *config);
+      DigitalInput_ConfigHandleTypeDef *config);
   Wheel_Status (*DeINIT)(struct _DigitalInput_HandleTypeDef *buttons);
   Wheel_Status (*ReadState)(struct _DigitalInput_HandleTypeDef *buttons);
 
@@ -61,7 +61,7 @@ typedef struct _DigitalInput_HandleTypeDef {
   // One bit per button, not debounced. TIM3 interrupt only: written by
   // ReadState, read by the TIM_POLL_CB of sw_buttons
   uint32_t buttons_state;
-} DigitalInput_HandleTypeDef;
+}DigitalInput_HandleTypeDef;
 
 #ifdef __cplusplus
 }

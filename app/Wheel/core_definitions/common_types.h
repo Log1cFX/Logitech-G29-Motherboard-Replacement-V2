@@ -48,7 +48,7 @@ extern "C" {
 typedef enum {
   WHEEL_OK, // must stay 0: statuses are combined with |=
   WHEEL_ERROR
-} Wheel_Status;
+}Wheel_Status;
 
 #ifdef __cplusplus
 }

@@ -46,12 +46,12 @@ typedef struct {
   uint16_t SS_pin;
   GPIO_TypeDef *SS_port;
   SPI_HandleTypeDef *hspi; // used with DMA
-  TIM_HandleTypeDef *htim; // one reading per period
-} Magnetometer_ConfigHandleTypeDef;
+  TIM_HandleTypeDef *htim;// one reading per period
+}Magnetometer_ConfigHandleTypeDef;
 
 typedef struct _Magnetometer_HandleTypeDef {
   Wheel_Status (*INIT)(struct _Magnetometer_HandleTypeDef *sensor,
-                       Magnetometer_ConfigHandleTypeDef *config);
+      Magnetometer_ConfigHandleTypeDef *config);
   Wheel_Status (*DeINIT)(struct _Magnetometer_HandleTypeDef *sensor);
   Wheel_Status (*Start_TIM_POLL)(struct _Magnetometer_HandleTypeDef *sensor);
   Wheel_Status (*Stop_TIM_POLL)(struct _Magnetometer_HandleTypeDef *sensor);
@@ -81,7 +81,7 @@ typedef struct _Magnetometer_HandleTypeDef {
   uint8_t transfer_is_done;
   uint8_t diagnostic_bits;
   uint8_t roll_cnt;
-} Magnetometer_HandleTypeDef;
+}Magnetometer_HandleTypeDef;
 
 #ifdef __cplusplus
 }

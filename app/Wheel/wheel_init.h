@@ -170,8 +170,8 @@ static ffb_metrics_t* create_metrics_helper() {
 }
 
 // Gives the ffb library the live values of the settings: it keeps copies, not
-// pointers. Once the ffb objects exist, and again after each change of the
-// settings. The effects already running take the new filters at once
+// pointers. Once the ffb objects exist, then after each change of the settings
+// (wheel_command.c). The effects already running take a new filter at once
 static void apply_settings() {
   const wheel_file_settings_ffb_t *ffb = &wheel_settings->ffb.content;
   ffb_axis_local_set_intensities(local_effects, ffb->endstop_strength,
@@ -180,18 +180,31 @@ static void apply_settings() {
   ffb_axis_local_set_idle_spring(local_effects, ffb->idle_spring_strength);
 
   // Only the filters of the settings change in the preset
-  ffb_effect_filter_preset_t filter_preset = {0};
-  ffb_get_filter_preset(hFFB, FFB_FILTER_PROFILE, &filter_preset);
+  ffb_effect_filter_preset_t old_preset = {0};
+  ffb_get_filter_preset(hFFB, FFB_FILTER_PROFILE, &old_preset);
+  ffb_effect_filter_preset_t filter_preset = old_preset;
   filter_preset.constant_freq = ffb->constant_filter_hz;
   filter_preset.constant_q = ffb->constant_filter_q;
   filter_preset.damper_freq = ffb->damper_filter_hz;
   filter_preset.friction_freq = ffb->friction_filter_hz;
   filter_preset.inertia_freq = ffb->inertia_filter_hz;
   ffb_set_filter_preset(hFFB, FFB_FILTER_PROFILE, &filter_preset);
-  ffb_update_filters_for_type(hFFB, FFB_TYPE_CONSTANT);
-  ffb_update_filters_for_type(hFFB, FFB_TYPE_DAMPER);
-  ffb_update_filters_for_type(hFFB, FFB_TYPE_FRICTION);
-  ffb_update_filters_for_type(hFFB, FFB_TYPE_INERTIA);
+
+  // Rebuilding the filters of a type clears the state of its running effects
+  // (calcBiquad() in ffb_biquad.cpp): only the types whose filter changed
+  if (filter_preset.constant_freq != old_preset.constant_freq || filter_preset.constant_q
+      != old_preset.constant_q) {
+    ffb_update_filters_for_type(hFFB, FFB_TYPE_CONSTANT);
+  }
+  if (filter_preset.damper_freq != old_preset.damper_freq) {
+    ffb_update_filters_for_type(hFFB, FFB_TYPE_DAMPER);
+  }
+  if (filter_preset.friction_freq != old_preset.friction_freq) {
+    ffb_update_filters_for_type(hFFB, FFB_TYPE_FRICTION);
+  }
+  if (filter_preset.inertia_freq != old_preset.inertia_freq) {
+    ffb_update_filters_for_type(hFFB, FFB_TYPE_INERTIA);
+  }
 }
 
 #endif /* WHEEL_INIT_H_ */

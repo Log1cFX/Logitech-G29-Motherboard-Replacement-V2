@@ -22,7 +22,8 @@
  *                 it can be sent with no application connected: it leaves
  *                 after the next sync
  *    from the PC  a file is only seen once it is complete and passed
- *                 wheel_file_check(). Until then the PC gets no acknowledgment
+ *                 wheel_file_check(). Until then the PC gets no acknowledgment.
+ *                 The command module reads them (wheel_command.h)
  *
  *  The protocol and the buffer are described in usb_msg.c.
  *
@@ -40,23 +41,30 @@ extern "C" {
 #include <stdint.h>
 #include "wheel_file.h"
 
-// Shared by the files of both directions. Each one takes 4 bytes more than its
-// WHEEL_FILE_TOTAL_SIZE
+// Shared by the files of both directions, each one taking USB_MSG_FILE_ROOM()
 #define USB_MSG_BUFFER_SIZE 2048
+// Bytes of the buffer a file of size bytes of content takes: 4 more than its
+// WHEEL_FILE_TOTAL_SIZE
+#define USB_MSG_FILE_ROOM(size) (WHEEL_FILE_TOTAL_SIZE(size) + 4u)
 // Biggest content of a file: one that fills its flash page, see
 // WHEEL_FILE_MAX_CONTENT_SIZE
 #define USB_MSG_MAX_CONTENT_SIZE 1016
 
 typedef enum {
   USB_MSG_OK, USB_MSG_FULL, // no free place of the buffer is big enough: nothing is stored
-  USB_MSG_INVALID// content over USB_MSG_MAX_CONTENT_SIZE
-}usb_msg_status_t;
+  USB_MSG_INVALID // content over USB_MSG_MAX_CONTENT_SIZE
+} usb_msg_status_t;
 
 // Builds a file for the PC in the buffer, around a copy of the content: see
 // wheel_file_make(). The content is no longer needed once this returns.
 // USB_MSG_OK means stored, not delivered: the file leaves the buffer when the
 // PC acknowledges it, or refuses it
 usb_msg_status_t usb_msg_send(uint8_t type, const void *content, uint16_t size);
+
+// Bytes of the biggest free place of the buffer. Files whose USB_MSG_FILE_ROOM()
+// add up to no more than this can all be sent: none of their usb_msg_send()
+// fails, when nothing else is stored in between
+uint16_t usb_msg_room(void);
 
 // Oldest file of the PC, NULL when none waits. It lies in the buffer of the
 // module, on a multiple of 4 bytes: its content can be cast to the struct of

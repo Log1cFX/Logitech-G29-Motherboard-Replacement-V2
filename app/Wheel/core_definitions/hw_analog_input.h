@@ -47,11 +47,11 @@ extern "C" {
 
 typedef struct {
   ADC_HandleTypeDef *hadc;
-} Analog_ConfigHandleTypeDef;
+}Analog_ConfigHandleTypeDef;
 
 typedef struct _Analog_HandleTypeDef {
   Wheel_Status (*INIT)(struct _Analog_HandleTypeDef *analog,
-                       Analog_ConfigHandleTypeDef *config);
+      Analog_ConfigHandleTypeDef *config);
   Wheel_Status (*DeINIT)(struct _Analog_HandleTypeDef *analog);
   Wheel_Status (*Start_CONTINUOUS_SCAN_DMA)(struct _Analog_HandleTypeDef *analog);
   Wheel_Status (*Stop)(struct _Analog_HandleTypeDef *analog);
@@ -61,18 +61,18 @@ typedef struct _Analog_HandleTypeDef {
   // at any time, read in SysTick (pedals, shifter)
   volatile uint32_t axis[ANALOG_INPUT_NUM];
 
-} Analog_HandleTypeDef;
+}Analog_HandleTypeDef;
 
 typedef struct _Pedals_ConfigHandleTypeDef {
   Analog_HandleTypeDef *hw_analog;
   // The range of each pedal, in the settings image (wheel_settings.h). Read at
   // every GetState: a change applies at once
   const wheel_file_settings_pedals_t *settings;
-} Pedals_ConfigHandleTypeDef;
+}Pedals_ConfigHandleTypeDef;
 
 typedef struct _Pedals_HandleTypeDef {
   Wheel_Status (*INIT)(struct _Pedals_HandleTypeDef *analog,
-                       Pedals_ConfigHandleTypeDef *config);
+      Pedals_ConfigHandleTypeDef *config);
   Wheel_Status (*DeINIT)(struct _Pedals_HandleTypeDef *analog);
   Wheel_Status (*GetState)(struct _Pedals_HandleTypeDef *analog);
 
@@ -81,7 +81,7 @@ typedef struct _Pedals_HandleTypeDef {
   volatile uint8_t clutch;
   volatile uint8_t brake;
   volatile uint8_t throtle;
-} Pedals_HandleTypeDef;
+}Pedals_HandleTypeDef;
 
 extern Analog_HandleTypeDef hAnalog;
 extern Pedals_HandleTypeDef hPedals;

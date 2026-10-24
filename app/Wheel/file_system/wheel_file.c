@@ -76,6 +76,18 @@ static wheel_file_status_t check_settings(const wheel_file_t *file, uint16_t siz
   return WHEEL_FILE_OK;
 }
 
+// The rules of a command: exactly the size of its struct, then a code and an
+// argument the wheel knows. The content is on a multiple of 4 bytes
+static wheel_file_status_t check_command(const wheel_file_t *file) {
+  if (file->header.size != sizeof(wheel_file_command_t)) {
+    return WHEEL_FILE_BAD_SIZE;
+  }
+  if (!wheel_file_command_valid((const wheel_file_command_t*)file->content)) {
+    return WHEEL_FILE_BAD_VALUE;
+  }
+  return WHEEL_FILE_OK;
+}
+
 // What is wrong with a file, WHEEL_FILE_OK when nothing is
 wheel_file_status_t wheel_file_check(const wheel_file_t *file) {
   const wheel_file_header_t *header = &file->header;
@@ -114,6 +126,13 @@ wheel_file_status_t wheel_file_check(const wheel_file_t *file) {
     // The time, then from 0 to WHEEL_FILE_LOG_MAX_TEXT characters
     return check_size(header, sizeof(wheel_file_log_t),
                       sizeof(wheel_file_log_t) + WHEEL_FILE_LOG_MAX_TEXT);
+  case WHEEL_FILE_COMMAND:
+    return check_command(file);
+  case WHEEL_FILE_COMMAND_STATUS:
+    return check_size(header, sizeof(wheel_file_command_status_t),
+                      sizeof(wheel_file_command_status_t));
+  case WHEEL_FILE_INFO:
+    return check_size(header, sizeof(wheel_file_info_t), sizeof(wheel_file_info_t));
   default:
     return WHEEL_FILE_UNKNOWN_TYPE;
   }

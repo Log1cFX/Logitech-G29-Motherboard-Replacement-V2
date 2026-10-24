@@ -66,7 +66,8 @@
  *   10      | DMA1 ch1 (ADC)        | nothing: the ADC fills hAnalog.axis by itself
  *   -       | main                  | usb_task (USB, the ffb library on host
  *           |                       | reports, the file link of usb_msg.h, the
- *           |                       | logs of wheel_log.h), calibration,
+ *           |                       | logs of wheel_log.h), calibration, the
+ *           |                       | commands of the PC (wheel_command.h),
  *           |                       | control loop
  *
  * The priorities are set in main.c, stm32f1xx_hal_msp.c, stm32f1xx_hal_conf.h
@@ -138,7 +139,7 @@ typedef struct {
   Shifter_HandleTypeDef *hShifter;
   MotorDriver_HandleTypeDef *hMotorDriver;
   Actuator_HandleTypeDef *hActuator;
-} Wheel_HandleTypeDef;
+}Wheel_HandleTypeDef;
 
 extern Wheel_HandleTypeDef wheel;
 

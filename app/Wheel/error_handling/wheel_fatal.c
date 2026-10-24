@@ -50,11 +50,11 @@
 
 // r4 to r11, then for WHEEL_FATAL_ERROR() the sp and the lr of the caller.
 // Written by the entries before any C code runs: global for their assembly
-__attribute__((used))     uint32_t wheel_fatal_saved[10];
+__attribute__((used))       uint32_t wheel_fatal_saved[10];
 
 // The stack of the fatal path: the one of the code that failed may be what
 // failed. Global for the assembly of the entries
-__attribute__((used, aligned(8)))     uint32_t wheel_fatal_stack[FATAL_STACK_SIZE / 4u];
+__attribute__((used, aligned(8)))       uint32_t wheel_fatal_stack[FATAL_STACK_SIZE / 4u];
 static_assert(sizeof(wheel_fatal_stack) == 1024u,
     "the entries set sp to wheel_fatal_stack + 1024");
 
@@ -108,8 +108,8 @@ void UsageFault_Handler(void) __attribute__((alias("fault_entry")));
 // Saves r4-r11 and the sp and lr of the caller, moves to the fatal stack, then
 // goes on in C. code, file and line stay in r0 to r2: the C code reads them
 __attribute__((naked, noreturn)) void wheel_fatal_error(
-    __attribute__((unused))     wheel_error_t code,
-    __attribute__((unused)) const char *file, __attribute__((unused))     uint16_t line) {
+    __attribute__((unused))       wheel_error_t code,
+    __attribute__((unused)) const char *file, __attribute__((unused))       uint16_t line) {
   __asm volatile(
       "movw r3, #:lower16:wheel_fatal_saved          \n"
       "movt r3, #:upper16:wheel_fatal_saved          \n"

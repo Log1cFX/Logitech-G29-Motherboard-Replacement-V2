@@ -137,7 +137,7 @@ tud_descriptor_configuration_cb(uint8_t index) {
 
 // Asked for by the host because bcdUSB is 2.1
 static uint8_t const desc_bos[] = {
-    // Total length, number of device capabilities
+// Total length, number of device capabilities
     TUD_BOS_DESCRIPTOR(BOS_TOTAL_LEN, 1),
     // Length of the descriptor set, vendor code of its request
     TUD_BOS_MS_OS_20_DESCRIPTOR(MS_OS_20_DESC_LEN, VENDOR_REQUEST_MS_OS_20)};
@@ -203,8 +203,8 @@ bool tud_vendor_control_xfer_cb(uint8_t rhport, uint8_t stage,
   if (stage != CONTROL_STAGE_SETUP) {
     return true;
   }
-  if (request->bmRequestType_bit.direction == TUSB_DIR_IN
-      && request->bRequest == VENDOR_REQUEST_MS_OS_20
+  if (request->bmRequestType_bit.direction == TUSB_DIR_IN && request->bRequest
+      == VENDOR_REQUEST_MS_OS_20
       && request->wIndex == MS_OS_20_DESCRIPTOR_INDEX) {
     // At most wLength bytes leave
     return tud_control_xfer(rhport, request, (void*)(uintptr_t)desc_ms_os_20,

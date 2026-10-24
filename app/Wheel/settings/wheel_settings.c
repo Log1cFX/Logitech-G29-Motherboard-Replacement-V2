@@ -120,6 +120,7 @@ void wheel_settings_init(void) {
     // Checked again after the write: the image must come from a valid page
     if (!wheel_file_page_write_bytes(WHEEL_FILE_PAGE_SETTINGS, backup, PAGE_SIZE) || !page_valid(
         settings)) {
+      // Tried to copy from backup and failed
       WHEEL_FATAL_ERROR(WHEEL_ERR_SETTINGS);
     }
   } else {
@@ -156,6 +157,14 @@ void wheel_settings_receive(const wheel_file_t *file) {
 // the valid one. A failed settings page cannot be left as it is: the next start
 // repairs it from the backup
 bool wheel_settings_save(void) {
+  // Nothing changed since the last save: no erase, no stall
+  const void *settings = page_at(WHEEL_FILE_PAGE_SETTINGS);
+  const void *backup = page_at(WHEEL_FILE_PAGE_SETTINGS_BACKUP);
+  if (memcmp(settings, &wheel_settings_image, PAGE_SIZE) == 0 && memcmp(
+      backup, &wheel_settings_image, PAGE_SIZE)
+                                                                 == 0) {
+    return true;
+  }
   if (!wheel_file_page_write_bytes(WHEEL_FILE_PAGE_SETTINGS_BACKUP,
                                    &wheel_settings_image, PAGE_SIZE)) {
     WHEEL_LOG_ERROR(WHEEL_ERR_SETTINGS);
@@ -165,5 +174,19 @@ bool wheel_settings_save(void) {
   PAGE_SIZE)) {
     WHEEL_FATAL_ERROR(WHEEL_ERR_SETTINGS);
   }
+  return true;
+}
+
+// Only from a valid page, as at the start. The interrupts read the image
+// through the module pointers: the whole page is copied before they run again
+bool wheel_settings_revert(void) {
+  const void *settings = page_at(WHEEL_FILE_PAGE_SETTINGS);
+  if (!page_valid(settings)) {
+    return false;
+  }
+  uint32_t primask = __get_PRIMASK();
+  __disable_irq();
+  memcpy(&wheel_settings_image, settings, PAGE_SIZE);
+  __set_PRIMASK(primask);
   return true;
 }

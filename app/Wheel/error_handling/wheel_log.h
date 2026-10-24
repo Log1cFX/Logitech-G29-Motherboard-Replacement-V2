@@ -75,6 +75,12 @@ void wheel_log_set_settings(const wheel_file_settings_system_t *settings);
 // from every usb_task() (see usb_custom_task() in steeringwheel.c)
 void wheel_log_task(void);
 
+// The soft errors since the start by code, WHEEL_ERR_COUNT values in counts.
+// Then the errors that could not be recorded, and the texts of WHEEL_LOG()
+// that could not be sent. For the device info (wheel_command.c). Main
+void wheel_log_counts(uint32_t counts[WHEEL_ERR_COUNT], uint32_t *dropped_errors,
+                      uint32_t *dropped_logs);
+
 /* BEHIND THE MACROS */
 // In wheel_log.c
 void wheel_log(const char *format, ...) __attribute__((format(printf, 1, 2)));

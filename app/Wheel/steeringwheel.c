@@ -10,8 +10,8 @@
 
 #include "wheel_def.h"
 #include "usb_processing.h"
-#include "usb_msg.h"
 #include "watchdog.h"
+#include "wheel_command.h"
 #include "wheel_log.h"
 #include "wheel_settings.h"
 #include "ffb/ffb_c.h"
@@ -50,7 +50,6 @@ static void wheel_delay(uint32_t ms);
 static void wheel_get_input(wheel_input_t *input);
 static bool tick();
 static void control_loop_step();
-static void echo_files();
 static void usb_custom_task(usb_state_t *state);
 
 // The init_* and create_* functions of wheel_startup(): a part of this file
@@ -80,6 +79,9 @@ void wheel_startup() {
     calibrate();
   }
   init_control_loop();
+  // The commands of the PC run from the first wheel_task(). apply_settings()
+  // needs the ffb objects
+  wheel_command_init(&wheel, apply_settings);
   start_control_loop();
 }
 
@@ -139,26 +141,9 @@ static void start_control_loop() {
 
 void wheel_task() {
   usb_task();
-  echo_files();
+  wheel_command_task();
   if (tick()) {
     control_loop_step();
-  }
-}
-
-// TEMPORARY, to test the file link until a real user of it exists: sends each
-// file of the PC back. A file is only removed once its copy is stored
-static void echo_files() {
-  const wheel_file_t *file = usb_msg_peek();
-  if (file == NULL) {
-    return;
-  }
-  const wheel_file_header_t *header = &file->header;
-  // A file and its copy are both in the buffer for a moment: one that takes
-  // more than half of it can never be sent back
-  bool too_big = WHEEL_FILE_TOTAL_SIZE(header->size) + 4 > USB_MSG_BUFFER_SIZE / 2;
-  if (too_big || usb_msg_send(header->type, file->content, header->size)
-      == USB_MSG_OK) {
-    usb_msg_pop();
   }
 }
 

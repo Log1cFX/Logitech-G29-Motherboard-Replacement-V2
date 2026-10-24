@@ -90,7 +90,8 @@ typedef enum {
   NACK_UNKNOWN_TYPE,
   NACK_BAD_VERSION,
   NACK_BAD_SIZE, // a content size its type does not allow
-  NACK_BAD_VALUE // a settings value out of its range
+  // A settings value out of its range, or a command the wheel does not know
+  NACK_BAD_VALUE
 } nack_reason_t;
 
 #define TIMEOUT_MS 1000u // for a handshake, and between two blocks of a message
@@ -119,6 +120,8 @@ typedef struct {
 
 static_assert(USB_MSG_BUFFER_SIZE % 4 == 0 && USB_MSG_BUFFER_SIZE < FREE_PIECE,
     "USB_MSG_BUFFER_SIZE does not fit the offsets of piece_t");
+static_assert(USB_MSG_FILE_ROOM(0) == sizeof(piece_t) + FILE_HEADER_SIZE,
+    "USB_MSG_FILE_ROOM() does not count a piece_t");
 
 // The files of one direction, from the first that arrived to the last. Both
 // fields are offsets of pieces, NO_PIECE when the chain is empty
@@ -670,6 +673,26 @@ usb_msg_status_t usb_msg_send(uint8_t type, const void *content, uint16_t size) 
   wheel_file_make(file_at(offset), type, content, size);
   chain_add(&msg.outgoing, offset);
   return USB_MSG_OK;
+}
+
+// Free pieces in a row make one place, as piece_take() joins them. A file goes
+// to the first place big enough: files that add up to no more than the biggest
+// place all fit, in it or before it
+uint16_t usb_msg_room(void) {
+  uint16_t biggest = 0;
+  uint16_t place = 0; // the free pieces met in a row so far
+  for (uint16_t offset = 0; offset < USB_MSG_BUFFER_SIZE;
+      offset += piece_at(offset)->size) {
+    if (piece_at(offset)->next == FREE_PIECE) {
+      place += piece_at(offset)->size;
+      if (place > biggest) {
+        biggest = place;
+      }
+    } else {
+      place = 0;
+    }
+  }
+  return biggest;
 }
 
 // Oldest file of the PC, where it lies in the buffer: nothing is copied.
