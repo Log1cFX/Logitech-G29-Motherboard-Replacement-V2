@@ -21,8 +21,23 @@ static Wheel_Status Sensor_DeINIT(Sensor_HandleTypeDef *sensor);
 static Wheel_Status Sensor_Update(Sensor_HandleTypeDef *sensor);
 static Wheel_Status Sensor_GetAxis(Sensor_HandleTypeDef *sensor);
 
+// The state of the module. Update() runs in the SPI DMA interrupt (priority 3),
+// GetAxis() in SysTick (priority 6): see the table in wheel_def.h
+typedef struct {
+  uint16_t physical_axis; // SysTick only
+  uint16_t previous_sensor_capture;// SPI DMA interrupt only
+  // Written in the SPI DMA interrupt (Update), read in SysTick (GetAxis).
+  // NOT PROTECTED: the position is turns + capture, but SysTick reads the two
+  // one after the other and the SPI DMA interrupt can change both in between
+  volatile uint16_t current_sensor_capture;
+  volatile int8_t magnet_full_rotation_cnt;
+  uint8_t start_settling_cnt;// set by INIT, then SPI DMA interrupt only
+} Sensor_Private;
+
+static Sensor_Private sensor_private;
+
 Sensor_HandleTypeDef hSensor = {Sensor_INIT, Sensor_DeINIT, Sensor_Update,
-    Sensor_GetAxis};
+    Sensor_GetAxis, .priv = &sensor_private};
 
 static void reset_state(Sensor_HandleTypeDef *sensor);
 static inline void calculate_magnet_rotations(Sensor_HandleTypeDef *sensor);
@@ -39,7 +54,8 @@ static Wheel_Status Sensor_INIT(Sensor_HandleTypeDef *sensor,
   memcpy(&sensor->Config, config, sizeof(Sensor_ConfigHandleTypeDef));
   // A calibration starts from min and max: those of a previous use must go
   reset_state(sensor);
-  sensor->start_settling_cnt = SENSOR_SETTLING_SAMPLES;
+  Sensor_Private *priv = sensor->priv;
+  priv->start_settling_cnt = SENSOR_SETTLING_SAMPLES;
   sensor->axis_scale = 1.0f;
   return WHEEL_OK;
 }
@@ -65,22 +81,24 @@ static void reset_state(Sensor_HandleTypeDef *sensor) {
   sensor->steering_pos = 0;
   sensor->min = 0;
   sensor->max = 0;
-  sensor->physical_axis = 0;
-  sensor->previous_sensor_capture = 0;
-  sensor->current_sensor_capture = 0;
-  sensor->magnet_full_rotation_cnt = 0;
-  sensor->start_settling_cnt = 0;
   sensor->distance = 0;
   sensor->axis_scale = 0.0f;
+  Sensor_Private *priv = sensor->priv;
+  priv->physical_axis = 0;
+  priv->previous_sensor_capture = 0;
+  priv->current_sensor_capture = 0;
+  priv->magnet_full_rotation_cnt = 0;
+  priv->start_settling_cnt = 0;
 }
 
 static Wheel_Status Sensor_Update(Sensor_HandleTypeDef *sensor) {
-  sensor->previous_sensor_capture = sensor->current_sensor_capture;
-  sensor->current_sensor_capture = sensor->Config.hw_magnetometer->reading;
-  if (sensor->start_settling_cnt == 0) {
+  Sensor_Private *priv = sensor->priv;
+  priv->previous_sensor_capture = priv->current_sensor_capture;
+  priv->current_sensor_capture = sensor->Config.hw_magnetometer->reading;
+  if (priv->start_settling_cnt == 0) {
     calculate_magnet_rotations(sensor);
   } else {
-    sensor->start_settling_cnt--;
+    priv->start_settling_cnt--;
   }
   return WHEEL_OK;
 }
@@ -92,7 +110,8 @@ static Wheel_Status Sensor_GetAxis(Sensor_HandleTypeDef *sensor) {
   sensor->distance = distance;
 
   uint16_t physical = sensor->steering_pos - sensor->min;
-  sensor->physical_axis = physical;
+  Sensor_Private *priv = sensor->priv;
+  priv->physical_axis = physical;
 
   uint16_t half = distance / 2U;
   int16_t virtual_offset = (int16_t)physical - (int16_t)half;
@@ -120,23 +139,25 @@ static const float roll_to_axis_coef = 1560.3571f;
 // Counts the turns of the magnet: a jump of more than half a turn between two
 // captures is a wrap
 static inline void calculate_magnet_rotations(Sensor_HandleTypeDef *sensor) {
-  uint16_t cur = sensor->current_sensor_capture;
-  uint16_t prev = sensor->previous_sensor_capture;
+  Sensor_Private *priv = sensor->priv;
+  uint16_t cur = priv->current_sensor_capture;
+  uint16_t prev = priv->previous_sensor_capture;
 
   int32_t diff = (int32_t)cur - (int32_t)prev;
 
   if (diff > SENSOR_HALF_REV) {
     diff -= SENSOR_COUNTS_PER_REV;
-    sensor->magnet_full_rotation_cnt--;
+    priv->magnet_full_rotation_cnt--;
   } else if (diff < -SENSOR_HALF_REV) {
     diff += SENSOR_COUNTS_PER_REV;
-    sensor->magnet_full_rotation_cnt++;
+    priv->magnet_full_rotation_cnt++;
   }
 }
 
 static inline void get_steering_pos(Sensor_HandleTypeDef *sensor) {
-  float fraction = (float)sensor->current_sensor_capture / SENSOR_CAPTURE_MAX;
-  float pos = sensor->magnet_full_rotation_cnt * roll_to_axis_coef
+  Sensor_Private *priv = sensor->priv;
+  float fraction = (float)priv->current_sensor_capture / SENSOR_CAPTURE_MAX;
+  float pos = priv->magnet_full_rotation_cnt * roll_to_axis_coef
       + fraction * roll_to_axis_coef;
   sensor->steering_pos = (int32_t)pos;
 }

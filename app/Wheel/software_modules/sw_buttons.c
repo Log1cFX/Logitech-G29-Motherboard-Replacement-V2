@@ -22,9 +22,23 @@ static void read_knob_button_state(Buttons_HandleTypeDef *buttons);
 static void update_knob_button_state(Buttons_HandleTypeDef *buttons);
 static void get_current_knob_state(Buttons_HandleTypeDef *buttons);
 
+// The state of the module. Written in the TIM3 interrupt (TIM_POLL_CB), read in
+// SysTick (GetState). Neither volatile nor protected: both have priority 6 and
+// cannot interrupt each other. Review this if one of the two priorities changes
+typedef struct {
+  uint32_t sample_buffer[BUTTONS_BUFFER_SIZE];
+  uint32_t knob_rotation_sequence_buffer[ROTATION_SEQUENCE_SIZE];
+  uint32_t knob_lock_init_time_ms;
+  uint8_t knob_head;
+  uint8_t knob_flags;
+  uint16_t sample_head;
+} Buttons_Private;
+
+static Buttons_Private buttons_private;
+
 Buttons_HandleTypeDef hButtons = {Buttons_INIT, Buttons_DeINIT,
     Buttons_Start_TIM_POLL, Buttons_Stop_TIM_POLL, Buttons_TIM_POLL_CB,
-    Buttons_GetState};
+    Buttons_GetState, .priv = &buttons_private};
 
 static Wheel_Status Buttons_INIT(Buttons_HandleTypeDef *buttons,
                                  Buttons_ConfigHandleTypeDef *config) {
@@ -77,21 +91,16 @@ static Wheel_Status Buttons_Stop_TIM_POLL(Buttons_HandleTypeDef *buttons) {
 // Only call with the poll timer stopped
 static void reset_state(Buttons_HandleTypeDef *buttons) {
   buttons->buttons_state = 0;
-  memset(buttons->sample_buffer, 0, sizeof(buttons->sample_buffer));
-  memset(buttons->knob_rotation_sequence_buffer, 0,
-         sizeof(buttons->knob_rotation_sequence_buffer));
-  buttons->knob_lock_init_time_ms = 0;
-  buttons->knob_head = 0;
-  buttons->knob_flags = 0;
-  buttons->sample_head = 0;
+  memset(buttons->priv, 0, sizeof(Buttons_Private));
 }
 
 static Wheel_Status Buttons_TIM_POLL_CB(Buttons_HandleTypeDef *buttons) {
   DigitalInput_HandleTypeDef *hw_buttons = buttons->Config.hw_buttons;
+  Buttons_Private *priv = buttons->priv;
   hw_buttons->ReadState(hw_buttons);
-  buttons->sample_head = (buttons->sample_head + 1) % BUTTONS_BUFFER_SIZE;
-  buttons->sample_buffer[buttons->sample_head] = hw_buttons->buttons_state;
-  if (GET_BIT(buttons->knob_flags, KNOB_LOCK_FLAG)) {
+  priv->sample_head = (priv->sample_head + 1) % BUTTONS_BUFFER_SIZE;
+  priv->sample_buffer[priv->sample_head] = hw_buttons->buttons_state;
+  if (GET_BIT(priv->knob_flags, KNOB_LOCK_FLAG)) {
     update_knob_button_state(buttons);
   } else {
     read_knob_button_state(buttons);
@@ -110,9 +119,10 @@ static Wheel_Status Buttons_GetState(Buttons_HandleTypeDef *buttons) {
 // vote odd and within BUTTONS_BUFFER_SIZE
 static void get_debounced_state(Buttons_HandleTypeDef *buttons) {
   uint16_t buttonSum[BUTTONS_NUM] = {0};
-  uint32_t *buffer = buttons->sample_buffer;
+  Buttons_Private *priv = buttons->priv;
+  uint32_t *buffer = priv->sample_buffer;
   uint16_t vote = buttons->Config.settings->vote_samples;
-  uint16_t sample_idx = buttons->sample_head;
+  uint16_t sample_idx = priv->sample_head;
 
   for (uint16_t offset = 0; offset < vote; offset++) {
     uint32_t sample = buffer[sample_idx];
@@ -155,9 +165,10 @@ static void get_debounced_state(Buttons_HandleTypeDef *buttons) {
 
 // Replaces the two raw bits of the knob with the detent being reported, if any
 static void get_current_knob_state(Buttons_HandleTypeDef *buttons) {
+  Buttons_Private *priv = buttons->priv;
   CLEAR_BIT(buttons->buttons_state, RL_KNOB_BIT_MASK);
-  if (GET_BIT(buttons->knob_flags, KNOB_LOCK_FLAG)) {
-    if (GET_BIT(buttons->knob_flags, KNOB_DIRECTION_FLAG)) {
+  if (GET_BIT(priv->knob_flags, KNOB_LOCK_FLAG)) {
+    if (GET_BIT(priv->knob_flags, KNOB_DIRECTION_FLAG)) {
       SET_BIT(buttons->buttons_state, R_KNOB_BIT_MASK);
     } else {
       SET_BIT(buttons->buttons_state, L_KNOB_BIT_MASK);
@@ -173,15 +184,16 @@ R_KNOB_BIT_MASK, RL_KNOB_BIT_MASK, L_KNOB_BIT_MASK, 0};
 
 // Records every change of the two knob bits and looks for a complete detent
 static void read_knob_button_state(Buttons_HandleTypeDef *buttons) {
-  uint32_t *buffer = buttons->sample_buffer;
-  uint32_t *sequence = buttons->knob_rotation_sequence_buffer;
-  uint8_t knob_idx = buttons->knob_head;
-  uint16_t sample_idx = buttons->sample_head;
+  Buttons_Private *priv = buttons->priv;
+  uint32_t *buffer = priv->sample_buffer;
+  uint32_t *sequence = priv->knob_rotation_sequence_buffer;
+  uint8_t knob_idx = priv->knob_head;
+  uint16_t sample_idx = priv->sample_head;
 
   if (GET_BIT(buffer[sample_idx], RL_KNOB_BIT_MASK) != sequence[knob_idx]) {
     knob_idx = (knob_idx + 1) % ROTATION_SEQUENCE_SIZE;
     sequence[knob_idx] = GET_BIT(buffer[sample_idx], RL_KNOB_BIT_MASK);
-    buttons->knob_head = knob_idx;
+    priv->knob_head = knob_idx;
   } else {
     return;
   }
@@ -204,21 +216,22 @@ static void read_knob_button_state(Buttons_HandleTypeDef *buttons) {
     }
   }
   if (found_sequence) {
-    SET_BIT(buttons->knob_flags, KNOB_LOCK_FLAG);
+    SET_BIT(priv->knob_flags, KNOB_LOCK_FLAG);
     if (seq == 1) {
-      SET_BIT(buttons->knob_flags, KNOB_DIRECTION_FLAG);
+      SET_BIT(priv->knob_flags, KNOB_DIRECTION_FLAG);
     }
-    buttons->knob_lock_init_time_ms = HAL_GetTick();
+    priv->knob_lock_init_time_ms = HAL_GetTick();
   }
 }
 
 // Ends the report of a detent after knob_lock_ms (settings)
 static void update_knob_button_state(Buttons_HandleTypeDef *buttons) {
+  Buttons_Private *priv = buttons->priv;
   uint32_t lock_ms = buttons->Config.settings->knob_lock_ms;
-  if (HAL_GetTick() - buttons->knob_lock_init_time_ms > lock_ms) {
-    CLEAR_BIT(buttons->knob_flags, KNOB_LOCK_FLAG);
-    CLEAR_BIT(buttons->knob_flags, KNOB_DIRECTION_FLAG);
-    memset(buttons->knob_rotation_sequence_buffer, 0,
-           sizeof(buttons->knob_rotation_sequence_buffer));
+  if (HAL_GetTick() - priv->knob_lock_init_time_ms > lock_ms) {
+    CLEAR_BIT(priv->knob_flags, KNOB_LOCK_FLAG);
+    CLEAR_BIT(priv->knob_flags, KNOB_DIRECTION_FLAG);
+    memset(priv->knob_rotation_sequence_buffer, 0,
+           sizeof(priv->knob_rotation_sequence_buffer));
   }
 }

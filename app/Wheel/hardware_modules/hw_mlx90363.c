@@ -38,9 +38,23 @@ static Wheel_Status MLX90363_Stop_TIM_POLL(Magnetometer_HandleTypeDef *sensor);
 static Wheel_Status MLX90363_TransmitRecieve_DMA(Magnetometer_HandleTypeDef *sensor);
 static Wheel_Status MLX90363_TxRxDone_CB(Magnetometer_HandleTypeDef *sensor);
 
+// The state of the part. Used by the TIM4 interrupt (TransmitRecieve_DMA) and
+// the SPI DMA interrupt (TxRxDone_CB): both have priority 3 and cannot
+// interrupt each other, so nothing is volatile (see the table in wheel_def.h).
+// Start_TIM_POLL also uses the buffers from main, before the timer runs
+typedef struct {
+  uint8_t SPI_Rx_buffer[MAGNETOMETER_FRAME_SIZE];
+  uint8_t SPI_Tx_buffer[MAGNETOMETER_FRAME_SIZE];
+  uint8_t transfer_is_done;
+  uint8_t diagnostic_bits;
+  uint8_t roll_cnt;
+} MLX90363_Private;
+
+static MLX90363_Private mlx90363_private;
+
 Magnetometer_HandleTypeDef hmlx90363 = {MLX90363_INIT, MLX90363_DeINIT,
     MLX90363_Start_TIM_POLL, MLX90363_Stop_TIM_POLL, MLX90363_TransmitRecieve_DMA,
-    MLX90363_TxRxDone_CB};
+    MLX90363_TxRxDone_CB, .priv = &mlx90363_private};
 
 static void reset_state(Magnetometer_HandleTypeDef *sensor);
 static uint8_t calculate_crc(uint8_t *message);
@@ -88,11 +102,7 @@ static Wheel_Status MLX90363_DeINIT(Magnetometer_HandleTypeDef *sensor) {
 // Only call with the poll timer stopped and no transfer running
 static void reset_state(Magnetometer_HandleTypeDef *sensor) {
   sensor->reading = 0;
-  memset(sensor->SPI_Rx_buffer, 0, sizeof(sensor->SPI_Rx_buffer));
-  memset(sensor->SPI_Tx_buffer, 0, sizeof(sensor->SPI_Tx_buffer));
-  sensor->transfer_is_done = 0;
-  sensor->diagnostic_bits = 0;
-  sensor->roll_cnt = 0;
+  memset(sensor->priv, 0, sizeof(MLX90363_Private));
 }
 
 static Wheel_Status MLX90363_Start_TIM_POLL(Magnetometer_HandleTypeDef *sensor) {
@@ -104,7 +114,8 @@ static Wheel_Status MLX90363_Start_TIM_POLL(Magnetometer_HandleTypeDef *sensor) 
     return WHEEL_ERROR;
   }
   reset_roll_counter(sensor);
-  sensor->roll_cnt = 0;
+  MLX90363_Private *priv = sensor->priv;
+  priv->roll_cnt = 0;
   HAL_StatusTypeDef ret = HAL_OK;
   ret = HAL_TIM_Base_Start_IT(config->htim);
   return (ret == HAL_OK) ? WHEEL_OK : WHEEL_ERROR;
@@ -121,12 +132,13 @@ static Wheel_Status MLX90363_Stop_TIM_POLL(Magnetometer_HandleTypeDef *sensor) {
 
 static Wheel_Status MLX90363_TransmitRecieve_DMA(Magnetometer_HandleTypeDef *sensor) {
   Magnetometer_ConfigHandleTypeDef *config = &sensor->Config;
-  set_GET1(sensor->SPI_Tx_buffer, 0);
-  sensor->transfer_is_done = 0;
+  MLX90363_Private *priv = sensor->priv;
+  set_GET1(priv->SPI_Tx_buffer, 0);
+  priv->transfer_is_done = 0;
   HAL_GPIO_WritePin(config->SS_port, config->SS_pin, 0);
   HAL_StatusTypeDef ret = HAL_OK;
-  ret = HAL_SPI_TransmitReceive_DMA(config->hspi, sensor->SPI_Tx_buffer,
-                                    sensor->SPI_Rx_buffer,
+  ret = HAL_SPI_TransmitReceive_DMA(config->hspi, priv->SPI_Tx_buffer,
+                                    priv->SPI_Rx_buffer,
                                     MAGNETOMETER_FRAME_SIZE);
   // Refused, the last transfer still running for instance: this frame is lost
   if (ret != HAL_OK) {
@@ -139,7 +151,8 @@ static Wheel_Status MLX90363_TransmitRecieve_DMA(Magnetometer_HandleTypeDef *sen
 static Wheel_Status MLX90363_TxRxDone_CB(Magnetometer_HandleTypeDef *sensor) {
   Magnetometer_ConfigHandleTypeDef *config = &sensor->Config;
   HAL_GPIO_WritePin(config->SS_port, config->SS_pin, 1);
-  sensor->transfer_is_done = 1;
+  MLX90363_Private *priv = sensor->priv;
+  priv->transfer_is_done = 1;
   Wheel_Status ret = WHEEL_OK;
   ret = getData(sensor);
   return ret;
@@ -209,8 +222,9 @@ static void set_NOP(uint8_t *buffer) {
 
 static void transmit_blocking(Magnetometer_HandleTypeDef *sensor) {
   Magnetometer_ConfigHandleTypeDef *config = &sensor->Config;
+  MLX90363_Private *priv = sensor->priv;
   HAL_GPIO_WritePin(config->SS_port, config->SS_pin, 0);
-  HAL_SPI_Transmit(config->hspi, sensor->SPI_Tx_buffer, MAGNETOMETER_FRAME_SIZE,
+  HAL_SPI_Transmit(config->hspi, priv->SPI_Tx_buffer, MAGNETOMETER_FRAME_SIZE,
   HAL_MAX_DELAY);
   HAL_GPIO_WritePin(config->SS_port, config->SS_pin, 1);
 }
@@ -218,18 +232,20 @@ static void transmit_blocking(Magnetometer_HandleTypeDef *sensor) {
 // Resets the rolling counter of the sensor, then ends the exchange.
 // Ref: Figure 4 - Trigger Mode 1
 static void reset_roll_counter(Magnetometer_HandleTypeDef *sensor) {
-  set_GET1(sensor->SPI_Tx_buffer, 1);
+  MLX90363_Private *priv = sensor->priv;
+  set_GET1(priv->SPI_Tx_buffer, 1);
   transmit_blocking(sensor);
   HAL_Delay(1); // required between the two frames
   // A NOP ends the exchange without incrementing the rolling counter
-  set_NOP(sensor->SPI_Tx_buffer);
+  set_NOP(priv->SPI_Tx_buffer);
   transmit_blocking(sensor);
 }
 
 static Wheel_Status getData(Magnetometer_HandleTypeDef *sensor) {
-  uint8_t *RxBuffer = sensor->SPI_Rx_buffer;
+  MLX90363_Private *priv = sensor->priv;
+  uint8_t *RxBuffer = priv->SPI_Rx_buffer;
   /* CHECKS */
-  if (!sensor->transfer_is_done) {
+  if (!priv->transfer_is_done) {
     return WHEEL_ERROR;
   }
 
@@ -254,12 +270,12 @@ static Wheel_Status getData(Magnetometer_HandleTypeDef *sensor) {
   // The rolling counter grows by 1 per frame: a bigger step is missed frames.
   // The frame itself is still good
   uint8_t rollcnt = RxBuffer[6] & ROLL_CNT_MASK;
-  uint8_t last_rollcnt = sensor->roll_cnt;
+  uint8_t last_rollcnt = priv->roll_cnt;
   uint8_t diff = (rollcnt - last_rollcnt + ROLL_CNT_MODULO) % ROLL_CNT_MODULO;
   if (diff > 1) {
     WHEEL_LOG_ERROR(WHEEL_ERR_SENSOR_MISSED);
   }
-  sensor->roll_cnt = rollcnt;
+  priv->roll_cnt = rollcnt;
 
   if (RxBuffer[7] != calculate_crc(RxBuffer)) {
     WHEEL_LOG_ERROR(WHEEL_ERR_SENSOR_CRC);
@@ -270,6 +286,6 @@ static Wheel_Status getData(Magnetometer_HandleTypeDef *sensor) {
   // Ref: datasheet page 20 and the note on page 21
   sensor->reading = (((RxBuffer[1] & ALPHA_MSB_MASK) << 8) + RxBuffer[0])
       << ALPHA_TO_16BIT_SHIFT;
-  sensor->diagnostic_bits = RxBuffer[1] >> DIAGNOSTIC_SHIFT;
+  priv->diagnostic_bits = RxBuffer[1] >> DIAGNOSTIC_SHIFT;
   return WHEEL_OK;
 }

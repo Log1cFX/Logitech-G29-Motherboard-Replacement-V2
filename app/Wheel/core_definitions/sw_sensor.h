@@ -67,20 +67,14 @@ typedef struct _Sensor_HandleTypeDef {
   // Written in main (calibration), read in SysTick (GetAxis)
   volatile int32_t min;// counterclockwise
   volatile int32_t max;// clockwise
-
-  /* PRIVATE */
-  uint16_t physical_axis; // SysTick only
-  uint16_t previous_sensor_capture;// SPI DMA interrupt only
-  // Written in the SPI DMA interrupt (Update), read in SysTick (GetAxis).
-  // NOT PROTECTED: the position is turns + capture, but SysTick reads the two
-  // one after the other and the SPI DMA interrupt can change both in between
-  volatile uint16_t current_sensor_capture;
-  volatile int8_t magnet_full_rotation_cnt;
-  uint8_t start_settling_cnt;// set by INIT, then SPI DMA interrupt only
   // max - min. Written in SysTick (GetAxis), read in main (calibration)
   volatile uint16_t distance;
   // Written in main (calibration), read in SysTick (GetAxis)
   volatile float axis_scale;
+
+  // The state of the implementation, in its .c. Set with the handle, never
+  // changed
+  void *priv;
 }Sensor_HandleTypeDef;
 
 extern Sensor_HandleTypeDef hSensor;

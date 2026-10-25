@@ -64,8 +64,9 @@ typedef struct _MotorDriver_HandleTypeDef {
 
   MotorDriver_ConfigHandleTypeDef Config;
 
-  uint8_t motors_enabled; // main only, like the whole module
-
+  // The state of the implementation, in its .c. Set with the handle, never
+  // changed
+  void *priv;
 } MotorDriver_HandleTypeDef;
 
 #endif /* CORE_DEFINITIONS_HW_MOTOR_DRIVER_H_ */

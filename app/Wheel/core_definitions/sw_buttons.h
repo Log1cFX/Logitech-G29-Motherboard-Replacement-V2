@@ -85,16 +85,9 @@ typedef struct _Buttons_HandleTypeDef {
   // steps, so main reads it with the interrupts off (wheel_get_input)
   volatile uint32_t buttons_state;
 
-  /* PRIVATE */
-  // Written in the TIM3 interrupt (TIM_POLL_CB), read in SysTick (GetState).
-  // Neither volatile nor protected: both have priority 6 and cannot interrupt
-  // each other. Review this if one of the two priorities changes
-  uint32_t sample_buffer[BUTTONS_BUFFER_SIZE];
-  uint32_t knob_rotation_sequence_buffer[ROTATION_SEQUENCE_SIZE];
-  uint32_t knob_lock_init_time_ms;
-  uint8_t knob_head;
-  uint8_t knob_flags;
-  uint16_t sample_head;
+  // The state of the implementation, in its .c. Set with the handle, never
+  // changed
+  void *priv;
 }Buttons_HandleTypeDef;
 
 extern Buttons_HandleTypeDef hButtons;

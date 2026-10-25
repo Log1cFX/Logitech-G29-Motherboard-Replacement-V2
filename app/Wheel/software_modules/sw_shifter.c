@@ -13,7 +13,15 @@ static Wheel_Status Shifter_DeINIT(Shifter_HandleTypeDef *shifter);
 static Wheel_Status Shifter_getSpeed(Shifter_HandleTypeDef *shifter);
 static void reset_state(Shifter_HandleTypeDef *shifter);
 
-Shifter_HandleTypeDef hShifter = {Shifter_INIT, Shifter_DeINIT, Shifter_getSpeed};
+// The state of the module
+typedef struct {
+  Point current_pos; // SysTick only
+} Shifter_Private;
+
+static Shifter_Private shifter_private;
+
+Shifter_HandleTypeDef hShifter = {Shifter_INIT, Shifter_DeINIT, Shifter_getSpeed,
+    .priv = &shifter_private};
 
 static Wheel_Status Shifter_INIT(Shifter_HandleTypeDef *shifter,
                                  Shifter_ConfigHandleTypeDef *config) {
@@ -38,18 +46,19 @@ static Wheel_Status Shifter_DeINIT(Shifter_HandleTypeDef *shifter) {
 
 static void reset_state(Shifter_HandleTypeDef *shifter) {
   shifter->gear = 0;
-  memset(&shifter->current_pos, 0, sizeof(Point));
+  memset(shifter->priv, 0, sizeof(Shifter_Private));
 }
 
 // Finds the grid cell the lever is in and looks up its gear. The corners come
 // from the settings, which keep min.x < max.x and min.y > max.y
 static Wheel_Status Shifter_getSpeed(Shifter_HandleTypeDef *shifter) {
-  shifter->current_pos.x = shifter->Config.hw_analog->axis[SHIFTER_IDX];
-  shifter->current_pos.y = shifter->Config.hw_analog->axis[SHIFTER_IDX + 1];
+  Shifter_Private *priv = shifter->priv;
+  Point *current_pos = &priv->current_pos;
+  current_pos->x = shifter->Config.hw_analog->axis[SHIFTER_IDX];
+  current_pos->y = shifter->Config.hw_analog->axis[SHIFTER_IDX + 1];
 
   const wheel_file_settings_point_t *min = &shifter->Config.settings->min;
   const wheel_file_settings_point_t *max = &shifter->Config.settings->max;
-  Point *current_pos = &shifter->current_pos;
 
   // Clamp to the calibrated area (y decreases from min to max)
   if (current_pos->x < min->x) current_pos->x = min->x;

@@ -71,8 +71,9 @@ typedef struct _Shifter_HandleTypeDef {
   // 0 (no gear) to 7. Written in SysTick (GetState), read in main (wheel_get_input)
   volatile uint8_t gear;
 
-  /* PRIVATE */
-  Point current_pos; // SysTick only
+  // The state of the implementation, in its .c. Set with the handle, never
+  // changed
+  void *priv;
 }Shifter_HandleTypeDef;
 
 extern Shifter_HandleTypeDef hShifter;

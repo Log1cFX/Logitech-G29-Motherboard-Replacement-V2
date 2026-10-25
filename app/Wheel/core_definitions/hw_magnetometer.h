@@ -63,24 +63,14 @@ typedef struct _Magnetometer_HandleTypeDef {
 
   Magnetometer_ConfigHandleTypeDef Config;
 
-  /*
-   * Everything below is used by the TIM4 interrupt (TransmitRecieve_DMA) and
-   * the SPI DMA interrupt (TxRxDone_CB). Both have priority 3 and cannot
-   * interrupt each other, so nothing is volatile (see the table in wheel_def.h).
-   * Start_TIM_POLL also uses the buffers from main, before the timer runs.
-   */
-
-  // Angle of the magnet over the 16-bit range. Read by the Update() of
-  // sw_sensor, in the same SPI DMA interrupt. Frames missed or rejected are
-  // logged as WHEEL_ERR_SENSOR_* (wheel_log.h)
+  // Angle of the magnet over the 16-bit range. Written in the SPI DMA interrupt
+  // (TxRxDone_CB), read by the Update() of sw_sensor in the same interrupt.
+  // Frames missed or rejected are logged as WHEEL_ERR_SENSOR_* (wheel_log.h)
   uint16_t reading;
 
-  /* PRIVATE */
-  uint8_t SPI_Rx_buffer[MAGNETOMETER_FRAME_SIZE];
-  uint8_t SPI_Tx_buffer[MAGNETOMETER_FRAME_SIZE];
-  uint8_t transfer_is_done;
-  uint8_t diagnostic_bits;
-  uint8_t roll_cnt;
+  // The state of the implementation, in its .c. Set with the handle, never
+  // changed
+  void *priv;
 }Magnetometer_HandleTypeDef;
 
 #ifdef __cplusplus
