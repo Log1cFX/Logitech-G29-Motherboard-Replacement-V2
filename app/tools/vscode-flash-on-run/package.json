@@ -1,0 +1,28 @@
+{
+  "name": "flash-on-run",
+  "displayName": "Flash on Run Without Debugging",
+  "description": "Run Without Debugging (Ctrl+F5) on an ST-LINK debug configuration runs a flash task instead of a debug session",
+  "version": "1.0.0",
+  "publisher": "g29-motherboard",
+  "license": "MIT",
+  "engines": {
+    "vscode": "^1.89.0"
+  },
+  "main": "./extension.js",
+  "activationEvents": [
+    "onDebugResolve:stlinkgdbtarget"
+  ],
+  "contributes": {
+    "configuration": {
+      "title": "Flash on Run Without Debugging",
+      "properties": {
+        "flashOnRun.task": {
+          "type": "string",
+          "default": "Flash",
+          "scope": "resource",
+          "description": "Label of the task (tasks.json) that Run Without Debugging runs instead of an ST-LINK debug session."
+        }
+      }
+    }
+  }
+}

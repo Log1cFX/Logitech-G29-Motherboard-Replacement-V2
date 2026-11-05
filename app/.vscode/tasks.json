@@ -1,0 +1,18 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            // Builds the active preset, then flashes the bootloader and the
+            // firmware without a debugger: the "flash" target of CMakeLists.txt.
+            // Run Without Debugging (Ctrl+F5) runs it: tools/vscode-flash-on-run
+            "label": "Flash",
+            "type": "cmake",
+            "command": "build",
+            "targets": [
+                "flash"
+            ],
+            "problemMatcher": [],
+            "detail": "Build, then flash the bootloader and the firmware, no debugger"
+        }
+    ]
+}

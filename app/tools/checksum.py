@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # Patches the firmware ELF for the bootloader, then writes the .bin from it:
-#   python checksum.py firmware.elf [firmware.bin]
+#   python tools/checksum.py firmware.elf [firmware.bin]
 #
 # 1. The CRC of each settings file of the .settings section (the settings
 #    page, see wheel_settings.h), computed as the CRC unit of the STM32 does

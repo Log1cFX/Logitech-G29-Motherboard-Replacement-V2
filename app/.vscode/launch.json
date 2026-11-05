@@ -1,0 +1,32 @@
+{
+    // Flashes the bootloader and the firmware of the active CMake preset
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "stlinkgdbtarget",
+            "request": "launch",
+            "name": "ST-LINK: bootloader + firmware",
+            "cwd": "${workspaceFolder}",
+            "preBuild": "${command:st-stm32-ide-debug-launch.build}",
+            "runEntry": "main",
+            "imagesAndSymbols": [
+                {
+                    // Flashed only: its symbols would mix with the firmware's
+                    "imageFileName": "${workspaceFolder}/../bootloader/bootloader-dfu-fw.elf"
+                },
+                {
+                    "imageFileName": "${command:cmake.launchTargetPath}",
+                    "symbolFileName": "${command:cmake.launchTargetPath}"
+                }
+            ],
+            "serverInterface": "SWD",
+            "serverReset": "Connect under reset",
+            "serverVerify": true,
+            // Debug builds print their logs through semihosting (wheel_log.h)
+            "serverSemihosting": {
+                "enabled": true,
+                "mode": "console"
+            }
+        }
+    ]
+}
